@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Node / opencode plugin deps
+.opencode/node_modules/
+.opencode/package-lock.json
+.opencode/bun.lock
+
+# Knowledge-graph scratch (from /graphify runs)
+graphify-out/
+
+# LaTeX build artifacts
+**/*.aux
+**/*.bbl
+**/*.bcf
+**/*.blg
+**/*.fdb_latexmk
+**/*.fls
+**/*.log
+**/*.out
+**/*.run.xml
+**/*.synctex.gz
+**/*.toc
+**/*.lof
+**/*.lot
+proposal/*.pdf
