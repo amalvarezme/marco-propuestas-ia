@@ -37,4 +37,8 @@ Diagram labels and captions are in **Spanish**.
 - `proposal/sections/diag_metodologico.tex`
 - `proposal/sections/diag_gantt.tex`
 
+Note: the institutional logos (LabIA, UNAL, GCPDS) live in
+`proposal/logos/` and are already rendered as a page footer in `main.tex`
+via `fancyhdr`. You do not need to add them to diagrams.
+
 Return a short summary to the Orchestrator.

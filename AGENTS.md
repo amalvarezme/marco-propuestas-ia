@@ -32,7 +32,9 @@ agente **Revisor** valida antes de avanzar.
    solo de labs/líderes reconocidos.
 7. **Salida LaTeX:** Cada sección se escribe como archivo `.tex` en
    `proposal/sections/`; referencias en `proposal/refs.bib`; ensamblaje en
-   `proposal/main.tex`.
+   `proposal/main.tex`. El template `main.tex` incluye un footer con los logos
+   institucionales (`proposal/logos/`: LabIA, UNAL, GCPDS) vía `fancyhdr`; los
+   agentes no deben eliminarlo.
 
 ## Flujo del pipeline (interactivo, con gates)
 

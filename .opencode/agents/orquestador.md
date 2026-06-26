@@ -27,6 +27,8 @@ proposal content yourself. You:
    advance until the user approves. On FAIL, re-dispatch the failing agent with
    the reviewer's fixes.
 5. **Assemble** the final `proposal/main.tex` once all sections pass.
+   The template already includes a `fancyhdr` footer with the institutional
+   logos from `proposal/logos/` (LabIA, UNAL, GCPDS). Do not remove it.
 
 ## Pipeline (interactive, with gates)
 
