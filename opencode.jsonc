@@ -1,7 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "orquestador",
+  "default_agent": "orchestrator",
   "instructions": ["AGENTS.md"],
+  "plugin": ["oh-my-opencode-slim"],
   "skills": {
     "paths": [".opencode/skills"]
   },

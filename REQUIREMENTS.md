@@ -13,6 +13,8 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 | **TeX Live** | 2024+ | LaTeX compilation (pdflatex + biber) | `brew install --cask mactex` |
 | **git** | 2.40+ | Version control | `brew install git` |
 | **opencode** | 1.17+ | Agent orchestration runtime | `npm install -g opencode-ai` |
+| **oh-my-opencode-slim** | 2.0.5 (pinned) | Panthéon de agentes generales (orchestrator, oracle, librarian, explorer, designer, fixer, observer, council). **Vendored** en `.opencode/package.json`; cargado desde `.opencode/node_modules/oh-my-opencode-slim/dist/index.js` | `npm install --prefix .opencode` (regenera `node_modules` gitignored) |
+| **bun** (o `npx`) | 1.1+ | Instalador del plugin OMO-slim | `curl -fsSL https://bun.sh \| bash` |
 
 ## 2. Python packages (`requirements.txt`)
 
@@ -51,7 +53,14 @@ All MCP servers run via `npx -y` (fetched on demand, no global install needed). 
 | **context7** | (remote, no install) | Library documentation lookup |
 
 opencode plugin:
-- `@opencode-ai/plugin@1.17.11` — in `.opencode/package.json`
+- `@opencode-ai/plugin@1.17.11` — in `.opencode/package.json` (plugin SDK types)
+- `oh-my-opencode-slim@2.0.5` — el panthéon de agentes generales, **vendored**
+  (pin en `.opencode/package.json`, `autoUpdate: false`). Cargado desde
+  `.opencode/node_modules/oh-my-opencode-slim/dist/index.js` (regenerado por
+  `npm install --prefix .opencode`). Configurado por proyecto en
+  `.opencode/oh-my-opencode-slim.jsonc` (preset `opencode-go`, observer
+  habilitado). La primera vez, genera la config global y las skills del panthéon
+  con `bunx oh-my-opencode-slim@2.0.5 install --preset=opencode-go --no-tui --skills=yes`.
 
 ## 4. LaTeX packages (TeX Live)
 
@@ -106,6 +115,7 @@ Graphify is a Claude skill file + the `graphifyy` Python package (in `requiremen
 | `GEMINI_API_KEY` | graphify (optional) | Enables Gemini for semantic extraction |
 | `GOOGLE_API_KEY` | graphify (optional) | Alternative to GEMINI_API_KEY |
 | `CROSSREF_MAILTO` | crossref MCP | Polite-pool (falls back to CONTACT_EMAIL) |
+| `OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS` | oh-my-opencode-slim V2 | `true` habilita la orquestación scheduler-first (background subagents) |
 
 ## 7. Project structure
 
@@ -115,11 +125,12 @@ Graphify is a Claude skill file + the `graphifyy` Python package (in `requiremen
 ├── REQUIREMENTS.md           # This file
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
-├── opencode.jsonc            # MCP server config + agent routing
+├── opencode.jsonc            # MCP server config + plugin OMO-slim + default_agent
 ├── .opencode/
 │   ├── package.json          # opencode plugin deps
-│   ├── agents/               # Agent system prompts (investigador, redactor, etc.)
-│   └── command/              # Custom commands
+│   ├── oh-my-opencode-slim.jsonc  # OMO-slim config (presets opencode-go/openai)
+│   ├── agents/               # Subagentes de propuesta + tikz-optimizer
+│   └── command/              # Comando /propuesta
 ├── info_data/                # User inputs (PDFs, DOCX)
 ├── proposal/
 │   ├── main.tex              # LaTeX assembly (footer with logos)
