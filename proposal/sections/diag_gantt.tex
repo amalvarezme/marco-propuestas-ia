@@ -1,0 +1,84 @@
+% === Diagrama 3: Cronograma Gantt (18+2 meses) ===
+% Diseñado por el agente Diseñador — Fase 5
+% Contenido basado en §3 (alcance temporal 18+2 meses) y §4.2 (mapeo OE$\leftrightarrow$Fase).
+% Las fases se solapan según cadenas de valor: F1(m1--5), F2(m4--12), F3(m11--16), F4(m15--20).
+% La librería pgfgantt ya está cargada en main.tex; no se declara aquí.
+% Paleta institucional: azul UNAL (#0066B3), gris LabIA (#666666), verde GCPDS (#2E8B57).
+
+\begin{figure}[t]
+\centering
+
+
+\begin{ganttchart}[
+  hgrid,
+  vgrid={*1{draw=gray!30, line width=0.3pt}},
+  title/.style={draw=azulUNAL, fill=azulUNAL!15, line width=0.5pt},
+  title height=1,
+  title label font=\scriptsize\bfseries,
+  bar/.style={fill=azulUNAL!70, draw=azulUNAL!90!black, line width=0.5pt},
+  bar height=0.5,
+  bar top shift=0.25,
+  bar label font=\footnotesize,
+  bar label node/.append style={text width=4.0cm, align=right},
+  group/.style={fill=verdeGCPDS!70, draw=verdeGCPDS!90!black, line width=0.7pt},
+  group label font=\footnotesize\bfseries,
+  group label node/.append style={text width=4.0cm, align=right},
+  milestone/.style={fill=verdeGCPDS, draw=verdeGCPDS!60!black, line width=0.7pt},
+  milestone label font=\scriptsize\bfseries,
+  milestone label node/.append style={text width=4.0cm, align=right},
+  x unit=0.60cm,
+  y unit chart=0.55cm,
+  y unit title=0.45cm
+]{1}{20}
+
+\gantttitle{Cronograma de actividades (18+2 meses)}{18} \\
+\gantttitlelist{1,...,18}{1} \\
+\gantttitle[title/.style={draw=verdeGCPDS, fill=verdeGCPDS!20, line width=0.5pt}]{Productos}{2} \\
+\gantttitlelist{19,20}{1} \\
+
+% --- Fase 1: Fundamentación y caracterización (OE1, meses 1--5) ---
+\ganttgroup[]{F1. Fundamentación y caracterización (OE1)}{1}{5} \\
+\ganttbar{Instrumento psicométrico validado}{1}{3} \\
+\ganttbar{Recolección y curaduría del \emph{dataset} multimodal}{2}{5} \\
+\ganttbar{Modelo del aprendiz (NLP + ML)}{3}{5} \\
+\ganttmilestone{Hito 1: instrumento + dataset + modelo v1 (TRL 4)}{5} \\
+
+% --- Fase 2: Diseño y desarrollo del ecosistema (OE2, meses 4--12) ---
+\ganttgroup[]{F2. Diseño y desarrollo del ecosistema (OE2)}{4}{12} \\
+\ganttbar{Arquitectura multiagente y orquestación MCP}{4}{6} \\
+\ganttbar{Scaffolding adaptativo y roles agénticos}{5}{9} \\
+\ganttbar{Generación de problemas y evaluación formativa}{7}{10} \\
+\ganttbar{Integración y pruebas del prototipo}{10}{12} \\
+\ganttmilestone{Hito 2: ecosistema agéntico integrado (TRL 5)}{12} \\
+
+% --- Fase 3: Validación empírica en aula (OE3, meses 11--16) ---
+\ganttgroup[]{F3. Validación empírica en aula (OE3)}{11}{16} \\
+\ganttbar{Diseño cuasiexperimental y aprobación ética}{11}{12} \\
+\ganttbar{Intervención en aula (semestre académico)}{12}{15} \\
+\ganttbar{Análisis estadístico del impacto causal}{14}{16} \\
+\ganttmilestone{Hito 3: validación empírica TRL 6}{16} \\
+
+% --- Fase 4: Transferencia, diseminación y productos (OE3, meses 15--20) ---
+\ganttgroup[]{F4. Transferencia y diseminación (OE3)}{15}{20} \\
+\ganttbar{Despliegue híbrido y registro de software}{15}{17} \\
+\ganttbar{Plan de adopción con actor externo del sector productivo}{17}{19} \\
+\ganttbar{Artículo indexado Q1/Q2 y comunicación de resultados}{18}{20} \\
+\ganttmilestone{Hito 4: transferencia + productos (TRL 7)}{20} \\
+
+% --- Cinta TRL inferior ---
+\ganttbar[bar/.style={fill=grisLabIA!30, draw=grisLabIA, line width=0.5pt},
+          bar label font=\scriptsize\bfseries]{TRL 4}{1}{5} \\
+\ganttbar[bar/.style={fill=grisLabIA!40, draw=grisLabIA, line width=0.5pt},
+          bar label font=\scriptsize\bfseries]{TRL 5}{6}{12} \\
+\ganttbar[bar/.style={fill=grisLabIA!55, draw=grisLabIA, line width=0.5pt},
+          bar label font=\scriptsize\bfseries]{TRL 6}{13}{16} \\
+\ganttbar[bar/.style={fill=grisLabIA!70, draw=grisLabIA, line width=0.5pt},
+          bar label font=\scriptsize\bfseries]{TRL 7}{17}{20} \\
+
+\end{ganttchart}
+
+\vspace{0.3cm}
+\noindent\footnotesize\textbf{Responsables:} IP = Investigador principal \quad CI = Coinvestigadores \quad TL = Team lead (posgrado) \quad EPg = Est.\ de posgrado \quad EPr = Est.\ de pregrado
+\caption{Cronograma de actividades del proyecto (18 meses de ejecución + 2 meses adicionales para productos). Las cuatro fases encadenadas (\textcolor{verdeGCPDS}{verde GCPDS}) se solapan para articular la cadena de valor: F1 (m.\,1--5, OE1), F2 (m.\,4--12, OE2), F3 (m.\,11--16, OE3) y F4 (m.\,15--20, OE3; incluye los 2 meses de productos). Los hitos verificables (diamantes verde GCPDS) marcan las entregas al cierre de cada fase y evidencian la progresión TRL~$4\rightarrow 7$.}
+\label{fig:gantt}
+\end{figure}

@@ -1,0 +1,78 @@
+% === Diagrama 2: Diagrama metodológico ===
+% Diseñado por el agente Diseñador — Fase 5
+% Contenido basado en §3 (alcance, fases F1--F4 y trayectoria TRL 4$\rightarrow$7),
+% §4.2 (mapeo OE1$\to$F1, OE2$\to$F2, OE3$\to$F3/F4), §5.3 (enfoques E1--E6).
+% Paleta institucional: azul UNAL (#0066B3), gris LabIA (#666666), verde GCPDS (#2E8B57).
+% Las librerías TikZ (positioning, arrows.meta, shapes.geometric, calc, fit, backgrounds)
+% ya están cargadas en main.tex; no se declaran aquí.
+
+\begin{figure}[t]
+\centering
+
+
+\begin{tikzpicture}[
+  font=\small,
+  >=Stealth, line width=0.7pt,
+  fase/.style={rectangle, rounded corners=5pt, draw=azulUNAL, fill=azulUNAL!8,
+               text width=3.0cm, align=center, inner sep=5pt, minimum height=3.4cm,
+               line width=0.9pt},
+  trlnode/.style={circle, draw=azulUNAL, fill=azulUNAL!12, line width=0.7pt,
+                  inner sep=1pt, minimum size=0.7cm, font=\footnotesize\bfseries},
+  ben/.style={rectangle, rounded corners=4pt, draw=grisLabIA, fill=grisLabIA!10,
+              text width=3.2cm, align=center, inner sep=4pt, font=\footnotesize,
+              line width=0.7pt, minimum height=0.7cm},
+  cadena/.style={-Stealth, line width=1.4pt, draw=azulUNAL!80!black}
+]
+
+% --- Cadena de fases F1$\rightarrow$F4 (eje horizontal) ---
+\node[fase] (F1) at (-6,0) {%
+  {\bfseries\color{azulUNAL}F1.\\Fundamentación}\\[3pt]
+  {\footnotesize OE1 · SP1 · Enfoque 1}\\[3pt]
+  {\scriptsize Instrumento psicométrico y \emph{dataset} multimodal del aprendiz}\\[4pt]
+  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$ Novedad:}\\
+  {\scriptsize\itshape Modelado multidimensional del aprendiz}%
+};
+\node[fase] (F2) at (-2,0) {%
+  {\bfseries\color{azulUNAL}F2.\\Diseño y desarrollo}\\[3pt]
+  {\footnotesize OE2 · SP2 · Enf.\ 2, 3, 4}\\[3pt]
+  {\scriptsize Arquitectura multiagente con MCP, scaffolding adaptativo, generación de problemas y evaluación formativa}\\[4pt]
+  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$ Novedades:}\\
+  {\scriptsize\itshape Arquitectura multiagente MCP y scaffolding adaptativo}%
+};
+\node[fase] (F3) at (2,0) {%
+  {\bfseries\color{azulUNAL}F3.\\Validación empírica}\\[3pt]
+  {\footnotesize OE3 · SP3 · Enfoque 5}\\[3pt]
+  {\scriptsize Diseño cuasiexperimental pre--post con grupo control en aulas reales de ingeniería}\\[4pt]
+  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$ Novedad:}\\
+  {\scriptsize\itshape Validación cuasiexperimental con analítica del aprendizaje}%
+};
+\node[fase] (F4) at (6,0) {%
+  {\bfseries\color{azulUNAL}F4.\\Transferencia y\\diseminación}\\[3pt]
+  {\footnotesize OE3 · SP3 · Enfoque 6}\\[3pt]
+  {\scriptsize Despliegue híbrido, registro de software, código abierto y plan de adopción con sector productivo}\\[4pt]
+  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$ Novedad:}\\
+  {\scriptsize\itshape Marco TRL adaptado a \emph{edtech}}%
+};
+
+\draw[cadena] (F1.east) -- (F2.west);
+\draw[cadena] (F2.east) -- (F3.west);
+\draw[cadena] (F3.east) -- (F4.west);
+
+% --- Barra de progresión TRL 4$\rightarrow$7 (alineada con las columnas de las fases) ---
+\node[font=\footnotesize\bfseries, color=azulUNAL!90!black] at (0,-2.3) {Progresión de madurez tecnológica};
+\draw[grisLabIA!60!black, line width=1.3pt, -Stealth] (-7.7,-2.7) -- (7.9,-2.7);
+\foreach \x/\trl in {-6/4, -2/5, 2/6, 6/7}{%
+  \node[trlnode] at (\x,-2.7) {\trl};
+  \node[font=\scriptsize, color=azulUNAL] at (\x,-3.15) {TRL \trl};
+}
+
+% --- Beneficiarios finales ---
+\node[font=\footnotesize\bfseries, color=azulUNAL!90!black] at (0,-4.2) {Beneficiarios finales};
+\node[ben] (B1) at (-4.5,-5.0) {Estudiantes de ingeniería};
+\node[ben] (B2) at (0,-5.0)    {Docentes};
+\node[ben] (B3) at (4.5,-5.0)  {Sector productivo (Industria 4.0/5.0)};
+
+\end{tikzpicture}
+\caption{Diagrama metodológico del proyecto. Cuatro fases encadenadas como cadena de valor $F1\rightarrow F2\rightarrow F3\rightarrow F4$ sobre los objetivos específicos (OE1--OE3) y los subproblemas (SP1--SP3). Cada fase exhibe su(s) enfoque(s) teórico(s) de §5.3 y, en \textcolor{verdeGCPDS}{verde GCPDS}, las novedades metodológicas destacadas. La barra inferior evidencia la trayectoria de madurez tecnológica TRL~$4\!\rightarrow\!5\!\rightarrow\!6\!\rightarrow\!7$, alineada con las cuatro fases. Los beneficiarios finales se enuncian en la franja inferior.}
+\label{fig:diagrama-metodologico}
+\end{figure}

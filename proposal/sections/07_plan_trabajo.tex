@@ -1,0 +1,153 @@
+% === §7 Plan de trabajo ===
+% Redactado por el Redactor — Fase 5
+% Alineación estricta con las fases de la Metodología (§6): F1→F2→F3→F4
+% Duración: 18 meses de ejecución + 2 meses de productos = 20 meses
+
+% --- Párrafo introductorio ---
+
+El plan de trabajo se estructura en correspondencia directa con las cuatro fases
+de la metodología (sección~\ref{sec:metodologia}): F1 (fundamentación y
+caracterización del aprendiz, OE1), F2 (diseño y desarrollo del ecosistema
+agéntico, OE2), F3 (validación empírica en aula y TRL~6, OE3) y F4 (transferencia
+y proyección TRL~7, OE3). La duración total se ajusta a los términos de la
+Convocatoria Nacional Alianzas SIUN 2025--2027: \textbf{18 meses de ejecución más
+2 meses adicionales para productos, totalizando 20 meses}. Las fases presentan
+solapes intencionales que reflejan el carácter iterativo e incremental del
+desarrollo (cadencia tipo Scrum híbrido): F1 ocupa los meses 1--5, F2 los meses
+4--12, F3 los meses 11--16 y F4 los meses 15--20, de modo que las fases
+consecutivas transfieren entregables sin interrupciones y el riesgo de cuello de
+botella se reduce. Cada actividad designa un rol responsable y culmina en un hito
+verificable en el que se libera un producto tangible, conectando con los
+resultados de la sección~\ref{sec:resultados}.
+
+\medskip
+
+% --- Descripción del cronograma Gantt para el Diseñador ---
+% NOTA PARA EL DISEÑADOR (agente TikZ): implementar con pgfgantt en
+% proposal/sections/diag_gantt.tex.
+
+\noindent\textbf{Descripción del diagrama de Gantt.}
+El cronograma se renderizará como un \emph{chart} de \texttt{pgfgantt} con el
+eje horizontal graduado en 20 meses (segmentado visualmente: meses 1--18 de
+ejecución sobre fondo neutro, meses 19--20 de productos con un tono diferenciado).
+Cada fase se representa como una barra horizontal que abarca sus meses de inicio y
+fin: F1 (meses 1--5), F2 (meses 4--12), F3 (meses 11--16) y F4 (meses 15--20).
+Las barras deben usar la paleta institucional (azul UNAL, gris LabIA, verde
+GCPDS) asignando un color por fase. Sobre cada barra se etiquetan las actividades
+principales como sub-barras \emph{linked} (encadenadas) con su intervalo mensual
+específico (ver tabla siguiente). Se deben marcar cuatro \textbf{hitos} como
+nodos simbólicos sobre el eje temporal: H1 (mes 5, TRL~4), H2 (mes 12, TRL~5), H3
+(mes 16, TRL~6) y H4 (mes 20, TRL~7 proyectado), cada uno con una etiqueta y un
+icono distintivo (triángulo o diamante). Una cinta paralela inferior debe
+representar la progresión TRL~4$\to$5$\to$6$\to$7 alineada con los hitos. El
+Diseñador debe asegurar que el gráfico sea legible en escala de grises e incluir
+una leyenda con los responsables (IP, coinvestigadores, \emph{team lead},
+estudiantes de posgrado, estudiantes de pregrado).
+
+\medskip
+
+% --- Tabla de actividades ---
+
+\begin{table}[h]
+\centering
+\caption{Plan de trabajo: actividades por fase, responsables, meses y
+productos/hitos. Total: 20 meses (18 de ejecución + 2 de productos).}
+\label{tab:plan_trabajo}
+\small
+\begin{tabularx}{\textwidth}{@{}l X l c c X@{}}
+\toprule
+\textbf{Fase} & \textbf{Actividad} & \textbf{Responsable} & \textbf{Ini.} & \textbf{Fin} & \textbf{Producto / Hito} \\
+\midrule
+
+% --- Fase 1 (OE1) ---
+F1 & A1.1 Diseño y validación psicométrica del instrumento de diagnóstico de aprendizaje profundo
+   & IP + D.\,Angulo + est.\ doctorado & 1 & 3 & Instrumento validado (IVC, $\alpha$ Cronbach) \\
+
+F1 & A1.2 Recolección y curaduría del dataset multimodal de trazas (textos, código, simulación)
+   & est.\ doctorado + est.\ pregrado & 2 & 5 & Dataset curado con consentimiento ético \\
+
+F1 & A1.3 Desarrollo y entrenamiento del modelo computacional del aprendiz (E1)
+   & IP + est.\ doctorado & 3 & 5 & Modelo del aprendiz (F1, AUC-ROC, F1) \\
+
+\addlinespace
+\multicolumn{6}{c}{\textit{Hito H1 (mes 5): TRL~4 — componentes de diagnóstico validados en laboratorio.}} \\
+\addlinespace
+
+% --- Fase 2 (OE2) ---
+F2 & A2.1 Diseño de la ontología de roles agénticos y arquitectura multiagente (E2)
+   & IP + C.\,Castellanos + \emph{team lead} & 4 & 6 & Documento de arquitectura agéntica \\
+
+F2 & A2.2 Implementación del bus de orquestación MCP y memoria compartida
+   & \emph{team lead} + est.\ maestría & 5 & 9 & Núcleo de orquestación MCP funcional \\
+
+F2 & A2.3 Desarrollo del módulo de scaffolding adaptativo (E3)
+   & est.\ maestría + est.\ pregrado & 6 & 10 & Función $s(\mathbf{x})$ calibrada \\
+
+F2 & A2.4 Implementación del generador de problemas y evaluador formativo (E4)
+   & \emph{team lead} + est.\ pregrado & 7 & 10 & Tubería RAG + evaluador NLP \\
+
+F2 & A2.5 Integración del ecosistema y pruebas en entorno simulado
+   & IP + equipo completo & 10 & 12 & Prototipo integrado + métricas de desempeño \\
+
+\addlinespace
+\multicolumn{6}{c}{\textit{Hito H2 (mes 12): TRL~5 — ecosistema integrado validado en entorno simulado.}} \\
+\addlinespace
+
+% --- Fase 3 (OE3, E5) ---
+F3 & A3.1 Diseño del protocolo cuasiexperimental y aprobación del Comité de Ética (E5)
+   & IP + D.\,Angulo + est.\ doctorado & 11 & 12 & Protocolo aprobado + asignaturas seleccionadas \\
+
+F3 & A3.2 Ejecución de la intervención en aula (grupos experimental y control)
+   & est.\ doctorado + 2 est.\ pregrado & 12 & 15 & Datos longitudinales T0--T2 \\
+
+F3 & A3.3 Análisis estadístico pre--post y analítica del aprendizaje
+   & est.\ doctorado + IP & 14 & 16 & Informe de impacto causal ($d$ de Cohen) \\
+
+\addlinespace
+\multicolumn{6}{c}{\textit{Hito H3 (mes 16): TRL~6 — evidencia causal de impacto en aula real.}} \\
+\addlinespace
+
+% --- Fase 4 (OE3, E6) — incluye 2 meses de productos ---
+F4 & A4.1 Despliegue en infraestructura híbrida (Apple Silicon + VPS) (E6)
+   & \emph{team lead} + est.\ maestría & 15 & 17 & Ecosistema desplegado en prod. \\
+
+F4 & A4.2 Documentación de interoperabilidad, registro de software y código abierto
+   & IP + profesional transferencia & 16 & 19 & Registro de software + repo GitHub \\
+
+F4 & A4.3 Plan de adopción con actor del sector productivo (demostración TRL~7)
+   & IP + profesional transferencia & 17 & 19 & Acta de demostración operativa \\
+
+F4 & A4.4 Redacción y sometimiento de artículos indexados + productos de apropiación
+   & IP + coinvestigadores & 18 & 20 & Artículos Q1/Q2 sometidos + ponencias \\
+
+\addlinespace
+\multicolumn{6}{c}{\textit{Hito H4 (mes 20): TRL~7 proyectado — productos académicos entregados.}} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\medskip
+
+% --- Párrafo de hitos y productos ---
+
+\noindent\textbf{Hitos y productos.}
+El plan define cuatro hitos verificables al cierre de cada fase, cada uno
+asociado a la liberación de productos tangibles que constituyen los resultados de
+la sección~\ref{sec:resultados}. \textbf{H1 (mes 5, TRL~4):} entrega del
+instrumento de diagnóstico validado psicométricamente, el \emph{dataset}
+multimodal curado y el modelo computacional del aprendiz; constituye el primer
+producto de generación de nuevo conocimiento y habilita F2. \textbf{H2 (mes 12,
+TRL~5):} liberación del prototipo integrado del ecosistema agéntico con métricas
+de desempeño documentadas; constituye el primer producto tecnológico
+intermedio. \textbf{H3 (mes 16, TRL~6):} entrega del informe de impacto causal
+cuasiexperimental con evidencia cuantitativa y cualitativa del efecto del
+ecosistema en el aprendizaje profundo; constituye el principal producto de
+generación de nuevo conocimiento (artículo Q1/Q2 en preparación) y certifica la
+meta de madurez TRL~6 exigida por la convocatoria. \textbf{H4 (mes 20, TRL~7
+proyectado):} entrega final durante los dos meses adicionales de productos
+—ecosistema desplegado y documentado, registro de software, código abierto,
+acta de demostración operativa con un actor del sector productivo, artículos
+indexados sometidos y ponencias—; certifica la transferencia tecnológica y la
+proyección TRL~7. El solape entre fases y la asignación de responsables por
+actividad garantizan que cada producto se libere en el mes previsto sin
+depender de una única persona, mitigando riesgos de cuello de botella.

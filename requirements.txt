@@ -1,0 +1,60 @@
+# Python dependencies for the AI research-proposal writing framework
+# Install: uv tool install --upgrade graphifyy  (or: pip install -r requirements.txt)
+# Python >= 3.11 recommended (graphify uses 3.11 on macOS Homebrew)
+
+# --- graphify (knowledge graph extraction & analysis) ---
+graphifyy>=0.8.41
+
+# Core runtime deps (pulled automatically by graphifyy, pinned here for reproducibility)
+networkx>=3.4
+numpy>=1.21
+rapidfuzz>=3.0
+
+# AST / code parsing (tree-sitter grammars used by graphify structural extraction)
+tree-sitter>=0.23,<0.26
+tree-sitter-python>=0.23,<0.26
+tree-sitter-javascript>=0.23,<0.26
+tree-sitter-typescript>=0.23,<0.25
+tree-sitter-go>=0.23,<0.26
+tree-sitter-rust>=0.23,<0.25
+tree-sitter-java>=0.23,<0.25
+tree-sitter-c>=0.23,<0.25
+tree-sitter-cpp>=0.23,<0.25
+tree-sitter-ruby>=0.23,<0.25
+tree-sitter-c-sharp>=0.23,<0.25
+tree-sitter-kotlin>=1.0,<2.0
+tree-sitter-scala>=0.23,<0.27
+tree-sitter-php>=0.23,<0.25
+tree-sitter-swift>=0.7,<0.9
+tree-sitter-lua>=0.2,<0.6
+tree-sitter-bash>=0.23,<0.27
+tree-sitter-json>=0.23,<0.26
+
+# --- graphify optional extras (used in this project) ---
+# PDF parsing (convocatoria PDFs, papers)
+pypdf>=4.0
+markdownify>=0.13
+
+# Office document parsing (DOCX proposals)
+python-docx>=1.1
+
+# Leiden clustering (community detection)
+graspologic>=3.0
+
+# SVG export
+matplotlib>=3.8
+
+# Video/audio transcription (if media inputs are added)
+faster-whisper>=1.0; python_version >= "3.11"
+yt-dlp>=2024.0
+
+# File watching (--watch mode)
+watchdog>=4.0
+
+# --- ponytail skill (lazy-code enforcement) ---
+# ponytail is an opencode skill, not a pip package — it ships as a cached
+# package at ~/.cache/opencode/packages/@dietrichgebert/ponytail@latest/
+# No pip install needed; opencode loads it automatically.
+
+# --- Semantic Scholar (optional, if not using the MCP server) ---
+# semanticscholar  # only if calling the API directly from Python

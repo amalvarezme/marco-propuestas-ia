@@ -1,0 +1,31 @@
+% === §3 Alcance de la propuesta ===
+% Redactado por el Redactor — Fase 2
+
+% --- Párrafo 1: Alcance geográfico, temporal y temático + tabla resumen ---
+
+El proyecto se ejecutará bajo un alcance explícitamente delimitado en tres dimensiones. \textbf{Geográficamente,} su carácter es \emph{nacional}: en tanto la Convocatoria Nacional Alianzas SIUN 2025--2027 es de cobertura nacional, el consorcio articula al LabIA y al GCPDS (Sede Manizales) con grupos y líneas del SIUN en otras sedes de la Universidad Nacional de Colombia, sin restringirse a una sola sede; la validación empírica en aula se realizará en asignaturas de pregrado y posgrado de la Facultad de Ingeniería y Arquitectura, con proyección de réplica en sedes y programas aliados. \textbf{Temporalmente,} la ejecución prevista es de \textbf{18 meses de operación + 2 meses adicionales para productos} (20 meses en total), conforme a los términos de referencia. \textbf{Temáticamente,} el proyecto se sitúa en la intersección entre \emph{IA agéntica} —arquitecturas multiagente basadas en LLMs, protocolos de orquestación y memoria pedagógica— y \emph{educación en ingeniería} (eléctrica, electrónica, ciencias de la computación e ingeniería de software), con énfasis en el fortalecimiento del aprendizaje profundo entendido como motivación intrínseca, argumentación técnica y resolución de problemas auténticos. La Tabla~\ref{tab:alcance} sintetiza los tres alcances.
+
+\begin{table}[h]
+\centering
+\caption{Resumen de los alcances geográfico, temporal y temático del proyecto.}
+\label{tab:alcance}
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+\textbf{Dimensiones} & \textbf{Descripción} & \textbf{Delimitación clave} \\
+\midrule
+Geográfica & Alianza intra-SIUN de carácter nacional (UNAL, múltiples sedes); piloto en la Sede Manizales y asignaturas aliadas del programa de Ingeniería. & Cobertura nacional vía SIUN; validación empírica local con proyección de réplica en otras sedes. \\
+\addlinespace
+Temporal & 18 meses de ejecución + 2 meses adicionales para productos, total 20 meses. & Ajustado a los términos de la Convocatoria Nacional Alianzas SIUN 2025--2027. \\
+\addlinespace
+Temática & IA agéntica (multiagente, LLMs, MCP) aplicada a la educación en ingeniería con foco en aprendizaje profundo. & Programas STEM objetivo: Ing.\ Eléctrica, Electrónica, Cs.\ de la Computación, Ing.\ de Software (pregrado y posgrado). \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% --- Párrafo 2: Delimitación de componentes tecnológicos, metodológicos y fases para alcanzar TRL 6/7 ---
+
+ Los componentes a desarrollar se delimitan en tres planos complementarios. \textbf{Tecnológicamente,} el ecosistema integrará: (i) un \emph{modelo del aprendiz} basado en IA predictiva que diagnostica las dimensiones de aprendizaje profundo a partir de trazas multimodales; (ii) una \emph{arquitectura multiagente} con roles pedagógicamente fundados —tutor, evaluador, generador de problemas, simulador de sistemas eléctricos/electrónicos y asistente de programación— orquestada bajo el Model Context Protocol (MCP); y (iii) un \emph{back-end de despliegue} híbrido (estaciones locales Apple Silicon para inferencia on-device y VPS en nube para orquestación y analítica), con una capa de interfaz conversacional y un panel de analítica del aprendizaje para docentes. \textbf{Metodológicamente,} el proyecto se organiza en cuatro fases encadenadas como cadena de valor sobre los objetivos específicos: (F1) fundamentación y caracterización del aprendiz; (F2) diseño y desarrollo del ecosistema agéntico; (F3) validación empírica en aula y despliegue TRL~6; (F4) transferencia, diseminación y proyección TRL~7. El paso de TRL~4 (validación en laboratorio) a TRL~6 se logrará mediante un diseño cuasiexperimental pre--post con grupo de control en al menos dos asignaturas, mientras la proyección al TRL~7 se sustentará en la documentación de despliegue, los registros de software y los planes de adopción con actores externos del sector productivo. \textbf{Fases de implementación:} cada fase entregará hitos verificables —informes técnicos, prototipos funcionales, dataset curado, artículos indexados y registro de software— que posibilitan auditar el avance del nivel de madurez tecnológica.
+
+% --- Párrafo 3: Deslimitación — qué no abordará la propuesta ---
+
+Para gestionar expectativas y acotar el problema, la propuesta \textbf{no} abordará los siguientes aspectos. \emph{Primero,} no se desarrollará entrenamiento desde cero de modelos fundacionales de lenguaje: se utilizarán LLMs preentrenados disponibles (locales y vía API), ajustados mediante ingeniería de prompts, \emph{retrieval-augmented generation} (RAG) y, cuando sea pertinente, ajuste fino paramétrico eficiente (LoRA/PEFT). \emph{Segundo,} el ecosistema se acotará a dominios STEM-ingenería en los programas objetivo; no se extenderá a áreas no ingenieriles (ciencias sociales, humanidades, artes ni educación básica/primaria), ni sustituirá al docente en la planificación curricular institucional. \emph{Tercero,} la validación empírica se circunscribirá a un diseño cuasiexperimental en asignaturas de la UNAL; no se realizarán ensayos clínicos controlados, ni estudios longitudinales multisede de gran escala, los cuales quedan como trabajo futuro. \emph{Cuarto,} el alcance del TRL~7 será demostrable mediante una prueba de concepto operativa con actores externos; no se compromete una comercialización, modelo de negocio escalado ni un despliegue productivo en régimen SaaS durante los 20 meses del proyecto. \emph{Quinto,} no se abordará la creación de hardware específico, ni la integración con plataformas LMS proprietarias más allá de interoperar mediante estándares abiertos (LTI/Caliper cuando sea factible). Esta deslimitación preserva el foco, viabilidad temporal y coherencia metodológica, garantizando que el núcleo innovador —el ecosistema agéntico y su evidencia de impacto— se entregue con rigor en el horizonte del proyecto.
