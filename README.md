@@ -15,7 +15,7 @@ revisión (gates).
 .
 ├── AGENTS.md                        # Playbook / reglas globales
 ├── guiaProyectosIA_Agente.md        # Guía autoritativa sección por sección
-├── opencode.jsonc                   # Config opencode + plugin OMO-slim + MCP servers
+├── opencode.jsonc                   # Config opencode + plugin OMO-slim-proyect + MCP servers
 ├── info_data/                       # Insumos del usuario (PDFs, papers)
 ├── proposal/                        # Salida LaTeX
 │   ├── main.tex
@@ -23,7 +23,7 @@ revisión (gates).
 │   ├── estado_propuesta.md
 │   └── sections/                    # .tex por sección (generados por agentes)
 └── .opencode/
-    ├── oh-my-opencode-slim.jsonc    # Configuración OMO-slim (presets, observer on)
+    ├── oh-my-opencode-slim.jsonc    # Configuración OMO-slim-proyect (presets, observer on)
     ├── agents/                      # Subagentes de propuesta + tikz-optimizer
     └── command/propuesta.md         # Comando /propuesta
 ```

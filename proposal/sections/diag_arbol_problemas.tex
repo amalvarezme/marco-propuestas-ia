@@ -1,70 +1,95 @@
-% === Diagrama 1: Árbol de problemas ===
-% Diseñado por el agente Diseñador — Fase 5
-% Contenido basado en §2.1 (párrafo 6) del Investigador.
-% Paleta institucional: azul UNAL (#0066B3), gris LabIA (#666666), verde GCPDS (#2E8B57).
+% === Diagrama 1: Árbol de problemas (rediseño legible) ===
+% Diseñador-TikZ — Fase 5.   Tikz-Optimizer — pase de pulido visual.
+% Contenido: §2.1 (párrafo 6) del Investigador.
+% Paleta institucional: azulUNAL (#0066B3), grisLabIA (#666666), verdeGCPDS (#2E8B57).
 % Las librerías TikZ (positioning, arrows.meta, shapes.geometric, calc, fit, backgrounds)
 % ya están cargadas en main.tex; no se declaran aquí.
+%
+% Geometría (ancho útil ~16 cm):
+%   Ramas  y Raíces: 4 cajas, text width=3.3 cm, centros x = -6, -2, 2, 6  (paso 4 cm)
+%   Subproblemas   : 3 cajas, text width=3.6 cm, centros x = -6, 0, 6
+%   Tronco         : 1 caja,  text width=12 cm, centrada en x = 0
+%   Capas verticales (y): ramas 7.5, tronco 3.5, subproblemas -0.5, raíces -4.5
+%   Gap vertical tronco→ramas ≈ 2.15 cm (cumple margen >1.5 cm para visibilidad de flechas).
+%   Flechas causales ascendentes: verticales limpias para C1→SP1 y C4→SP3;
+%   diagonales limpias para C2,C3→SP2 (forman "V" simétrica convergente en SP2.south).
+%   Rellenos diferenciados para seguridad en escala de grises: verdeGCPDS!30 (ramas),
+%   azulUNAL!22 (subproblemas), grisLabIA!22 (raíces).
 
 \begin{figure}[t]
 \centering
 
-
 \begin{tikzpicture}[
   font=\footnotesize,
-  >=Stealth, line width=0.6pt,
-  raiz/.style={rectangle, rounded corners=4pt, draw=grisLabIA, fill=grisLabIA!12,
-               text width=3.0cm, align=center, inner sep=4pt, line width=0.7pt},
-  subprob/.style={rectangle, rounded corners=4pt, draw=azulUNAL, fill=azulUNAL!12,
-                  text width=3.4cm, align=center, inner sep=4pt, line width=0.7pt,
-                  font=\small\bfseries, minimum height=0.95cm},
-  tronco/.style={rectangle, rounded corners=6pt, draw=azulUNAL!80!black, fill=azulUNAL,
-                 text=white, text width=11cm, align=center, inner sep=6pt, line width=1pt,
-                 font=\small\bfseries},
-  rama/.style={rectangle, rounded corners=4pt, draw=verdeGCPDS, fill=verdeGCPDS!12,
-               text width=3.0cm, align=center, inner sep=4pt, line width=0.7pt},
-  flecha/.style={->, line width=0.55pt, draw=grisLabIA!70!black}
+  >={Stealth[length=2.6mm, width=2.0mm]},
+  line width=0.8pt,
+  % --- Nodos ---
+  rama/.style={rectangle, rounded corners=4pt, draw=verdeGCPDS, fill=verdeGCPDS!30,
+               text width=3.3cm, align=center, inner sep=4pt, line width=0.9pt,
+               minimum height=1.7cm, font=\footnotesize},
+  tronco/.style={rectangle, rounded corners=6pt, draw=azulUNAL!70!black, fill=azulUNAL,
+                 text=white, text width=12cm, align=center, inner sep=7pt, line width=1.1pt,
+                 font=\small\bfseries, minimum height=2.0cm},
+  subprob/.style={rectangle, rounded corners=4pt, draw=azulUNAL, fill=azulUNAL!22,
+                  text width=3.6cm, align=center, inner sep=5pt, line width=0.9pt,
+                  font=\small\bfseries, minimum height=2.0cm},
+  raiz/.style={rectangle, rounded corners=4pt, draw=grisLabIA, fill=grisLabIA!22,
+               text width=3.3cm, align=center, inner sep=4pt, line width=0.9pt,
+               minimum height=1.8cm, font=\footnotesize},
+  % --- Flechas ---
+  flecha/.style={->, line width=0.9pt, draw=grisLabIA!75!black},
+  flechacadena/.style={->, line width=0.9pt, draw=azulUNAL!75!black,
+                       densely dashed, >={Stealth[length=2.6mm, width=2.0mm]}},
 ]
 
 % --- Ramas (consecuencias) — nivel superior ---
-\node[rama] (E1) at (-5.7,3.3) {\textbf{E1.} Egresados con competencias superficiales y dependencia acrítica de la IA};
-\node[rama] (E2) at (-1.9,3.3) {\textbf{E2.} Desaprovechamiento del potencial de la IA agéntica para personalizar la formación};
-\node[rama] (E3) at (1.9,3.3) {\textbf{E3.} Baja transferencia de innovaciones en IA educativa hacia aulas y sector productivo};
-\node[rama] (E4) at (5.7,3.3) {\textbf{E4.} Desalineación entre los perfiles de egreso y las demandas de la Industria 4.0/5.0};
+\node[rama] (E1) at (-6, 7.5) {\textbf{E1.} Egresados con competencias superficiales y dependencia acrítica de la IA};
+\node[rama] (E2) at (-2, 7.5) {\textbf{E2.} Desaprovechamiento del potencial de la IA agéntica para personalizar la formación};
+\node[rama] (E3) at ( 2, 7.5) {\textbf{E3.} Baja transferencia de innovaciones en IA educativa hacia aulas y sector productivo};
+\node[rama] (E4) at ( 6, 7.5) {\textbf{E4.} Desalineación entre perfiles de egreso y demandas de la Industria 4.0/5.0};
 
 % --- Tronco (problema central) — nivel intermedio ---
-\node[tronco] (TR) at (0,0.5) {Limitada capacidad del sistema educativo en ingeniería para fortalecer el aprendizaje profundo —motivación intrínseca, argumentación técnica y resolución de problemas auténticos— en entornos mediados por IA, con tecnologías que no alcanzan madurez suficiente para su transferencia.};
+\node[tronco] (TR) at (0, 3.5) {Limitada capacidad del sistema educativo en ingeniería para fortalecer el aprendizaje profundo —motivación intrínseca, argumentación técnica y resolución de problemas auténticos— en entornos mediados por IA, con tecnologías que no alcanzan madurez suficiente para su transferencia.};
 
-% --- Subproblemas (puente causa $\rightarrow$ problema) ---
-\node[subprob] (SP1) at (-4.2,-2.0) {SP1\\Diagnóstico y modelado\\multidimensional del aprendiz};
-\node[subprob] (SP2) at (0,-2.0)    {SP2\\Arquitectura agéntica autónoma\\para la personalización};
-\node[subprob] (SP3) at (4.2,-2.0)  {SP3\\Validación empírica y\\transferencia TRL 6/7};
+% --- Subproblemas (puente causa → problema) ---
+\node[subprob] (SP1) at (-6, -0.5) {SP1: Diagnóstico y modelado multidimensional del aprendiz};
+\node[subprob] (SP2) at ( 0, -0.5) {SP2: Arquitectura agéntica autónoma para la personalización};
+\node[subprob] (SP3) at ( 6, -0.5) {SP3: Validación empírica y transferencia TRL 6/7};
 
 % --- Raíces (causas estructurales) — nivel inferior ---
-\node[raiz] (C1) at (-5.7,-4) {\textbf{C1.} Predominio de pedagogías expositivas centradas en la transmisión de contenidos};
-\node[raiz] (C2) at (-1.9,-4) {\textbf{C2.} Fragmentación del ecosistema de herramientas de IA sin orquestación pedagógica};
-\node[raiz] (C3) at (1.9,-4)  {\textbf{C3.} Escasa cultura de validación empírica y transferencia en \emph{edtech} para ingeniería};
-\node[raiz] (C4) at (5.7,-4)  {\textbf{C4.} Heterogeneidad en competencias digitales y matemáticas de los estudiantes en Colombia};
+\node[raiz] (C1) at (-6, -4.5) {\textbf{C1.} Predominio de pedagogías expositivas centradas en la transmisión de contenidos};
+\node[raiz] (C2) at (-2, -4.5) {\textbf{C2.} Fragmentación del ecosistema de herramientas de IA sin orquestación pedagógica};
+\node[raiz] (C3) at ( 2, -4.5) {\textbf{C3.} Escasa cultura de validación empírica y transferencia en \emph{edtech} para ingeniería};
+\node[raiz] (C4) at ( 6, -4.5) {\textbf{C4.} Heterogeneidad en competencias digitales y matemáticas de los estudiantes en Colombia};
 
-% --- Flechas: raíces $\rightarrow$ subproblemas (mapeo C1-C2$\to$SP1, C2-C3$\to$SP2, C3-C4$\to$SP3) ---
+% --- Flechas: raíces → subproblemas (4 rutas limpias, sin solapamientos) ---
+% Mapeo: C1→SP1, C2→SP2, C3→SP2, C4→SP3.  SP2 recibe 2 causas (C2,C3)
+% que convergen en su bottom-center formando una "V" simétrica.
+% C1→SP1: vertical directa
 \draw[flecha] (C1.north) -- (SP1.south);
-\draw[flecha] (C2.north) -- (SP1.south);
+% C2→SP2: diagonal corta (C2 a la izquierda del centro de SP2)
 \draw[flecha] (C2.north) -- (SP2.south);
+% C3→SP2: diagonal corta (C3 a la derecha del centro de SP2)
 \draw[flecha] (C3.north) -- (SP2.south);
-\draw[flecha] (C3.north) -- (SP3.south);
+% C4→SP3: vertical directa
 \draw[flecha] (C4.north) -- (SP3.south);
 
-% --- Flechas: subproblemas $\rightarrow$ tronco ---
-\draw[flecha] (SP1.north) -- (TR.south);
-\draw[flecha] (SP2.north) -- (TR.south);
-\draw[flecha] (SP3.north) -- (TR.south);
+% --- Flechas cadena lateral: SP1 → SP2 → SP3 (horizontal, punteada) ---
+\draw[flechacadena] (SP1.east) -- (SP2.west);
+\draw[flechacadena] (SP2.east) -- (SP3.west);
 
-% --- Flechas: tronco $\rightarrow$ ramas (puntos intermedios sobre el borde superior del tronco) ---
-\draw[flecha] (TR.north west) -- (E1.south);
-\draw[flecha] ($(TR.north west)!0.33!(TR.north east)$) -- (E2.south);
-\draw[flecha] ($(TR.north west)!0.67!(TR.north east)$) -- (E3.south);
-\draw[flecha] (TR.north east) -- (E4.south);
+% --- Flechas: subproblemas → tronco (casi verticales) ---
+\draw[flecha] (SP1.north) -- ($(TR.south west) + (0.5, 0)$);
+\draw[flecha] (SP2.north) -- (TR.south);
+\draw[flecha] (SP3.north) -- ($(TR.south east) + (-0.5, 0)$);
+
+% --- Flechas: tronco → ramas (desde el borde superior del tronco) ---
+\draw[flecha] ($(TR.north west) + (0.5, 0)$) -- (E1.south);
+\draw[flecha] ($(TR.north west)!0.335!(TR.north east)$) -- (E2.south);
+\draw[flecha] ($(TR.north west)!0.665!(TR.north east)$) -- (E3.south);
+\draw[flecha] ($(TR.north east) + (-0.5, 0)$) -- (E4.south);
 
 \end{tikzpicture}
-\caption{Árbol de problemas del proyecto. Las \textcolor{grisLabIA}{raíces} (causas estructurales C1--C4) alimentan los subproblemas SP1--SP3, los cuales confluyen en el \textcolor{azulUNAL}{tronco} (problema central) cuyas \textcolor{verdeGCPDS}{ramas} (consecuencias E1--E4) materializan el impacto negativo sobre el sistema educativo y el sector productivo. Las flechas indican relaciones causales ascendentes.}
+\caption{Árbol de problemas del proyecto. Las raíces (causas estructurales C1--C4) alimentan los subproblemas SP1--SP3, los cuales confluyen en el tronco (problema central) cuyas ramas (consecuencias E1--E4) materializan el impacto negativo sobre el sistema educativo y el sector productivo. Las flechas indican relaciones causales ascendentes. Las flechas punteadas horizontales denotan secuencialidad entre subproblemas.}
 \label{fig:arbol-problemas}
 \end{figure}

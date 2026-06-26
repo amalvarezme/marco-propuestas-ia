@@ -50,7 +50,8 @@ Fase 3  Investigador → §4.1 + §4.2 ──→ GATE Revisor (subproblema↔obj
 Fase 4  Bibliografo-Propuesta → §5.2 estado del arte (paralelo)
         Investigador → §5.1, §5.3, hipótesis ──→ GATE Revisor ──→ user
 Fase 5  Redactor → §6 metodología + Diseñador-TikZ → diagramas TikZ
-        Tikz-Optimizer → compila/optimiza visualmente diagramas (loop PNG)
+        Revisor-Figuras → audita visualmente PNGs (reporte de problemas)
+        Tikz-Optimizer → corrige según reporte, compila/optimiza (loop PNG)
         Redactor → §7 plan de trabajo (Gantt) ──→ GATE Revisor ──→ user
 Fase 6  Redactor → §8 resultados; Bibliografo-Propuesta → §9 referencias (BibTeX)
 Fase 7  Revisor → auditoría final ──→ user; Coordinador-Propuesta → ensambla main.tex
@@ -59,6 +60,30 @@ Fase 7  Revisor → auditoría final ──→ user; Coordinador-Propuesta → e
 En cada **GATE**, el Coordinador-Propuesta **detiene** el flujo y espera
 aprobación del usuario antes de avanzar. El Revisor devuelve PASS/FAIL +
 correcciones.
+
+## Dispatch directo de agentes de propuesta
+
+El **Orchestrator** puede despachar directamente cualquier subagente de
+propuesta para tareas puntuales —arreglar figuras, revisar una sección,
+actualizar bibliografía, refinar objetivos— **sin pasar por el
+`coordinador-propuesta`**. El pipeline completo de 9 secciones con gates sigue
+usando `/propuesta` → `coordinador-propuesta`.
+
+| Agente | Cuándo despacharlo directamente |
+|--------|--------------------------------|
+| `disenador-tikz` | Rediseñar o crear diagramas TikZ de la propuesta |
+| `revisor-figuras` | Auditar visualmente figuras renderizadas (PNG) y describir problemas publication-ready |
+| `tikz-optimizer` | Compilar y optimizar visualmente diagramas TikZ existentes |
+| `investigador` | Definir/refinar subproblemas, pregunta, objetivos, hipótesis, enfoques |
+| `redactor` | Redactar o revisar secciones narrativas (§1–§3, §6–§8) |
+| `revisor` | Validar coherencia y calidad de secciones ya redactadas |
+| `bibliografo-propuesta` | Construir o actualizar la bibliografía (§5.2, §9) |
+| `insumos-observador` | Ingerir y estructurar insumos del usuario (PDFs, papers) |
+
+Cuando despaches un agente de propuesta directamente, incluye en el prompt
+todo el contexto necesario (sección asignada, artefactos clave, dependencias
+cruzadas) ya que el agente no tiene el estado del pipeline que el
+`coordinador-propuesta` mantiene.
 
 ## Guía completa de redacción
 
@@ -81,6 +106,7 @@ su sección asignada. Resumen de asignación:
 | §5.3 Enfoques teóricos | Investigador |
 | §6 Metodología | Redactor |
 | Diagramas (árbol problemas, metodológico, Gantt) | Diseñador-TikZ |
+| Auditoría visual de figuras (publication-ready) | Revisor-Figuras |
 | Compilación/optimización visual de diagramas (loop PNG) | Tikz-Optimizer |
 | §7 Plan de trabajo | Redactor |
 | §8 Resultados y productos | Redactor |
@@ -93,9 +119,10 @@ su sección asignada. Resumen de asignación:
 > proyecto en `.opencode/oh-my-opencode-slim.jsonc`. El agente primario por
 > defecto es el **Orchestrator** del pantheon (enrutador general). El
 > **Coordinador-Propuesta** es un subagente propietario del marco que el
-> Orchestrator invoca cuando el usuario quiere redactar una propuesta; el
-> Coordinador despacha a su vez a los subagentes de propuesta listados arriba y
-> detiene el flujo en los GATEs. Los agentes del pantheon (`oracle`, `librarian`,
-> `observer`, `explorer`, `fixer`, `designer`, `council`) cubren tareas
-> generales y **no** se solapan con los de propuesta (que son especialistas de
-> dominio).
+> Orchestrator invoca para el pipeline completo vía `/propuesta`; el
+> Coordinador despacha a su vez a los subagentes de propuesta y detiene el flujo
+> en los GATEs. Adicionalmente, el **Orchestrator puede despachar directamente**
+> cualquier subagente de propuesta para tareas puntuales (ver sección "Dispatch
+> directo" arriba). Los agentes del pantheon (`oracle`, `librarian`, `observer`,
+> `explorer`, `fixer`, `designer`, `council`) cubren tareas generales y **no** se
+> solapan con los de propuesta (que son especialistas de dominio).

@@ -1,76 +1,137 @@
-% === Diagrama 2: Diagrama metodológico ===
-% Diseñado por el agente Diseñador — Fase 5
-% Contenido basado en §3 (alcance, fases F1--F4 y trayectoria TRL 4$\rightarrow$7),
-% §4.2 (mapeo OE1$\to$F1, OE2$\to$F2, OE3$\to$F3/F4), §5.3 (enfoques E1--E6).
-% Paleta institucional: azul UNAL (#0066B3), gris LabIA (#666666), verde GCPDS (#2E8B57).
-% Las librerías TikZ (positioning, arrows.meta, shapes.geometric, calc, fit, backgrounds)
-% ya están cargadas en main.tex; no se declaran aquí.
+% === Diagrama 2: Diagrama metodológico (rediseño legible) ===
+% Diseñador-TikZ — Fase 5.   Tikz-Optimizer — pase de pulido visual.
+% Contenido: §3 (alcance, fases F1--F4), §4.2 (mapeo OE↔Fase), §5.3 (enfoques).
+% Paleta institucional: azulUNAL (#0066B3), grisLabIA (#666666), verdeGCPDS (#2E8B57).
+% Las librerías TikZ ya están cargadas en main.tex; no se declaran aquí.
+%
+% Geometría (ancho útil ~16 cm):
+%   4 cajas de fase, text width=2.8 cm → ancho visible ~3.15 cm.
+%   Centros x = -7.2, -2.4, 2.4, 7.2  (paso 4.8 cm) — gap entre bordes = 2.0 cm.
+%   Filas verticales (y): fases 0, círculos TRL -4.5,
+%                         caption "Progresión" -4.8 (entre círculos y barra),
+%                         barra TRL -5.1 (por DEBAJO de los círculos, no a través),
+%                         etiquetas TRL -5.6, (partida TRL 3-4) -6.0,
+%                         título beneficiarios -6.5, cajas beneficiarios -7.2,
+%                         leyenda -8.1.
+%   Separación vertical: los círculos TRL se bajaron de y=-4.0 a y=-4.5 para
+%   que su tapa (y≈-4.15) quede 0.65 cm por debajo del borde inferior de
+%   las cajas F (y=-3.5), eliminando los solapamientos previos de los
+%   círculos 5 y 6 con los bordes inferiores de F2 y F3 (y el ocultamiento
+%   del crédito "+ team lead" en F2). La caption "Progresión de madurez
+%   tecnológica" se reubicó en y=-4.8, manteniéndose entre los círculos y la
+%   barra TRL y completamente fuera del bloque F2/F3.
+%   La barra TRL pasa por DEBAJO de los círculos (no por su centro) para
+%   eliminar el solapamiento visual con Overlap A/B.
+%   Las cajas de beneficiarios se bajaron de y=-7.0 a y=-7.2 para mantener
+%   el gap de 0.7 cm con el título "Beneficiarios finales" (y=-6.5). La
+%   leyenda se bajó de y=-7.9 a y=-8.1 para mantener 0.9 cm de margen
+%   respecto a las cajas de beneficiarios.
+%   Etiquetas inter-fase con fill=white y above=8pt para no ser tapadas por
+%   bordes de fase y dejar margen limpio sobre el astil.
 
 \begin{figure}[t]
 \centering
 
-
 \begin{tikzpicture}[
   font=\small,
-  >=Stealth, line width=0.7pt,
+  >={Stealth[length=2.8mm, width=2.0mm]},
+  line width=0.8pt,
+  % --- Nodos ---
   fase/.style={rectangle, rounded corners=5pt, draw=azulUNAL, fill=azulUNAL!8,
-               text width=3.0cm, align=center, inner sep=5pt, minimum height=3.4cm,
-               line width=0.9pt},
-  trlnode/.style={circle, draw=azulUNAL, fill=azulUNAL!12, line width=0.7pt,
+               text width=2.8cm, align=center, inner sep=5pt, line width=0.9pt,
+               minimum height=7.0cm},
+  trlnode/.style={circle, draw=azulUNAL!70!black, fill=azulUNAL!12, line width=0.9pt,
                   inner sep=1pt, minimum size=0.7cm, font=\footnotesize\bfseries},
   ben/.style={rectangle, rounded corners=4pt, draw=grisLabIA, fill=grisLabIA!10,
-              text width=3.2cm, align=center, inner sep=4pt, font=\footnotesize,
-              line width=0.7pt, minimum height=0.7cm},
-  cadena/.style={-Stealth, line width=1.4pt, draw=azulUNAL!80!black}
+              text width=2.8cm, align=center, inner sep=4pt, font=\footnotesize,
+              line width=0.7pt, minimum height=1.0cm},
+  % --- Flechas ---
+  cadena/.style={-Stealth, line width=1.5pt, draw=azulUNAL!85!black,
+                 >={Stealth[length=3.0mm, width=2.2mm]}},
 ]
 
-% --- Cadena de fases F1$\rightarrow$F4 (eje horizontal) ---
-\node[fase] (F1) at (-6,0) {%
+% --- Cadena de fases F1 → F4 (eje horizontal) ---
+\node[fase] (F1) at (-7.2, 0) {%
   {\bfseries\color{azulUNAL}F1.\\Fundamentación}\\[3pt]
   {\footnotesize OE1 · SP1 · Enfoque 1}\\[3pt]
-  {\scriptsize Instrumento psicométrico y \emph{dataset} multimodal del aprendiz}\\[4pt]
-  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$ Novedad:}\\
-  {\scriptsize\itshape Modelado multidimensional del aprendiz}%
+  {\scriptsize Instrumento psicométrico y \emph{dataset} multimodal del aprendiz}\\[5pt]
+  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$~Novedad:}\\
+  {\scriptsize\itshape Modelado multidimensional del aprendiz}\\[5pt]
+  {\scriptsize\color{grisLabIA!50!black}IP + D. Angulo + est.\ posgrado}%
 };
-\node[fase] (F2) at (-2,0) {%
+\node[fase] (F2) at (-2.4, 0) {%
   {\bfseries\color{azulUNAL}F2.\\Diseño y desarrollo}\\[3pt]
-  {\footnotesize OE2 · SP2 · Enf.\ 2, 3, 4}\\[3pt]
-  {\scriptsize Arquitectura multiagente con MCP, scaffolding adaptativo, generación de problemas y evaluación formativa}\\[4pt]
-  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$ Novedades:}\\
-  {\scriptsize\itshape Arquitectura multiagente MCP y scaffolding adaptativo}%
+  {\footnotesize OE2 · SP2 · Enf.\ 2--4}\\[3pt]
+  {\scriptsize Arquitectura multiagente MCP, \emph{scaffolding} adaptativo, generación de problemas y evaluación formativa}\\[5pt]
+  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$~Novedad:}\\
+  {\scriptsize\itshape Arquitectura multiagente MCP y \emph{scaffolding}}\\[5pt]
+  {\scriptsize\color{grisLabIA!50!black}IP + \mbox{C.~Castellanos} + team lead}%
 };
-\node[fase] (F3) at (2,0) {%
+\node[fase] (F3) at (2.4, 0) {%
   {\bfseries\color{azulUNAL}F3.\\Validación empírica}\\[3pt]
   {\footnotesize OE3 · SP3 · Enfoque 5}\\[3pt]
-  {\scriptsize Diseño cuasiexperimental pre--post con grupo control en aulas reales de ingeniería}\\[4pt]
-  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$ Novedad:}\\
-  {\scriptsize\itshape Validación cuasiexperimental con analítica del aprendizaje}%
+  {\scriptsize Diseño cuasiexperimental pre--post con grupo control en aulas reales de ingeniería}\\[5pt]
+  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$~Novedad:}\\
+  {\scriptsize\itshape Validación cuasiexperimental con analítica del aprendizaje}\\[5pt]
+  {\scriptsize\color{grisLabIA!50!black}IP + D. Angulo + est.\ posgrado}%
 };
-\node[fase] (F4) at (6,0) {%
+\node[fase] (F4) at (7.2, 0) {%
   {\bfseries\color{azulUNAL}F4.\\Transferencia y\\diseminación}\\[3pt]
   {\footnotesize OE3 · SP3 · Enfoque 6}\\[3pt]
-  {\scriptsize Despliegue híbrido, registro de software, código abierto y plan de adopción con sector productivo}\\[4pt]
-  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$ Novedad:}\\
-  {\scriptsize\itshape Marco TRL adaptado a \emph{edtech}}%
+  {\scriptsize Despliegue híbrido, registro de software, código abierto y plan de adopción con sector productivo}\\[5pt]
+  {\color{verdeGCPDS}\scriptsize\bfseries$\bigstar$~Novedad:}\\
+  {\scriptsize\itshape Marco TRL adaptado a \emph{edtech}}\\[5pt]
+  {\scriptsize\color{grisLabIA!50!black}IP + team lead}%
 };
 
-\draw[cadena] (F1.east) -- (F2.west);
-\draw[cadena] (F2.east) -- (F3.west);
-\draw[cadena] (F3.east) -- (F4.west);
+% --- Flechas inter-fase con etiqueta SOBRE la flecha (fill=white para no chocar con bordes) ---
+% above=8pt (antes 4pt) para que "ecosistema TRL 5" no roce el astil.
+\draw[cadena] (F1.east) -- (F2.west)
+  node[midway, above=8pt, font=\scriptsize, align=center,
+       text width=1.2cm, inner sep=1pt, color=azulUNAL!85!black, fill=white]
+  {modelo del\\aprendiz};
+\draw[cadena] (F2.east) -- (F3.west)
+  node[midway, above=8pt, font=\scriptsize, align=center,
+       text width=1.2cm, inner sep=1pt, color=azulUNAL!85!black, fill=white]
+  {ecosistema\\TRL 5};
+\draw[cadena] (F3.east) -- (F4.west)
+  node[midway, above=8pt, font=\scriptsize, align=center,
+       text width=1.2cm, inner sep=1pt, color=azulUNAL!85!black, fill=white]
+  {evidencia\\de impacto};
 
-% --- Barra de progresión TRL 4$\rightarrow$7 (alineada con las columnas de las fases) ---
-\node[font=\footnotesize\bfseries, color=azulUNAL!90!black] at (0,-2.3) {Progresión de madurez tecnológica};
-\draw[grisLabIA!60!black, line width=1.3pt, -Stealth] (-7.7,-2.7) -- (7.9,-2.7);
-\foreach \x/\trl in {-6/4, -2/5, 2/6, 6/7}{%
-  \node[trlnode] at (\x,-2.7) {\trl};
-  \node[font=\scriptsize, color=azulUNAL] at (\x,-3.15) {TRL \trl};
+% --- Barra de progresión TRL 4 → 7 (alineada con las columnas de las fases) ---
+% Los círculos TRL están en y=-4.5; la caption "Progresión" en y=-4.8 vive
+% entre los círculos y la barra, completamente fuera del bloque F2.
+% La barra horizontal en y=-5.1 pasa por DEBAJO de los círculos, no por su
+% centro, evitando los Overlaps A y B.
+\draw[grisLabIA!60!black, line width=1.4pt, -Stealth, >={Stealth[length=3.0mm, width=2.2mm]}]
+  (-8.6, -5.1) -- (8.6, -5.1);
+\foreach \x/\trl in {-7.2/4, -2.4/5, 2.4/6, 7.2/7}{%
+  \node[trlnode] at (\x, -4.5) {\trl};
+  \node[font=\scriptsize\bfseries, color=azulUNAL] at (\x, -5.6) {TRL \trl};
 }
+\node[font=\footnotesize\bfseries, color=azulUNAL!90!black] at (0, -6.1) {Progresión de madurez tecnológica};
+% TRL 4 lleva la anotación de partida (TRL 3-4) y un segmento punteado previo
+% Estilo italic + color gris más claro para distinguirla de la etiqueta TRL 4
+% (Overlap D: que no parezca continuación del "TRL 4").
+\node[font=\tiny\itshape, color=grisLabIA!60!black] at (-7.2, -6.0) {(partida TRL 3--4)};
+\draw[grisLabIA, line width=1.0pt, dashed] (-8.6, -5.1) -- (-7.6, -5.1);
 
 % --- Beneficiarios finales ---
-\node[font=\footnotesize\bfseries, color=azulUNAL!90!black] at (0,-4.2) {Beneficiarios finales};
-\node[ben] (B1) at (-4.5,-5.0) {Estudiantes de ingeniería};
-\node[ben] (B2) at (0,-5.0)    {Docentes};
-\node[ben] (B3) at (4.5,-5.0)  {Sector productivo (Industria 4.0/5.0)};
+\node[font=\footnotesize\bfseries, color=azulUNAL!90!black] at (0, -6.5) {Beneficiarios finales};
+\node[ben] (B1) at (-7.2, -7.2) {Estudiantes de\\ingeniería};
+\node[ben] (B2) at (-2.4, -7.2) {Docentes};
+\node[ben] (B3) at ( 2.4, -7.2) {Sector productivo\\(Industria 4.0/5.0)};
+\node[ben] (B4) at ( 7.2, -7.2) {Instituciones\\aliadas (SIUN)};
+
+% --- Leyenda compacta (3 entradas en una línea, íconos alineados con texto) ---
+\node[font=\scriptsize, text width=14cm, align=center,
+      rectangle, rounded corners=3pt, draw=grisLabIA, fill=white,
+      inner sep=4pt, line width=0.5pt] at (0, -8.1) {%
+  \textcolor{azulUNAL}{\rule[-1.5pt]{6pt}{6pt}}~Fases de la cadena de valor \quad
+  \textcolor{verdeGCPDS}{$\bigstar$}~Novedades metodológicas \quad
+  \textcolor{grisLabIA}{\rule[-1.5pt]{6pt}{6pt}}~TRL y beneficiarios%
+};
 
 \end{tikzpicture}
 \caption{Diagrama metodológico del proyecto. Cuatro fases encadenadas como cadena de valor $F1\rightarrow F2\rightarrow F3\rightarrow F4$ sobre los objetivos específicos (OE1--OE3) y los subproblemas (SP1--SP3). Cada fase exhibe su(s) enfoque(s) teórico(s) de §5.3 y, en \textcolor{verdeGCPDS}{verde GCPDS}, las novedades metodológicas destacadas. La barra inferior evidencia la trayectoria de madurez tecnológica TRL~$4\!\rightarrow\!5\!\rightarrow\!6\!\rightarrow\!7$, alineada con las cuatro fases. Los beneficiarios finales se enuncian en la franja inferior.}

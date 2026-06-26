@@ -14,7 +14,7 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 | **git** | 2.40+ | Version control | `brew install git` |
 | **opencode** | 1.17+ | Agent orchestration runtime | `npm install -g opencode-ai` |
 | **oh-my-opencode-slim** | 2.0.5 (pinned) | Panthéon de agentes generales (orchestrator, oracle, librarian, explorer, designer, fixer, observer, council). **Vendored** en `.opencode/package.json`; cargado desde `.opencode/node_modules/oh-my-opencode-slim/dist/index.js` | `npm install --prefix .opencode` (regenera `node_modules` gitignored) |
-| **bun** (o `npx`) | 1.1+ | Instalador del plugin OMO-slim | `curl -fsSL https://bun.sh \| bash` |
+| **bun** (o `npx`) | 1.1+ | Instalador del plugin OMO-slim-proyect | `curl -fsSL https://bun.sh \| bash` |
 
 ## 2. Python packages (`requirements.txt`)
 
@@ -125,10 +125,10 @@ Graphify is a Claude skill file + the `graphifyy` Python package (in `requiremen
 ├── REQUIREMENTS.md           # This file
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
-├── opencode.jsonc            # MCP server config + plugin OMO-slim + default_agent
+├── opencode.jsonc            # MCP server config + plugin OMO-slim-proyect + default_agent
 ├── .opencode/
 │   ├── package.json          # opencode plugin deps
-│   ├── oh-my-opencode-slim.jsonc  # OMO-slim config (presets opencode-go/openai)
+│   ├── oh-my-opencode-slim.jsonc  # OMO-slim-proyect config (presets opencode-go/openai)
 │   ├── agents/               # Subagentes de propuesta + tikz-optimizer
 │   └── command/              # Comando /propuesta
 ├── info_data/                # User inputs (PDFs, DOCX)
