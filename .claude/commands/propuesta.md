@@ -76,7 +76,7 @@ Fase 0.5 [COMPUERTA G0.5] Solo aplica si el campo "Archivo TDR" de la tabla
         (confirmado auto o resuelto vía el gate de ambigüedad — ambos
         cuentan). Si no hay TDR, omite esta fase por completo: la guía
         aplicable sigue siendo `guiaProyectosIA_Agente.md` sin cambios y el
-        dispatcher continúa directo a la Fase 1.
+        dispatcher continúa directo a la Fase 1a.
         ──→ OPT-IN G0.5 (concepto nuevo y separado del campo
         "Confirmaciones de usuario" de la Fase 0, que solo cubre el gate de
         ambigüedad): pregunta una sola vez, explícitamente, "Se detectó un
@@ -102,16 +102,84 @@ Fase 0.5 [COMPUERTA G0.5] Solo aplica si el campo "Archivo TDR" de la tabla
             `investigador` con las correcciones exactas del usuario, y
             repite el gate. NO avances sin aprobación explícita.
         En ambos desenlaces finales (OMITIDA-POR-USUARIO o APROBADA), el
-        dispatcher continúa con la Fase 1 (la Fase 1a que consumirá esta
-        "guía aplicable" se añade en un cambio posterior — ver
-        bibliografo-tdr-graph-gate PR2 — por ahora la Fase 1 sigue como
-        hoy).
+        dispatcher continúa con la Fase 1a, que consume la "guía aplicable"
+        resuelta aquí (ver bloque "Fase 1a" a continuación).
+Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
+        haya o no TDR — la "guía aplicable" resuelta en la Fase 0/Fase 0.5
+        (base o ajustada) solo determina el parámetro (b) de la búsqueda del
+        bibliógrafo en el paso (a) siguiente, no si esta fase corre.
+        (a) Task → bibliografo-propuesta MODE=scope → exactamente 5 papers
+        Q1/Q2 publicados en los últimos 2 años, abstract-only, que calcen
+        con (i) el prompt original del usuario a `/propuesta` y (ii) la guía
+        aplicable (`proposal/guia_ajustada_TDR.md` si G0.5 = APROBADA, si no
+        `guiaProyectosIA_Agente.md`). Ver `bibliografo-propuesta.md`,
+        "MODE=scope", para el contrato completo (herramientas, esquema de
+        salida `proposal/scoping/papers/paper-{1..5}.md`, prohibición de
+        leer cualquier borrador existente).
+        (b) El DISPATCHER (no el subagente) ejecuta `graphify`, de forma
+        aislada. Mecánica exacta:
+          1. `cd proposal/scoping/` (cambio de CWD obligatorio).
+          2. `graphify papers/` (INPUT_PATH relativo — siempre una ruta,
+             nunca una pregunta en lenguaje natural, para no disparar el
+             fast-path de graphify).
+          3. La salida queda en `proposal/scoping/graphify-out/`.
+        NUNCA ejecutes `graphify` desde la raíz del repo. NUNCA uses
+        `--force`. Si `proposal/scoping/graphify-out/` ya existe de una
+        iteración previa con papers distintos, bórralo antes de reconstruir
+        (evita el shrink-guard y respuestas obsoletas del fast-path).
+        (c) Task → investigador (rama de entrada temprana — ver
+        `investigador.md`, "Entrada temprana (Fase 1a)") → 3 subproblemas
+        tempranos, cada uno con (1) el gap, (2) de qué abstract(s)
+        (`paper-N`) proviene, (3) un cruce de una línea contra el TDR/guía.
+        ──→ COMPUERTA COMBINADA G1a: presenta juntos, en una sola solicitud
+        de aprobación:
+          1. Los 5 papers + parámetros de búsqueda (query, filtro de
+             cuartil, rango de años, hits por herramienta).
+          2. El grafo (ruta `proposal/scoping/graphify-out/` + las 3
+             secciones del `GRAPH_REPORT.md`: God Nodes, Surprising
+             Connections, Suggested Questions).
+          3. Los 3 subproblemas tempranos, cada uno con su gap y su
+             `paper-N` de origen.
+        Reglas de iteración por componente (NO es un rechazo en bloque):
+          - Cambio solo a los PAPERS → re-despacha MODE=scope con el ajuste
+            solicitado → regenera los 5 abstracts → RECONSTRUYE el grafo
+            (repite el paso (b)) → re-ejecuta la entrada temprana del
+            investigador (repite el paso (c)) → vuelve a presentar G1a.
+          - Cambio solo al GRAFO (reetiquetar/reagrupar) → re-ejecuta
+            únicamente el clustering/reporte de `graphify`; los papers y los
+            subproblemas quedan intactos; vuelve a presentar G1a. El
+            auto-cascade a los subproblemas es explícitamente NO, salvo que
+            el usuario lo pida (default adoptado).
+          - Cambio solo a los SUBPROBLEMAS → re-despacha la entrada temprana
+            del investigador con el feedback exacto del usuario; mismos 5
+            papers y mismo grafo; vuelve a presentar G1a.
+        Regla de faltante G1a: si el bibliógrafo reporta menos de 5 papers
+        Q1/Q2 ≤2 años, el dispatcher NO debe sustituir ni relajar filtros en
+        silencio — preséntale al usuario, en vivo, estas opciones:
+          (a) ampliar la ventana de años,
+          (b) relajar el cuartil (aceptar solo Q2 o un venue top nombrado),
+          (c) ampliar/reformular los términos de búsqueda,
+          (d) continuar con menos de 5,
+          (e) aceptar un paper específico que el usuario nombre.
+        Aplica la opción elegida y vuelve a presentar dentro de G1a.
+        ──→ Al aprobar G1a: escribe los 3 subproblemas aprobados + G1a =
+        APROBADA en `proposal/estado_propuesta.md` ("Compuertas tempranas
+        (G0.5, G1a)" → sub-tabla "G1a — Scoping temprano": 5 papers,
+        parámetros de búsqueda, ruta del grafo + extracto del reporte, los 3
+        subproblemas tempranos con su gap/`paper-N`, y Estado G1a).
 Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
         archivo de salida), despachado ANTES del investigador.
         Task → investigador → §2.1 subproblemas + pregunta de investigación.
         Inyecta inline en el prompt de esta Task el mapa de MODE=explore y,
         si existe, el bloque "PRIORIDAD TDR" de la Fase 0.
+        Si la Fase 1a corrió y su gate cerró con G1a = APROBADA (ver
+        `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano"),
+        inyecta ADEMÁS, inline, el bloque "SUBPROBLEMAS TEMPRANOS APROBADOS
+        (G1a)" con los 3 subproblemas tempranos y su justificación
+        gap↔`paper-N`. Si la Fase 1a no corrió (o no cerró en APROBADA),
+        omite por completo este bloque adicional: el despacho de esta Task
+        es entonces idéntico al de hoy.
         ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.
 Fase 2  Task → redactor → §2.2 pertinencia, §3 alcance
         ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.

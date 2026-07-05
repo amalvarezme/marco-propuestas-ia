@@ -44,7 +44,13 @@ Orquestador: mantén este archivo actualizado tras cada fase/gate.
 
 ### G1a — Scoping temprano
 
-_(completado en Fase 1a — ver cambio bibliografo-tdr-graph-gate PR2)_
+| Campo | Valor |
+|---|---|
+| Estado | _(PENDIENTE \| EN REVISIÓN \| APROBADA)_ |
+| 5 papers | _(lista `paper-1..5`: título, cuartil, año, DOI/URL — o ruta a `proposal/scoping/papers/`)_ |
+| Parámetros de búsqueda | _(query, filtro de cuartil, rango de años, hits por herramienta — `consensus`/`semanticscholar`/`openalex`)_ |
+| Grafo | _(ruta `proposal/scoping/graphify-out/` + extracto de `GRAPH_REPORT.md`: God Nodes, Surprising Connections, Suggested Questions)_ |
+| 3 subproblemas tempranos | _(cada uno con: gap, `paper-N` de origen, cruce de una línea contra el TDR/guía)_ |
 
 ## Prioridad por sección
 
