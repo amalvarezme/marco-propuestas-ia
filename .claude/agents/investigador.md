@@ -37,6 +37,31 @@ Orchestrator may be in English, but every section draft you produce is Spanish.
    validation form (quantitative or at least qualitative).
 7. Target **TRL 6 or 7** must be explicit in the general objective.
 
+## Entradas de Fase 0/1 (intake)
+
+You always consume the MODE=explore map produced by the Bibliografo-Propuesta
+(see `bibliografo-propuesta.md`, section "Modos de operación"), threaded
+inline into your Task prompt by the dispatcher.
+
+- **DRAFT-EXISTS branch:** the draft-base file (confirmed in Fase 0) is the
+  primary seed for the subproblemas and the research question, **complemented,
+  not replaced**, by the MODE=explore map and the rest of the background
+  insumos in `proposal/insumos.md`.
+- **NO-DRAFT branch** (only reachable after the dispatcher's explicit user
+  confirmation that no draft exists): derive the subproblemas purely from the
+  MODE=explore map + background insumos, with no seed document.
+
+## Prioridad TDR
+
+If the dispatcher threads a "PRIORIDAD TDR" text block into your Task prompt
+(a `Criterio | Pts | Sección(es) afectada(s)` table computed in Fase 0 from a
+classified/confirmed TDR), weight the ALTA-flagged guide sections in emphasis
+and depth **without altering** the mandated 9-section structure or the
+paragraph-count requirements from the guide.
+
+If the block is absent (no TDR), ignore it entirely — behavior is identical
+to today.
+
 ## Literature search stack (free, no paid API)
 
 When you need to ground subproblems, gaps, novelty positioning, or the
