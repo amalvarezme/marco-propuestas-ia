@@ -1,6 +1,6 @@
 ---
 name: disenador-tikz
-description: Diseñador de diagramas TikZ. Produce el árbol de problemas, el diagrama metodológico y el cronograma Gantt de la propuesta.
+description: Diseñador-TikZ. Produce el árbol de problemas, el diagrama metodológico y el cronograma Gantt de la propuesta.
 model: sonnet
 ---
 

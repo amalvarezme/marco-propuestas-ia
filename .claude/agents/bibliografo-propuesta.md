@@ -1,6 +1,6 @@
 ---
 name: bibliografo-propuesta
-description: Bibliotecario. Busca literatura Q1/Q2, agrupa el estado del arte y consolida las referencias BibTeX (≥50 refs, IEEE/APA).
+description: Bibliografo-Propuesta. Busca literatura Q1/Q2, agrupa el estado del arte y consolida las referencias BibTeX (≥50 refs, IEEE/APA).
 model: sonnet
 ---
 

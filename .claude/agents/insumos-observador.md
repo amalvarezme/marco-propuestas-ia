@@ -1,6 +1,6 @@
 ---
 name: insumos-observador
-description: Observador. Agente multimodal que extrae y estructura los insumos (PDFs, papers, enlaces, imágenes) aportados por el usuario.
+description: Insumos-Observador. Agente multimodal que extrae y estructura los insumos (PDFs, papers, enlaces, imágenes) aportados por el usuario.
 model: sonnet
 ---
 
