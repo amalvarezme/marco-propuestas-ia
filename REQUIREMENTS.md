@@ -12,9 +12,6 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 | **npm / npx** | 10+ | MCP server fetching | bundled with Node |
 | **TeX Live** | 2024+ | LaTeX compilation (pdflatex + biber) | `brew install --cask mactex` |
 | **git** | 2.40+ | Version control | `brew install git` |
-| **opencode** | 1.17+ | Agent orchestration runtime | `npm install -g opencode-ai` |
-| **oh-my-opencode-slim** | 2.0.5 (pinned) | Panthéon de agentes generales (orchestrator, oracle, librarian, explorer, designer, fixer, observer, council). **Vendored** en `.opencode/package.json`; cargado desde `.opencode/node_modules/oh-my-opencode-slim/dist/index.js` | `npm install --prefix .opencode` (regenera `node_modules` gitignored) |
-| **bun** (o `npx`) | 1.1+ | Instalador del plugin OMO-slim-proyect | `curl -fsSL https://bun.sh \| bash` |
 
 ## 2. Python packages (`requirements.txt`)
 
@@ -41,7 +38,7 @@ Optional extras (used in this project):
 
 ## 3. Node.js / MCP servers
 
-All MCP servers run via `npx -y` (fetched on demand, no global install needed). Configured in `opencode.jsonc`:
+All MCP servers run via `npx -y` (fetched on demand, no global install needed). Registered as Claude Code MCP servers — see `.mcp.json` for this project's currently active servers (`engram`, `consensus`); the servers below are used by the proposal agents as Claude Code tools:
 
 | Server | npm package | Purpose |
 |--------|-------------|---------|
@@ -51,16 +48,6 @@ All MCP servers run via `npx -y` (fetched on demand, no global install needed). 
 | **pubmed** | `@cyanheads/pubmed-mcp-server` | PubMed/PMC search, full-text, MeSH |
 | **semantic scholar** | `@xbghc/semanticscholar-mcp` | Paper search, citations, recommendations |
 | **context7** | (remote, no install) | Library documentation lookup |
-
-opencode plugin:
-- `@opencode-ai/plugin@1.17.11` — in `.opencode/package.json` (plugin SDK types)
-- `oh-my-opencode-slim@2.0.5` — el panthéon de agentes generales, **vendored**
-  (pin en `.opencode/package.json`, `autoUpdate: false`). Cargado desde
-  `.opencode/node_modules/oh-my-opencode-slim/dist/index.js` (regenerado por
-  `npm install --prefix .opencode`). Configurado por proyecto en
-  `.opencode/oh-my-opencode-slim.jsonc` (preset `opencode-go`, observer
-  habilitado). La primera vez, genera la config global y las skills del panthéon
-  con `bunx oh-my-opencode-slim@2.0.5 install --preset=opencode-go --no-tui --skills=yes`.
 
 ## 4. LaTeX packages (TeX Live)
 
@@ -96,16 +83,13 @@ pdflatex main.tex
 pdflatex main.tex
 ```
 
-## 5. opencode skills
+## 5. Claude Code skills
 
 | Skill | Source | Trigger |
 |-------|--------|---------|
 | **graphify** | `~/.claude/skills/graphify/SKILL.md` | `/graphify` |
-| **ponytail** | `~/.cache/opencode/packages/@dietrichgebert/ponytail@latest/` | `ponytail` / lazy mode |
-| **customize-opencode** | built-in | opencode config editing |
 
-Ponytail is a cached opencode package — no pip install. It auto-loads when triggered.
-Graphify is a Claude skill file + the `graphifyy` Python package (in `requirements.txt`).
+Graphify is a Claude Code skill file + the `graphifyy` Python package (in `requirements.txt`).
 
 ## 6. Environment variables
 
@@ -115,7 +99,6 @@ Graphify is a Claude skill file + the `graphifyy` Python package (in `requiremen
 | `GEMINI_API_KEY` | graphify (optional) | Enables Gemini for semantic extraction |
 | `GOOGLE_API_KEY` | graphify (optional) | Alternative to GEMINI_API_KEY |
 | `CROSSREF_MAILTO` | crossref MCP | Polite-pool (falls back to CONTACT_EMAIL) |
-| `OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS` | oh-my-opencode-slim V2 | `true` habilita la orquestación scheduler-first (background subagents) |
 
 ## 7. Project structure
 
@@ -125,7 +108,6 @@ Graphify is a Claude skill file + the `graphifyy` Python package (in `requiremen
 ├── REQUIREMENTS.md           # This file
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
-├── opencode.jsonc            # MCP server config + plugin OMO-slim-proyect + default_agent
 ├── .claude/                  # CANONICAL runtime — single source of truth
 │   ├── agents/               # 9 subagentes de propuesta (coordinador-propuesta,
 │   │                         #   investigador, redactor, insumos-observador,
@@ -133,11 +115,6 @@ Graphify is a Claude skill file + the `graphifyy` Python package (in `requiremen
 │   │                         #   revisor-figuras, tikz-optimizer)
 │   └── commands/
 │       └── propuesta.md      # Comando /propuesta — dispatcher real del pipeline
-├── .opencode/                 # Mirror NO canónico (legado opencode/oh-my-opencode-slim)
-│   ├── package.json          # opencode plugin deps
-│   ├── oh-my-opencode-slim.jsonc  # OMO-slim-proyect config (presets opencode-go/openai)
-│   ├── agents/               # Stubs espejo de `.claude/agents/` — no editar directamente
-│   └── command/               # Comando /propuesta (legado)
 ├── info_data/                # User inputs (PDFs, DOCX)
 ├── proposal/
 │   ├── main.tex              # LaTeX assembly (footer with logos)

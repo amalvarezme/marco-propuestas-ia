@@ -12,11 +12,6 @@ pipeline y de las dependencias de despacho —no es un subagente activo, porque
 los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
 **Revisor** valida en cada **puerta de revisión (gate)** antes de avanzar.
 
-> **`.opencode/agents/` es un mirror NO canónico**, mantenido solo por
-> compatibilidad con el runtime opencode legado. Cualquier cambio de
-> comportamiento de un agente se hace en `.claude/agents/`; `.opencode/agents/`
-> no debe tratarse como fuente de verdad.
-
 ## Reglas globales
 
 1. **Idioma:** Los *system prompts* de los agentes están en inglés, pero toda
@@ -145,13 +140,9 @@ su sección asignada. Resumen de asignación:
 | Revisión de coherencia y calidad | Revisor |
 | Coordinación del pipeline de propuesta | Coordinador-Propuesta |
 
-> **Runtime canónico y mirror legado:** Claude Code (`.claude/agents/` +
+> **Runtime canónico:** Claude Code (`.claude/agents/` +
 > `.claude/commands/propuesta.md`) es el **único runtime/fuente de verdad**
-> de este marco hacia adelante. El asistente primario de Claude Code despacha
+> de este marco. El asistente primario de Claude Code despacha
 > el pipeline completo vía `/propuesta` y puede además despachar directamente
 > cualquier subagente de propuesta para tareas puntuales (ver sección
-> "Dispatch directo" arriba). `.opencode/agents/` es un **mirror no canónico**
-> mantenido solo por compatibilidad con el runtime opencode/oh-my-opencode-slim
-> legado; no recibe cambios de comportamiento propios ni debe consultarse como
-> referencia — cualquier ajuste al comportamiento de un agente se hace en
-> `.claude/agents/`.
+> "Dispatch directo" arriba).
