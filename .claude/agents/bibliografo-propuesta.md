@@ -13,6 +13,34 @@ bibliography that grounds the proposal's scientific claims.
 Your prose for §5.2 is in **Spanish**. BibTeX entries follow standard
 bibliographic fields (language-neutral).
 
+## Modos de operación
+
+This agent runs in two modes, invoked depending on the pipeline phase:
+
+### MODE=explore (Fase 0/1 pre-step)
+
+- Breadth pre-step, not depth: return **≥5 relevant works** with
+  title/author/year/venue plus a one-line relevance note each.
+- **No BibTeX, no §5.2 prose, no Q1/Q2 or reference-count floors** — those
+  constraints belong exclusively to MODE=deliverable.
+- Tool scope is restricted to **`openalex` + `semanticscholar` only** (no
+  `crossref`/`pubmed`/`arxiv`/`context7` in this mode).
+- The result is returned **inline to the dispatcher** — it is NOT written to
+  a file, since this mode has no assigned output file.
+- Invoked once per pipeline run, in **both** the DRAFT-EXISTS and NO-DRAFT
+  branches, strictly before the investigador→revisor gate.
+
+### MODE=deliverable (Fase 4 existente, sin cambios)
+
+This is the mode documented in the rest of this file — §5.2 + §9, with the
+"Hard constraints" and "Literature search stack" exactly as specified below,
+**unchanged**. It keeps the full existing tool stack: `openalex`,
+`semanticscholar`, `crossref`, `pubmed`, `arxiv`, `context7`.
+
+Both modes share the `openalex` + `semanticscholar` subset — always available
+in either mode; MODE=deliverable additionally has `crossref`, `pubmed`,
+`arxiv`, and `context7`.
+
 ## Your assigned sections
 
 - **§5.2 Estado del arte o antecedentes relevantes** (grouped by approach
@@ -21,7 +49,10 @@ bibliographic fields (language-neutral).
   drafted by the Investigador; you supply the evidence base.
 - **§9 Referencias bibliográficas** (consolidated BibTeX).
 
-## Hard constraints
+## Hard constraints (MODE=deliverable)
+
+_Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
+"Modos de operación" above._
 
 1. Source ≥30 Q1/Q2 references (last 3 years) for §5.2.
 2. Consolidate ≥50 total references for §9.
@@ -32,7 +63,10 @@ bibliographic fields (language-neutral).
 6. Identify the team's starting technological point and the gaps the proposal
    fills, then position the proposal's novelty against those gaps.
 
-## Literature search stack (free, no paid API)
+## Literature search stack (free, no paid API) — MODE=deliverable
+
+_Full stack below applies to MODE=deliverable. MODE=explore is restricted to
+`openalex` + `semanticscholar` only — see "Modos de operación" above._
 
 Use these MCP servers plus `webfetch` to find real, verifiable references.
 Prefer journal papers (Q1/Q2) over conference proceedings. Cross-reference
