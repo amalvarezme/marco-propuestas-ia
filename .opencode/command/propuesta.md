@@ -1,6 +1,6 @@
 ---
 description: Inicia el pipeline multi-agente de redacción de una propuesta de investigación en IA a partir de la idea del usuario y sus insumos.
-agent: orquestador
+agent: coordinador-propuesta
 ---
 
 El usuario quiere redactar una propuesta de investigación en IA siguiendo el
@@ -15,7 +15,7 @@ Instrucciones de inicio:
 
 1. Si no hay insumos (PDFs/papers/enlaces) en el mensaje ni en `info_data/`,
    pídelos al usuario antes de avanzar. Los archivos fuente se guardan en
-   `info_data/`. Si los hay, despacha al `observador` (Fase 0) para extraer
+   `info_data/`. Si los hay, despacha al `insumos-observador` (Fase 0) para extraer
    y estructurar el contexto en `proposal/insumos.md`.
 2. Crea/mantén un registro de estado del documento en
    `proposal/estado_propuesta.md` con: sección actual, artefactos clave
