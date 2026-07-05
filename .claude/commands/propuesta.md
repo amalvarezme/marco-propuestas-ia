@@ -122,7 +122,12 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
           2. `graphify papers/` (INPUT_PATH relativo — siempre una ruta,
              nunca una pregunta en lenguaje natural, para no disparar el
              fast-path de graphify).
-          3. La salida queda en `proposal/scoping/graphify-out/`.
+          3. `graphify export html` (obligatorio, no opcional — genera
+             `proposal/scoping/graphify-out/graph.html`, el grafo interactivo
+             navegable en el navegador, para facilitar el análisis visual del
+             usuario más allá de las 3 secciones de texto del reporte).
+          4. La salida queda en `proposal/scoping/graphify-out/` (`graph.json`,
+             `graph.html`, `GRAPH_REPORT.md`).
         NUNCA ejecutes `graphify` desde la raíz del repo. NUNCA uses
         `--force`. Si `proposal/scoping/graphify-out/` ya existe de una
         iteración previa con papers distintos, bórralo antes de reconstruir
@@ -135,9 +140,11 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         de aprobación:
           1. Los 5 papers + parámetros de búsqueda (query, filtro de
              cuartil, rango de años, hits por herramienta).
-          2. El grafo (ruta `proposal/scoping/graphify-out/` + las 3
-             secciones del `GRAPH_REPORT.md`: God Nodes, Surprising
-             Connections, Suggested Questions).
+          2. El grafo: la ruta del HTML interactivo
+             `proposal/scoping/graphify-out/graph.html` (indícale al usuario
+             que puede abrirlo en el navegador para explorar visualmente
+             nodos/comunidades) + las 3 secciones del `GRAPH_REPORT.md`: God
+             Nodes, Surprising Connections, Suggested Questions.
           3. Los 3 subproblemas tempranos, cada uno con su gap y su
              `paper-N` de origen.
         Reglas de iteración por componente (NO es un rechazo en bloque):
