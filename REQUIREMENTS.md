@@ -126,18 +126,25 @@ Graphify is a Claude skill file + the `graphifyy` Python package (in `requiremen
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
 ├── opencode.jsonc            # MCP server config + plugin OMO-slim-proyect + default_agent
-├── .opencode/
+├── .claude/                  # CANONICAL runtime — single source of truth
+│   ├── agents/               # 9 subagentes de propuesta (coordinador-propuesta,
+│   │                         #   investigador, redactor, insumos-observador,
+│   │                         #   bibliografo-propuesta, revisor, disenador-tikz,
+│   │                         #   revisor-figuras, tikz-optimizer)
+│   └── commands/
+│       └── propuesta.md      # Comando /propuesta — dispatcher real del pipeline
+├── .opencode/                 # Mirror NO canónico (legado opencode/oh-my-opencode-slim)
 │   ├── package.json          # opencode plugin deps
 │   ├── oh-my-opencode-slim.jsonc  # OMO-slim-proyect config (presets opencode-go/openai)
-│   ├── agents/               # Subagentes de propuesta + tikz-optimizer
-│   └── command/              # Comando /propuesta
+│   ├── agents/               # Stubs espejo de `.claude/agents/` — no editar directamente
+│   └── command/               # Comando /propuesta (legado)
 ├── info_data/                # User inputs (PDFs, DOCX)
 ├── proposal/
 │   ├── main.tex              # LaTeX assembly (footer with logos)
 │   ├── refs.bib              # BibTeX (87 entries, IEEE)
 │   ├── sections/             # One .tex per section + 3 TikZ diagrams
 │   ├── logos/                # LabIA, UNAL, GCPDS logos
-│   ├── insumos.md            # Shared context digest (Observador output)
+│   ├── insumos.md            # Shared context digest (Insumos-Observador output)
 │   └── estado_propuesta.md   # Phase tracker
 └── graphify-out/             # Knowledge graph outputs (gitignored)
 ```
