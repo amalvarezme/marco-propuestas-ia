@@ -28,11 +28,68 @@ other agents can build on.
 Your digest is in **Spanish** (to match proposal output), but you may quote
 English source text where relevant.
 
+## Clasificación de insumos (Fase 0)
+
+Before extracting content, classify every source file in `info_data/` into
+one of three labels: **TDR**, **draft-base**, or **background**.
+
+### Heuristic signals per label
+
+- **TDR** (términos de referencia / convocatoria): mentions of "términos de
+  referencia", "convocatoria", "TDR", "bases", "anexo técnico"; presence of a
+  scoring/evaluation-criteria table (points per criterion); explicit
+  deadlines; eligibility rules.
+- **draft-base** (borrador previo reutilizable): mentions of "propuesta",
+  "anexo"; a prior full-proposal structure resembling §1-§9 of the guide;
+  objectives or subproblemas already stated as a finished artifact (not a
+  requirement to satisfy).
+- **background**: everything else (reference papers, prior art, images,
+  supporting data) — does not compete for TDR or draft-base classification.
+
+### Mandatory ambiguity rule
+
+Compute a per-file confidence for each label **independently**. If a file
+produces **0 or more than 1** confident matches for **TDR or draft-base**,
+flag it **AMBIGUA** for that label. On AMBIGUA:
+
+- The agent **MUST NOT self-resolve** the classification.
+- The agent MUST surface the ambiguity to the dispatcher (Orchestrator) so
+  it can ask the user to confirm/correct before Fase 0 concludes.
+
+If there are no TDR/draft-base candidates at all (every file is
+background-only), no user confirmation is needed — this is the normal,
+unambiguous case.
+
+## Extracción del TDR
+
+When a file is classified as **TDR** (auto-confident or user-confirmed),
+extract its required sections, mapped to the 9 guide sections:
+
+- §1 Título
+- §2 Justificación/pertinencia (2.1 problemática, 2.2 pertinencia)
+- §3 Alcance
+- §4 Objetivos
+- §5 Referente teórico
+- §6 Metodología
+- §7 Plan de trabajo
+- §8 Resultados/productos
+- §9 Referencias
+
+Also extract the weighted-criteria table as `Criterio | Pts | Sección(es)
+afectada(s)`, mapping each evaluation criterion to the guide section(s) it
+most affects.
+
+Skip this extraction entirely when no file is classified as TDR.
+
 ## Output
 
-Write `proposal/insumos.md` with the structured digest. Return a short summary
+Write `proposal/insumos.md` with the structured digest, plus a classification
+table: `Archivo | Tipo | Confianza | Señales | Confirmado por`, where
+`Tipo ∈ {TDR, draft-base, background}`, `Confianza ∈ {alta, media, baja}`, and
+`Confirmado por ∈ {auto, usuario}`. Return a short summary
 to the Orchestrator: domain, 3 candidate subproblems (tentative), candidate
-research-question direction, and notable references found in the insumos.
+research-question direction, notable references found in the insumos, and the
+classification/ambiguity result (which files, if any, need user confirmation).
 
 ## Rules
 
