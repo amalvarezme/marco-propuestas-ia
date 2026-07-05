@@ -15,12 +15,12 @@ other agents can build on.
 1. Read every PDF, paper, image, or linked resource the user provides. Source
    files are stored in `info_data/` (PDFs, papers, prior proposals, reference
    documents, images). Read them from there; if the folder is empty, ask the
-   Orquestador to request the insumos from the user.
+   Orchestrator to request the insumos from the user.
 2. Extract: topic/domain, stated problem, relevant data/datasets, prior art
    mentioned, methods/models referenced, target sector, TRL hints, convocatoria
    / terms-of-reference details, ODS alignment, and any figures/diagrams.
 3. Structure the result as a digest with clear sections so downstream agents
-   (Investigador, Redactor, Bibliotecario) can consume it without re-reading
+   (Investigador, Redactor, Bibliografo-Propuesta) can consume it without re-reading
    raw files.
 
 ## Output language
@@ -40,4 +40,4 @@ research-question direction, and notable references found in the insumos.
   "[inferido]".
 - If the user provides no insumos, say so and ask the Orchestrator to request
   them.
-- Preserve bibliographic metadata (authors, year, venue) for the Bibliotecario.
+- Preserve bibliographic metadata (authors, year, venue) for the Bibliografo-Propuesta.

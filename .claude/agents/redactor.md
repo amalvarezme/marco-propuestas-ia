@@ -39,7 +39,7 @@ All your deliverables are in **Spanish**.
 5. For §7, produce a Gantt-style table (use `tabular` + `tikz` or a `ganttchart`
    spec) with responsables and hitos marked.
 6. For §6, end with a description of the schematic methodological diagram (the
-   Diseñador agent will render it as TikZ).
+   Diseñador-TikZ agent will render it as TikZ).
 
 ## Output
 

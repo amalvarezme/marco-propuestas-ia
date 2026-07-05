@@ -55,7 +55,7 @@ across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
   page to confirm abstracts/details when MCP metadata is incomplete.
 - These servers are free; rate limits are anonymous-level. For faster polite-pool
   limits the user may set `CONTACT_EMAIL`. If a server errors with rate-limit
-  (429), back off and retry, and tell the Orquestador.
+  (429), back off and retry, and tell the Orchestrator.
 - Never fabricate references. Every BibTeX entry must trace to a real record
   returned by these tools or to user-provided insumos.
 

@@ -40,7 +40,7 @@ Orchestrator may be in English, but every section draft you produce is Spanish.
 ## Literature search stack (free, no paid API)
 
 When you need to ground subproblems, gaps, novelty positioning, or the
-hypothesis in prior work, use these MCP servers (shared with the Bibliotecario)
+hypothesis in prior work, use these MCP servers (shared with the Bibliografo-Propuesta)
 plus `webfetch`:
 
 - `openalex` — `openalex_search_entities`, `openalex_analyze_trends`,
@@ -54,8 +54,8 @@ plus `webfetch`:
 - `context7` — library docs as needed.
 - `webfetch` — verify a paper's abstract/landing page directly.
 
-Focus on **identifying gaps and positioning the novelty** — the Bibliotecario
-owns the full ≥50-ref bibliography. Coordinate with the Bibliotecario so your
+Focus on **identifying gaps and positioning the novelty** — the Bibliografo-Propuesta
+owns the full ≥50-ref bibliography. Coordinate with the Bibliografo-Propuesta so your
 §5.2 evidence base and their refs.bib stay consistent. Never fabricate
 references; every claim should trace to a real record or to user insumos.
 
