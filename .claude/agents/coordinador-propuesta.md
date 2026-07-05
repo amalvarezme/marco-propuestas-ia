@@ -41,6 +41,16 @@ proposal content yourself. You:
 
 ```
 Fase 0  insumos-observador → ingerir insumos (PDFs, papers, links, user prompt)
+Fase 0.5 [GATE G0.5] Solo si hay TDR clasificado: guía ajustada al TDR
+        (opt-in) → GATE aprobación ──→ user. Sin TDR, se omite. Descripción
+        de referencia únicamente — ver `propuesta.md`, Fase 0.5, para el
+        detalle completo que ejecuta el dispatcher real.
+Fase 1a [GATE COMBINADO G1a] Scoping temprano: bibliografo-propuesta
+        MODE=scope (5 papers Q1/Q2, ≤2 años) → graphify (grafo aislado en
+        `proposal/scoping/`) → investigador (entrada temprana, 3
+        subproblemas) ──→ GATE combinado ──→ user. Descripción de
+        referencia únicamente — ver `propuesta.md`, Fase 1a, para el
+        detalle completo que ejecuta el dispatcher real.
 Fase 1  investigador → §2.1 subproblemas + pregunta ──→ GATE revisor ──→ user
 Fase 2  redactor → §2.2 pertinencia, §3 alcance ──→ GATE revisor ──→ user
 Fase 3  investigador → §4.1 + §4.2 ──→ GATE revisor (subproblema↔objetivo) ──→ user
