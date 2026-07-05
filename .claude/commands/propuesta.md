@@ -27,8 +27,10 @@ reales.)
 1. Si no hay insumos (PDFs/papers/enlaces) en el mensaje ni en `info_data/`,
    pídelos al usuario antes de avanzar. Los archivos fuente se guardan en
    `info_data/`. Si los hay, despacha con `Task` al subagente
-   `insumos-observador` (Fase 0) para extraer y estructurar el contexto en
-   `proposal/insumos.md`.
+   `insumos-observador` (Fase 0) para clasificar (TDR / draft-base /
+   background), extraer el TDR si aplica, y estructurar el contexto en
+   `proposal/insumos.md`. Ver el bloque "Fase 0" del pipeline abajo para el
+   flujo completo de clasificación, gate de ambigüedad y decisión de ruta.
 2. Crea/mantén un registro de estado del documento en
    `proposal/estado_propuesta.md` con: sección actual, artefactos clave
    (pregunta de investigación, subproblemas, objetivos, hipótesis) y estado de
@@ -47,7 +49,33 @@ reales.)
 
 ```
 Fase 0  Task → insumos-observador → ingerir insumos (PDFs, papers, links, prompt)
-Fase 1  Task → investigador → §2.1 subproblemas + pregunta de investigación
+        y clasificarlos (TDR / draft-base / background, ver
+        `insumos-observador.md`); si hay TDR, extraer sus secciones + tabla
+        de criterios ponderados.
+        ──→ GATE DE AMBIGÜEDAD: si insumos-observador marca uno o más
+        archivos como AMBIGUA (para TDR y/o draft-base), DETENTE y pregunta
+        al usuario para confirmar/corregir. Si TDR y draft-base están
+        ambiguos a la vez, combina ambas dudas en UNA sola pregunta.
+        ──→ RAMA TDR: si hay un TDR confirmado (auto o por el usuario),
+        calcula la tabla de prioridad por sección (regla ALTA = tercil
+        superior por puntaje de criterios ponderados del TDR; crosswalk:
+        calidad/innovación→§4/§5/§6, formación→§8, impacto
+        territorial/ODS→§2.2/§3, articulación→§2.2/§8) y escríbela en
+        `proposal/estado_propuesta.md` ("Prioridad por sección"). Si no hay
+        TDR, omite este paso por completo.
+        ──→ RAMA DRAFT: si hay draft-base confirmado → ruta DRAFT-EXISTS.
+        Si no, pregunta explícitamente "¿existe un borrador previo?" antes
+        de concluir NO-DRAFT; el usuario puede nombrar un archivo para pasar
+        a DRAFT-EXISTS.
+        ──→ Escribe la decisión de ruta (DRAFT-EXISTS | NO-DRAFT, archivo
+        TDR, archivo draft-base y quién confirmó cada uno) en
+        `proposal/estado_propuesta.md` ("Clasificación y ruta (Fase 0)").
+Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
+        literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
+        archivo de salida), despachado ANTES del investigador.
+        Task → investigador → §2.1 subproblemas + pregunta de investigación.
+        Inyecta inline en el prompt de esta Task el mapa de MODE=explore y,
+        si existe, el bloque "PRIORIDAD TDR" de la Fase 0.
         ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.
 Fase 2  Task → redactor → §2.2 pertinencia, §3 alcance
         ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.
@@ -80,6 +108,20 @@ Fase 7  Task → revisor → auditoría final ──→ usuario. NO avances sin 
 - Plan de trabajo (§7) ↔ fases de la Metodología (§6).
 - Resultados (§8) ↔ productos entregados en hitos del plan (§7).
 - TRL 6 o 7 debe ser explícito en objetivos, pertinencia y resultados.
+
+## Reglas de clasificación y ambigüedad
+
+- Confirmación obligatoria ante ambigüedad: si `insumos-observador` marca un
+  archivo como AMBIGUA para TDR y/o draft-base, el dispatcher DEBE detenerse
+  y pedir confirmación al usuario antes de continuar (no autoresolver).
+- El draft-base nunca es la única fuente: cuando existe, se complementa —no
+  se reemplaza— con el mapa de MODE=explore y el resto de insumos de
+  background.
+- Sin bypass del gate: ambas rutas (DRAFT-EXISTS y NO-DRAFT) convergen en el
+  mismo gate investigador→revisor→usuario existente; ninguna rama lo omite.
+- Garantía retrocompatible: si no hay TDR ni archivos candidatos a
+  draft-base (todo es background), el comportamiento es idéntico al de antes
+  de este cambio — no se agregan preguntas ni pasos adicionales.
 
 ## Reglas de gate (obligatorias)
 
