@@ -12,6 +12,37 @@ Orquestador: mantén este archivo actualizado tras cada fase/gate.
 - Hipótesis: La integración de un modelo computacional multidimensional del aprendiz con una arquitectura multiagente pedagógicamente fundada (LLMs + MCP + scaffolding adaptativo), desplegada en aula real, produce una mejora estadísticamente significativa (p<0.05) en el aprendizaje profundo de estudiantes de ingeniería frente a la instrucción tradicional, alcanzando TRL 6/7 transferible al sector productivo colombiano.
 - TRL meta: 6/7
 
+## Clasificación y ruta (Fase 0)
+
+> **Nota (scaffold/plantilla):** plantilla de guía para futuras corridas del
+> pipeline; no es una reclasificación retroactiva de los insumos reales de
+> esta corrida ya completada.
+
+| Campo | Valor |
+|---|---|
+| Ruta | _(DRAFT-EXISTS \| NO-DRAFT)_ |
+| Archivo TDR | _(nombre de archivo, o "ninguno")_ |
+| Archivo draft-base (confirmado por) | _(nombre de archivo — auto \| usuario)_ |
+| Confirmaciones de usuario | _(lista de ambigüedades/preguntas resueltas por el usuario, o "ninguna")_ |
+
+## Prioridad por sección
+
+> Esta tabla se **omite por completo** cuando no hay TDR clasificado/confirmado
+> en Fase 0. Plantilla/guía únicamente — no es una clasificación real de esta
+> corrida.
+
+| Sección guía | Prioridad (ALTA/NORMAL) | Justificación |
+|---|---|---|
+| §1 Título | _(ALTA/NORMAL)_ | _(a completar desde la tabla de criterios del TDR)_ |
+| §2 Justificación/pertinencia (2.1 problemática, 2.2 pertinencia) | _(ALTA/NORMAL)_ | _(a completar)_ |
+| §3 Alcance | _(ALTA/NORMAL)_ | _(a completar)_ |
+| §4 Objetivos | _(ALTA/NORMAL)_ | _(a completar)_ |
+| §5 Referente teórico | _(ALTA/NORMAL)_ | _(a completar)_ |
+| §6 Metodología | _(ALTA/NORMAL)_ | _(a completar)_ |
+| §7 Plan de trabajo | _(ALTA/NORMAL)_ | _(a completar)_ |
+| §8 Resultados/productos | _(ALTA/NORMAL)_ | _(a completar)_ |
+| §9 Referencias | _(ALTA/NORMAL)_ | _(a completar)_ |
+
 ## Avance por fase
 | Fase | Sección | Agente | Estado | Gate |
 |------|---------|--------|--------|------|
