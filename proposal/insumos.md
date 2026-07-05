@@ -193,6 +193,53 @@ Elementos clave recuperados:
 
 ---
 
+## Clasificación de insumos (Fase 0)
+
+> **Nota (scaffold/plantilla):** esta sección es una plantilla para futuras
+> corridas del pipeline (Fase 0 del comando `/propuesta`). Los archivos reales
+> de `info_data/` usados en esta corrida específica —ya completada— **no se
+> clasifican retroactivamente aquí**; esta tabla se completa desde la Fase 0
+> del `insumos-observador` en corridas futuras.
+
+| Archivo | Tipo | Confianza | Señales | Confirmado por |
+|---|---|---|---|---|
+| _(ejemplo)_ `TDR_convocatoria.pdf` | TDR | alta | "términos de referencia", tabla de criterios, plazos | auto |
+| _(ejemplo)_ `Anexo2_propuesta_previa.docx` | draft-base | media | estructura §1-§9 previa, objetivos ya declarados | usuario |
+| _(ejemplo)_ `paper_relacionado.pdf` | background | — | no coincide con señales de TDR ni draft-base | auto |
+
+`Tipo ∈ {TDR, draft-base, background}` · `Confianza ∈ {alta, media, baja}` ·
+`Confirmado por ∈ {auto, usuario}`.
+
+## Extracción del TDR (si aplica)
+
+> **Nota (scaffold/plantilla):** se omite por completo cuando no hay TDR
+> clasificado/confirmado. No aplica a esta corrida (el conjunto real de
+> insumos de este proyecto no incluyó un TDR clasificado bajo este esquema).
+
+Secciones requeridas mapeadas a las 9 secciones de la guía:
+
+| Sección guía | Contenido esperado del TDR |
+|---|---|
+| §1 Título | _(a extraer)_ |
+| §2 Justificación/pertinencia (2.1 problemática, 2.2 pertinencia) | _(a extraer)_ |
+| §3 Alcance | _(a extraer)_ |
+| §4 Objetivos | _(a extraer)_ |
+| §5 Referente teórico | _(a extraer)_ |
+| §6 Metodología | _(a extraer)_ |
+| §7 Plan de trabajo | _(a extraer)_ |
+| §8 Resultados/productos | _(a extraer)_ |
+| §9 Referencias | _(a extraer)_ |
+
+Tabla de criterios ponderados (base para la regla ALTA = tercil superior por
+puntaje):
+
+| Criterio | Pts | Sección(es) afectada(s) |
+|---|---|---|
+| _(ejemplo)_ Calidad del proyecto | 30 | §4/§5/§6 |
+| _(ejemplo)_ Formación en investigación de estudiantes | 20 | §8 |
+
+---
+
 ## F. Subproblemas candidatos (tentativos, para el Investigador)
 
 1. **Diagnóstico y modelado del aprendiz:** ausencia de diagnósticos
