@@ -25,6 +25,27 @@ Orquestador: mantén este archivo actualizado tras cada fase/gate.
 | Archivo draft-base (confirmado por) | _(nombre de archivo — auto \| usuario)_ |
 | Confirmaciones de usuario | _(lista de ambigüedades/preguntas resueltas por el usuario, o "ninguna")_ |
 
+## Compuertas tempranas (G0.5, G1a)
+
+> Estas compuertas son distintas de la fila "Confirmaciones de usuario" de
+> arriba (esa cubre únicamente el gate de ambigüedad de la Fase 0) y también
+> distintas del gate investigador→revisor→usuario de la Fase 1. G0.5 decide
+> qué guía aplicar antes de la búsqueda de literatura; G1a cubre el scoping
+> temprano (bibliografo-propuesta MODE=scope + graphify + borrador temprano
+> del investigador).
+
+### G0.5 — Guía ajustada al TDR
+
+| Campo | Valor |
+|---|---|
+| Estado | _(N/A sin TDR \| OMITIDA-POR-USUARIO \| PENDIENTE \| EN REVISIÓN \| APROBADA)_ |
+| Guía aplicable | _(`guiaProyectosIA_Agente.md` \| `proposal/guia_ajustada_TDR.md`)_ |
+| Aprobada por / fecha | _(usuario y fecha, o "N/A" si OMITIDA-POR-USUARIO o sin TDR)_ |
+
+### G1a — Scoping temprano
+
+_(completado en Fase 1a — ver cambio bibliografo-tdr-graph-gate PR2)_
+
 ## Prioridad por sección
 
 > Esta tabla se **omite por completo** cuando no hay TDR clasificado/confirmado

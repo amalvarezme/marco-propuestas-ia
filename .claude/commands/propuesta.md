@@ -71,6 +71,41 @@ Fase 0  Task → insumos-observador → ingerir insumos (PDFs, papers, links, pr
         ──→ Escribe la decisión de ruta (DRAFT-EXISTS | NO-DRAFT, archivo
         TDR, archivo draft-base y quién confirmó cada uno) en
         `proposal/estado_propuesta.md` ("Clasificación y ruta (Fase 0)").
+Fase 0.5 [COMPUERTA G0.5] Solo aplica si el campo "Archivo TDR" de la tabla
+        "Clasificación y ruta (Fase 0)" quedó con un valor no vacío
+        (confirmado auto o resuelto vía el gate de ambigüedad — ambos
+        cuentan). Si no hay TDR, omite esta fase por completo: la guía
+        aplicable sigue siendo `guiaProyectosIA_Agente.md` sin cambios y el
+        dispatcher continúa directo a la Fase 1.
+        ──→ OPT-IN G0.5 (concepto nuevo y separado del campo
+        "Confirmaciones de usuario" de la Fase 0, que solo cubre el gate de
+        ambigüedad): pregunta una sola vez, explícitamente, "Se detectó un
+        TDR (<archivo>). ¿Genero una guía ajustada al TDR antes de la
+        búsqueda de literatura? (sí/no)".
+          - "no" → guía aplicable = `guiaProyectosIA_Agente.md` (sin
+            cambios); registra G0.5 = OMITIDA-POR-USUARIO en
+            `proposal/estado_propuesta.md` ("Compuertas tempranas (G0.5,
+            G1a)").
+          - "sí" → Task → investigador → genera
+            `proposal/guia_ajustada_TDR.md` a partir de
+            `guiaProyectosIA_Agente.md` (entrada de solo lectura — el
+            archivo base NUNCA se modifica), ajustando
+            secciones/alcance/requisitos según la tabla de criterios
+            ponderados ya extraída en `proposal/insumos.md` ("Extracción
+            del TDR").
+        ──→ GATE G0.5: presenta `proposal/guia_ajustada_TDR.md` al usuario
+        para aprobación explícita.
+          - Aprobada → guía aplicable = `proposal/guia_ajustada_TDR.md`;
+            registra G0.5 = APROBADA (quién/fecha) en
+            `proposal/estado_propuesta.md`.
+          - Cambios solicitados → vuelve a despachar la misma Task al
+            `investigador` con las correcciones exactas del usuario, y
+            repite el gate. NO avances sin aprobación explícita.
+        En ambos desenlaces finales (OMITIDA-POR-USUARIO o APROBADA), el
+        dispatcher continúa con la Fase 1 (la Fase 1a que consumirá esta
+        "guía aplicable" se añade en un cambio posterior — ver
+        bibliografo-tdr-graph-gate PR2 — por ahora la Fase 1 sigue como
+        hoy).
 Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
         archivo de salida), despachado ANTES del investigador.
