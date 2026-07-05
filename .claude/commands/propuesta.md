@@ -58,7 +58,8 @@ Fase 0  Task → insumos-observador → ingerir insumos (PDFs, papers, links, pr
         ambiguos a la vez, combina ambas dudas en UNA sola pregunta.
         ──→ RAMA TDR: si hay un TDR confirmado (auto o por el usuario),
         calcula la tabla de prioridad por sección (regla ALTA = tercil
-        superior por puntaje de criterios ponderados del TDR; crosswalk:
+        superior por puntaje de criterios ponderados del TDR, empates en el
+        límite del tercil se incluyen como ALTA; crosswalk:
         calidad/innovación→§4/§5/§6, formación→§8, impacto
         territorial/ODS→§2.2/§3, articulación→§2.2/§8) y escríbela en
         `proposal/estado_propuesta.md` ("Prioridad por sección"). Si no hay
@@ -120,8 +121,10 @@ Fase 7  Task → revisor → auditoría final ──→ usuario. NO avances sin 
 - Sin bypass del gate: ambas rutas (DRAFT-EXISTS y NO-DRAFT) convergen en el
   mismo gate investigador→revisor→usuario existente; ninguna rama lo omite.
 - Garantía retrocompatible: si no hay TDR ni archivos candidatos a
-  draft-base (todo es background), el comportamiento es idéntico al de antes
-  de este cambio — no se agregan preguntas ni pasos adicionales.
+  draft-base (todo es background), la clasificación no agrega preguntas de
+  confirmación adicionales. El pre-step de `bibliografo-propuesta`
+  (MODE=explore) en la Fase 1 sigue siendo obligatorio para ambas rutas,
+  incluida esta — no se omite ni se bypassea el gate.
 
 ## Reglas de gate (obligatorias)
 
