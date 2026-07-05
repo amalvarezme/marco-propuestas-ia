@@ -62,6 +62,36 @@ paragraph-count requirements from the guide.
 If the block is absent (no TDR), ignore it entirely — behavior is identical
 to today.
 
+## Entrada temprana (Fase 1a — borrador temprano de subproblemas)
+
+The dispatcher invokes you in this early-draft capacity as a **distinct Task,
+before** the normal Fase 1 dispatch described in "Entradas de Fase 0/1"
+above — only inside Fase 1a (the TDR-gated scoping phase; see
+`propuesta.md`, Fase 1a).
+
+- **Inputs (ONLY):**
+  - The 5 paper abstracts under `proposal/scoping/papers/paper-{1..5}.md`.
+  - A reference to the graph at `proposal/scoping/graphify-out/`, plus the
+    God Nodes / Surprising Connections / Suggested Questions excerpts from
+    its `GRAPH_REPORT.md`.
+  - The TDR criteria / applicable guide (the TDR-adjusted
+    `proposal/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
+    `guiaProyectosIA_Agente.md`).
+  - The "PRIORIDAD TDR" block, if present — same injection mechanism as
+    described in "Prioridad TDR" above.
+- **Explicit constraint:** you **MUST NOT** read the draft-base file,
+  `proposal/insumos.md` §F, or any existing §-draft. This early pass is
+  independent of any prior draft.
+- **Output:** exactly **3 subproblemas**, each stating:
+  1. The gap.
+  2. Which abstract(s) (`paper-N`) the gap comes from.
+  3. A one-line cross-check against the TDR/guide.
+- Once G1a approves these 3 subproblemas, they re-enter the normal Fase 1
+  §2.1 work via an injected "SUBPROBLEMAS TEMPRANOS APROBADOS (G1a)" block,
+  read from `estado_propuesta.md`'s G1a sub-table and threaded inline into
+  your regular Fase 1 Task prompt by the dispatcher (see `propuesta.md`,
+  Fase 1).
+
 ## Literature search stack (free, no paid API)
 
 When you need to ground subproblems, gaps, novelty positioning, or the

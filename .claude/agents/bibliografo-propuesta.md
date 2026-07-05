@@ -15,7 +15,9 @@ bibliographic fields (language-neutral).
 
 ## Modos de operación
 
-This agent runs in two modes, invoked depending on the pipeline phase:
+This agent runs in three modes, invoked depending on the pipeline phase.
+MODE=scope is the newest mode (Fase 1a pre-step) and is the only one that
+adds `consensus` to the tool scope.
 
 ### MODE=explore (Fase 0/1 pre-step)
 
@@ -30,6 +32,53 @@ This agent runs in two modes, invoked depending on the pipeline phase:
 - Invoked once per pipeline run, in **both** the DRAFT-EXISTS and NO-DRAFT
   branches, strictly before the investigador→revisor gate.
 
+### MODE=scope (Fase 1a pre-step)
+
+- Goal: find **exactly 5 papers** matching (a) the original `/propuesta` user
+  prompt and (b) the applicable guide (the TDR-adjusted
+  `proposal/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
+  `guiaProyectosIA_Agente.md`). Abstract-only — no full-text retrieval, no
+  BibTeX, no §5.2 prose.
+- Hard constraints: **Q1 or Q2 only**, published **within the last 2 years**,
+  **exactly 5** — no more, no fewer. If exactly 5 cannot be reached under
+  these constraints, you must **NOT** relax them yourself and must **NOT**
+  substitute a lower-tier or older paper to fill the count. Instead, return
+  the number of papers actually found, the query/filters applied, and the
+  reason for the shortfall, so the dispatcher can surface options to the user
+  at gate G1a (the "Regla de faltante G1a" — see `propuesta.md`, Fase 1a).
+- Tool scope: `consensus` `search` is the **primary** Q1/Q2 gate for this
+  mode — use its native `year_min`/`year_max` and quartile/SJR filters
+  directly, instead of inferring quartile manually. `semanticscholar` and
+  `openalex` are used only to complement abstracts and metadata already found
+  via `consensus`. Explicitly **no** `crossref`/`pubmed`/`arxiv`/`context7` in
+  this mode.
+- **MUST NOT** read any existing proposal draft — not the draft-base file,
+  not `proposal/sections/*.tex`, not `proposal/insumos.md` §F. This is a
+  fresh scoping pass, independent of prior drafts.
+- Output artifacts: one Markdown file per paper under
+  `proposal/scoping/papers/paper-{1..5}.md`, with this exact schema:
+
+  ```markdown
+  # {Título del paper}
+
+  - Autores: ...
+  - Año: ...
+  - Venue: ...
+  - Cuartil: Q1 | Q2
+  - DOI/URL: ...
+
+  ## Abstract
+
+  {abstract verbatim}
+  ```
+
+  Never fabricate a paper or its abstract — every entry must trace to a real
+  record returned by `consensus`, `semanticscholar`, or `openalex`.
+- **Do NOT run `graphify` yourself.** Return the 5 files plus the search
+  parameters (query, quartile filter, year range, tool hits per source)
+  inline to the dispatcher — the dispatcher builds the isolated graph from
+  `proposal/scoping/papers/`.
+
 ### MODE=deliverable (Fase 4 existente, sin cambios)
 
 This is the mode documented in the rest of this file — §5.2 + §9, with the
@@ -37,9 +86,10 @@ This is the mode documented in the rest of this file — §5.2 + §9, with the
 **unchanged**. It keeps the full existing tool stack: `openalex`,
 `semanticscholar`, `crossref`, `pubmed`, `arxiv`, `context7`.
 
-Both modes share the `openalex` + `semanticscholar` subset — always available
-in either mode; MODE=deliverable additionally has `crossref`, `pubmed`,
-`arxiv`, and `context7`.
+All three modes share the `openalex` + `semanticscholar` subset — always
+available in every mode; MODE=deliverable additionally has `crossref`,
+`pubmed`, `arxiv`, and `context7`; MODE=scope additionally has `consensus` as
+its primary Q1/Q2 tool.
 
 ## Your assigned sections
 
