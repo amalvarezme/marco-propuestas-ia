@@ -7,7 +7,7 @@ Usage:
 Looks for diag_<name>.tex under proposal/sections/ relative to the repo root
 (this script lives at proposal/scripts/compile_tikz.py, so the repo root is
 two parents up).  All intermediate files (.tex wrappers, .pdf, .png, .log) go
-under /tmp/opencode/figopt/.
+under /tmp/propuesta/figopt/.
 
 Requires: pdflatex, pdftoppm in PATH.
 """
@@ -16,7 +16,7 @@ import sys, subprocess, re, pathlib
 # Repo root = parent of parent of this script's directory.
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
-WORK = pathlib.Path("/tmp/opencode/figopt")
+WORK = pathlib.Path("/tmp/propuesta/figopt")
 WORK.mkdir(parents=True, exist_ok=True)
 
 def build(name, kind):

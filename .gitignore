@@ -1,10 +1,9 @@
 # macOS
 .DS_Store
 
-# Node / opencode plugin deps
-.opencode/node_modules/
-.opencode/package-lock.json
-.opencode/bun.lock
+# Local agent indexes / caches
+.atl/
+.codegraph/
 
 # Knowledge-graph scratch (from /graphify runs)
 graphify-out/

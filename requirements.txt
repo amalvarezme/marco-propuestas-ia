@@ -51,10 +51,5 @@ yt-dlp>=2024.0
 # File watching (--watch mode)
 watchdog>=4.0
 
-# --- ponytail skill (lazy-code enforcement) ---
-# ponytail is an opencode skill, not a pip package — it ships as a cached
-# package at ~/.cache/opencode/packages/@dietrichgebert/ponytail@latest/
-# No pip install needed; opencode loads it automatically.
-
 # --- Semantic Scholar (optional, if not using the MCP server) ---
 # semanticscholar  # only if calling the API directly from Python

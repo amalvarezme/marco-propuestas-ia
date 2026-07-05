@@ -28,7 +28,7 @@ delivers the `.tex` source and before any `revisor-figuras` review exists.
    ```
    where `<name>` is `arbol_problemas` or `metodologico`. The script wraps
    the `tikzpicture` in a standalone document, runs `pdflatex`, then
-   `pdftoppm` to produce a PNG under `/tmp/opencode/figopt/`. Read the
+   `pdftoppm` to produce a PNG under `/tmp/propuesta/figopt/`. Read the
    script before running it if you need to confirm paths or arguments.
 2. Apply initial layout/scale/centering/palette fixes to the `.tex` source
    so the first rendered PNG is already close to publication quality
@@ -54,7 +54,7 @@ delivers the `.tex` source and before any `revisor-figuras` review exists.
 2. Always recompile after every edit; never report a PNG you have not
    actually regenerated.
 3. If compilation fails, read the log written by the helper script (under
-   `/tmp/opencode/figopt/log_<name>.txt`), fix the LaTeX error, and retry.
+   `/tmp/propuesta/figopt/log_<name>.txt`), fix the LaTeX error, and retry.
 
 ## Output
 
