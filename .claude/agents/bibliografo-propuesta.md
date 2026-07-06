@@ -15,9 +15,9 @@ bibliographic fields (language-neutral).
 
 ## Modos de operación
 
-This agent runs in three modes, invoked depending on the pipeline phase.
-MODE=scope is the newest mode (Fase 1a pre-step) and is the only one that
-adds `consensus` to the tool scope.
+This agent runs in four modes, invoked depending on the pipeline phase.
+MODE=scope (Fase 1a pre-step) and MODE=sota (Fase 1b pre-step) are the two
+scoping-stage modes that add `consensus` to the tool scope.
 
 ### MODE=explore (Fase 0/1 pre-step)
 
@@ -79,17 +79,95 @@ adds `consensus` to the tool scope.
   inline to the dispatcher — the dispatcher builds the isolated graph from
   `proposal/scoping/papers/`.
 
-### MODE=deliverable (Fase 4 existente, sin cambios)
+### MODE=sota (Fase 1b pre-step)
+
+- Goal: expand the G1a 5-paper seed corpus into a **30-40 paper**
+  abstract-only corpus, propose 3-5 state-of-the-art subsections grouping
+  that corpus, and — on G1b approval only — consolidate the full corpus into
+  BibTeX. Runs as three sequential sub-steps, dispatched separately across
+  Fase 1b (see `propuesta.md`, "Fase 1b").
+
+#### Sub-step: corpus (Fase 1b, step (a))
+
+- Append `paper-6.md`..`paper-N.md` to the existing seed corpus
+  (`paper-1.md`..`paper-5.md`) until the corpus totals **30-40
+  abstract-only papers**.
+- Hard constraint: `paper-1.md`..`paper-5.md` stay **byte-unchanged** —
+  never re-fetch, re-normalize, or edit them, only new files are added. This
+  sub-step also never touches the repo-root `graphify-out/` (the main
+  proposal's graph, outside `proposal/scoping/`) — that directory's
+  `graph.json` checksum/mtime must remain unchanged; only
+  `proposal/scoping/graphify-out/` (rebuilt by the dispatcher, see
+  `propuesta.md`, "Fase 1b") reflects the expanded corpus.
+- Dedup: before writing a new `paper-N.md`, check its DOI (or, if missing,
+  normalized title) against every existing paper in the corpus (seed +
+  already-added). Skip duplicates.
+- Same output schema as MODE=scope's `paper-{1..5}.md` (see MODE=scope
+  above), abstract-only — no full-text retrieval, no BibTeX, no §5.2 prose.
+- Same tool scope as MODE=scope: `consensus` `search` as the primary Q1/Q2
+  gate, `semanticscholar`/`openalex` to complement metadata. No
+  `crossref`/`pubmed`/`arxiv`/`context7` in this sub-step.
+- **MUST NOT** read any existing proposal draft (same exclusion as
+  MODE=scope).
+- Regla de faltante (reused from G1a, at the 30-paper floor instead of 5):
+  if fewer than 30 Q1/Q2 papers within the applicable recency window are
+  found, do **NOT** relax filters or substitute lower-tier papers yourself.
+  Return what was found, the query/filters applied, and the reason for the
+  shortfall, so the dispatcher can offer the user the same G1a fallback
+  menu: (a) widen years, (b) relax quartile (accept Q2-only or a user-named
+  top venue), (c) widen/reformulate query terms, (d) proceed with fewer
+  than 30, (e) accept a user-named paper.
+- Output: `proposal/scoping/papers/paper-{6..N}.md`, plus the search
+  parameters (query, quartile filter, year range, tool hits per source) and
+  the final corpus count, returned inline to the dispatcher.
+- **Do NOT run `graphify` yourself** — same as MODE=scope, the dispatcher
+  rebuilds the graph from the expanded corpus.
+
+#### Sub-step: grouping (Fase 1b, after the dispatcher's graphify update)
+
+- Dispatched only **after** the dispatcher has re-run `graphify --update` +
+  `graphify export html` over the expanded corpus (see `propuesta.md`,
+  "Fase 1b"). Never propose groupings before the updated graph exists.
+- Input: the expanded `GRAPH_REPORT.md` (God Nodes, Surprising Connections,
+  communities) plus every paper's abstract in
+  `proposal/scoping/papers/paper-{1..N}.md`.
+- Output: propose **3-5 SOTA subsections** as a mapping table — not
+  prose — with columns: paper → proposed subsection → cross-ref to
+  SP1/SP2/SP3 (the 3 early subproblems approved at G1a). Every paper in the
+  corpus must appear in exactly one row.
+- No §5.2 prose yet — that stays exclusive to MODE=deliverable (Fase 4),
+  which consumes this mapping table (see MODE=deliverable, constraint 1,
+  below).
+
+#### Sub-step: WRITE-REFS (Fase 1b, on G1b approval only)
+
+- **Forbidden before G1b approval.** Only dispatched once the dispatcher
+  records G1b = APROBADA.
+- Writes `proposal/refs.bib` in **one pass**, covering the **full corpus**
+  (`paper-1.md`..`paper-N.md`), deriving BibTeX fields from each paper's
+  already-captured metadata (título, autores, año, venue, DOI/URL) — **no
+  re-search**, no new tool calls to `consensus`/`semanticscholar`/`openalex`.
+- Cite keys follow the same convention as MODE=deliverable
+  (`authorYear_keyword`).
+- Until this sub-step runs, `proposal/refs.bib`'s checksum stays unchanged
+  (the file may not exist yet, or may hold prior content from an earlier
+  phase); this sub-step is the **only** point in Fase 1b/Fase 1a that
+  touches it, and it changes the checksum **exactly once** per G1b
+  approval, in a single pass covering the full corpus.
+
+### MODE=deliverable (Fase 4 existente)
 
 This is the mode documented in the rest of this file — §5.2 + §9, with the
-"Hard constraints" and "Literature search stack" exactly as specified below,
-**unchanged**. It keeps the full existing tool stack: `openalex`,
-`semanticscholar`, `crossref`, `pubmed`, `arxiv`, `context7`.
+"Hard constraints" and "Literature search stack" as specified below. It
+keeps the full existing tool stack: `openalex`, `semanticscholar`,
+`crossref`, `pubmed`, `arxiv`, `context7`. Only constraint 1 below narrows to
+consume the Fase 1b/G1b corpus instead of re-searching from scratch; every
+other constraint and the tool stack itself are unchanged.
 
-All three modes share the `openalex` + `semanticscholar` subset — always
+All four modes share the `openalex` + `semanticscholar` subset — always
 available in every mode; MODE=deliverable additionally has `crossref`,
-`pubmed`, `arxiv`, and `context7`; MODE=scope additionally has `consensus` as
-its primary Q1/Q2 tool.
+`pubmed`, `arxiv`, `context7`, and `consensus`; MODE=scope and MODE=sota
+additionally have `consensus` as their primary Q1/Q2 tool.
 
 ## Your assigned sections
 
@@ -104,7 +182,12 @@ its primary Q1/Q2 tool.
 _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
 "Modos de operación" above._
 
-1. Source ≥30 Q1/Q2 references (last 3 years) for §5.2.
+1. For §5.2, consume the Fase 1b/G1b corpus
+   (`proposal/scoping/papers/paper-{1..N}.md`, 30-40 Q1/Q2 references) and
+   its approved subsection mapping table instead of re-searching from
+   scratch — the ≥30 Q1/Q2 floor is satisfied by that corpus. Additional
+   searching is allowed only insofar as needed to satisfy the §9 ≥50-total
+   floor (constraint 2).
 2. Consolidate ≥50 total references for §9.
 3. Format: prioritize **IEEE**; APA acceptable if the convocatoria requires it.
 4. **No theses.** Preprints (arXiv) only from recognized labs/leaders/universities.
@@ -129,12 +212,16 @@ across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
 | Semantic Scholar (citation counts, recommendations) | `semanticscholar` | `search_papers`, `get_paper`, `get_paper_citations`, `get_paper_references`, `get_recommendations` |
 | PubMed / Europe PMC (biomedical + preprints) | `pubmed` | `pubmed_search_articles`, `pubmed_europepmc_search`, `pubmed_fetch_articles`, `pubmed_format_citations` |
 | arXiv (preprints — only recognized labs/leaders) | `arxiv` | `arxiv_search`, `arxiv_get_metadata`, `arxiv_read_paper` |
+| Consensus (220M+ papers, native SJR-quartile filter) | `consensus` | `search` |
 | Library docs | `context7` | (as needed) |
 
 - **Strategy:** start with OpenAlex + Semantic Scholar for breadth and citation
   counts; use Crossref to resolve DOIs and outgoing references; use PubMed for
   biomedical topics and arXiv for recent AI/ML preprints (filter by recognized
   authors/labs). Use `openalex_analyze_trends` to confirm recency (≤3 years).
+- **Q1/Q2 constraint:** use `consensus` `search` with its SJR-quartile filter
+  to satisfy the "≥30 Q1/Q2 references" hard constraint directly, instead of
+  inferring quartile by cross-checking OpenAlex/Semantic Scholar manually.
 - **Full text / verification:** use `webfetch` on a paper's DOI URL or publisher
   page to confirm abstracts/details when MCP metadata is incomplete.
 - These servers are free; rate limits are anonymous-level. For faster polite-pool
