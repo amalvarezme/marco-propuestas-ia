@@ -205,27 +205,30 @@ Use these MCP servers plus `webfetch` to find real, verifiable references.
 Prefer journal papers (Q1/Q2) over conference proceedings. Cross-reference
 across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
 
-| Source | MCP server | Key tools |
+| Source | MCP server | Key tools (verified against the installed package) |
 |--------|-----------|-----------|
-| OpenAlex (270M+ works, citation graph, filters by year/quartile) | `openalex` | `openalex_search_entities`, `openalex_analyze_trends`, `openalex_get_citation_graph`, `openalex_resolve_name` |
-| Crossref (~155M works, DOI resolution, references) | `crossref` | `crossref_search_works`, `crossref_get_work`, `crossref_get_references` |
-| Semantic Scholar (citation counts, recommendations) | `semanticscholar` | `search_papers`, `get_paper`, `get_paper_citations`, `get_paper_references`, `get_recommendations` |
-| PubMed / Europe PMC (biomedical + preprints) | `pubmed` | `pubmed_search_articles`, `pubmed_europepmc_search`, `pubmed_fetch_articles`, `pubmed_format_citations` |
-| arXiv (preprints — only recognized labs/leaders) | `arxiv` | `arxiv_search`, `arxiv_get_metadata`, `arxiv_read_paper` |
+| OpenAlex (270M+ works, filters by year/quartile) | `openalex` | `openalex_resolve_name`, `openalex_search_entities`, `openalex_analyze_trends`. **No citation-graph tool exists** in `@cyanheads/openalex-mcp-server` — do not call `openalex_get_citation_graph`, it does not exist. Requires `OPENALEX_API_KEY` (an email, not a real key) set in `.mcp.json`. |
+| Crossref (DOI metadata lookup) | `crossref` | `searchByTitle`, `searchByAuthor`, `getWorkByDOI` (`@botanicastudios/crossref-mcp`). No combined-keyword search and **no outgoing-references tool** — use `getWorkByDOI` only to enrich/verify a DOI already found via OpenAlex/Semantic Scholar. |
+| Semantic Scholar (citation counts, recommendations) | `semanticscholar` | `search_papers`, `get_paper`, `get_paper_citations`, `get_paper_references`, `get_recommendations` (plus `search_authors`, `get_author`, `get_author_papers`). |
+| PubMed / Europe PMC (biomedical + preprints, full text) | `pubmed` | `pubmed_search_articles`, `pubmed_fetch_articles`, `pubmed_fetch_fulltext`, `pubmed_format_citations` (`@cyanheads/pubmed-mcp-server`). **No separate `pubmed_europepmc_search` tool** — Europe PMC/PMC/Unpaywall full text is covered by `pubmed_fetch_fulltext`, not a dedicated search tool. |
+| arXiv (preprints — only recognized labs/leaders) | `arxiv` | `arxiv_search`, `arxiv_get_metadata`, `arxiv_read_paper` (`@cyanheads/arxiv-mcp-server`). |
 | Consensus (220M+ papers, native SJR-quartile filter) | `consensus` | `search` |
-| Library docs | `context7` | (as needed) |
+| Library docs | `context7` | `resolve-library-id`, `query-docs` (`@upstash/context7-mcp`) |
 
 - **Strategy:** start with OpenAlex + Semantic Scholar for breadth and citation
-  counts; use Crossref to resolve DOIs and outgoing references; use PubMed for
-  biomedical topics and arXiv for recent AI/ML preprints (filter by recognized
+  counts; use Crossref's `getWorkByDOI` only to verify/enrich a DOI already in
+  hand (it cannot resolve outgoing references — Semantic Scholar's
+  `get_paper_references` is the tool for that); use PubMed for biomedical
+  topics and arXiv for recent AI/ML preprints (filter by recognized
   authors/labs). Use `openalex_analyze_trends` to confirm recency (≤3 years).
 - **Q1/Q2 constraint:** use `consensus` `search` with its SJR-quartile filter
   to satisfy the "≥30 Q1/Q2 references" hard constraint directly, instead of
   inferring quartile by cross-checking OpenAlex/Semantic Scholar manually.
 - **Full text / verification:** use `webfetch` on a paper's DOI URL or publisher
   page to confirm abstracts/details when MCP metadata is incomplete.
-- These servers are free; rate limits are anonymous-level. For faster polite-pool
-  limits the user may set `CONTACT_EMAIL`. If a server errors with rate-limit
+- These servers are free; rate limits are anonymous-level except OpenAlex,
+  which requires `OPENALEX_API_KEY` (an email address for its polite pool,
+  set in `.mcp.json`) just to start. If a server errors with rate-limit
   (429), back off and retry, and tell the Orchestrator.
 - Never fabricate references. Every BibTeX entry must trace to a real record
   returned by these tools or to user-provided insumos.

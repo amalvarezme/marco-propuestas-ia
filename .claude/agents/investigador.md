@@ -98,11 +98,15 @@ When you need to ground subproblems, gaps, novelty positioning, or the
 hypothesis in prior work, use these MCP servers (shared with the Bibliografo-Propuesta)
 plus `webfetch`:
 
-- `openalex` — `openalex_search_entities`, `openalex_analyze_trends`,
-  `openalex_get_citation_graph` (breadth, citation graph, recency).
+- `openalex` — `openalex_resolve_name`, `openalex_search_entities`,
+  `openalex_analyze_trends` (breadth, recency; requires `OPENALEX_API_KEY`,
+  an email, in `.mcp.json`). No citation-graph tool exists in this server —
+  use `semanticscholar`'s `get_paper_citations`/`get_paper_references` for
+  citation-graph navigation instead.
 - `semanticscholar` — `search_papers`, `get_paper`, `get_paper_citations`,
   `get_paper_references` (citation counts, related work).
-- `crossref` — `crossref_search_works`, `crossref_get_work` (DOI resolution).
+- `crossref` — `searchByTitle`, `searchByAuthor`, `getWorkByDOI`. Use only to
+  verify/enrich a DOI already found elsewhere — no outgoing-references tool.
 - `pubmed` — `pubmed_search_articles` (biomedical topics).
 - `arxiv` — `arxiv_search`, `arxiv_get_metadata` (recent AI/ML preprints;
   only recognized labs/leaders).
