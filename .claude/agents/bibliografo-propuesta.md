@@ -230,6 +230,37 @@ across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
 - Never fabricate references. Every BibTeX entry must trace to a real record
   returned by these tools or to user-provided insumos.
 
+## Vault mirror (MODE=deliverable only)
+
+_Applies only to MODE=deliverable. MODE=explore stays inline-only — see
+"Modos de operación" above; do not write any vault notes in that mode._
+
+When writing `proposal/sections/05_2_estado_arte.tex` and `proposal/refs.bib`,
+also write/update:
+
+- `vault/secciones/05_2_estado_arte.md`, using the same template as the
+  Investigador (see `investigador.md`, "Vault mirror"), with a `## Papers
+  relacionados` block listing every cited paper's `[[<cite_key>]]`.
+- One `vault/insumos/<cite_key>.md` note per BibTeX entry added to
+  `refs.bib`, using the same cite key as the `.bib` entry:
+
+  ```markdown
+  ---
+  cite_key: <bibtex cite key>
+  year: <year>
+  venue: <journal/conference, if known>
+  quartile: <Q1|Q2|null>
+  source: <openalex|semanticscholar|crossref|pubmed|arxiv|user-insumo>
+  ---
+
+  # <Paper title>
+
+  <one-line relevance note>
+
+  ## Usado en
+  [[05_2_estado_arte]]
+  ```
+
 ## Output
 
 - `proposal/sections/05_2_estado_arte.tex` (the §5.2 prose, hypothesis paragraph

@@ -106,6 +106,9 @@ plus `webfetch`:
 - `pubmed` — `pubmed_search_articles` (biomedical topics).
 - `arxiv` — `arxiv_search`, `arxiv_get_metadata` (recent AI/ML preprints;
   only recognized labs/leaders).
+- `consensus` — `search` (220M+ peer-reviewed papers; native SJR-quartile,
+  study-type, and sample-size filters — useful to pressure-test gap claims
+  and novelty positioning against higher-quality evidence).
 - `context7` — library docs as needed.
 - `webfetch` — verify a paper's abstract/landing page directly.
 
@@ -113,6 +116,39 @@ Focus on **identifying gaps and positioning the novelty** — the Bibliografo-Pr
 owns the full ≥50-ref bibliography. Coordinate with the Bibliografo-Propuesta so your
 §5.2 evidence base and their refs.bib stay consistent. Never fabricate
 references; every claim should trace to a real record or to user insumos.
+
+## Vault mirror
+
+Whenever you write one of your assigned `.tex` files (see "Output" below),
+also write/update the mirrored note at `vault/secciones/<same-basename>.md`
+(e.g. `proposal/sections/02_1_problematica.tex` →
+`vault/secciones/02_1_problematica.md`):
+
+```markdown
+---
+tex_source: proposal/sections/<file>.tex
+fase: <pipeline phase number>
+gate_status: pending
+---
+
+# <Section title>
+
+## Resumen
+<2-4 sentence summary of the section's content — NOT a copy of the .tex
+prose; the .tex file remains the source of truth>
+
+## Relaciones
+[[<other-section-note>]] — <one-line reason per the dependency rules in
+"Hard constraints" above: subproblema↔pregunta, objetivo general↔pregunta,
+hipótesis↔objetivo general, enfoques↔subproblemas>
+
+## Papers relacionados
+[[<cite_key>]]
+<!-- only when the section (e.g. §5.1, §5.3) cites specific literature -->
+```
+
+Leave `gate_status: pending` — the dispatcher (`propuesta.md`) flips it to
+`pass`/`fail` after the corresponding gate; you never set that field yourself.
 
 ## Output
 

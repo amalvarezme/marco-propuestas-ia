@@ -37,6 +37,14 @@ proposal content yourself. You:
    The template already includes a `fancyhdr` footer with the institutional
    logos from `proposal/logos/` (LabIA, UNAL, GCPDS). Do not remove it.
 
+In parallel with `proposal/`, the section-writing agents maintain a
+lightweight Obsidian-compatible vault under `vault/` (`vault/secciones/` +
+`vault/insumos/`) mirroring sections and literature as linked Markdown notes,
+for graph-view navigation. This vault is a visual/navigation layer only — git
+history on the `.tex`/`.bib` files remains the actual version-of-record; the
+vault itself is not versioned separately and is never treated as a source of
+truth.
+
 ## Pipeline (interactive, with gates)
 
 ```

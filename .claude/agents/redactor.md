@@ -41,6 +41,41 @@ All your deliverables are in **Spanish**.
 6. For §6, end with a description of the schematic methodological diagram (the
    Diseñador-TikZ agent will render it as TikZ).
 
+## Vault mirror
+
+Whenever you write one of your assigned `.tex` files (see "Output" below),
+also write/update the mirrored note at `vault/secciones/<same-basename>.md`,
+using the same template as the Investigador (see `investigador.md`, "Vault
+mirror"):
+
+```markdown
+---
+tex_source: proposal/sections/<file>.tex
+fase: <pipeline phase number>
+gate_status: pending
+---
+
+# <Section title>
+
+## Resumen
+<2-4 sentence summary of the section's content — NOT a copy of the .tex
+prose; the .tex file remains the source of truth>
+
+## Relaciones
+[[<other-section-note>]] — <one-line reason per `coordinador-propuesta.md`'s
+dependency rules: pertinencia/alcance↔problemática; metodología↔objetivos
+específicos; plan de trabajo↔fases de metodología; resultados↔hitos del plan
+de trabajo>
+```
+
+For the §6 metodología note specifically, also embed the compiled diagram as
+an Obsidian image, if the Disenador-TikZ/Tikz-Optimizer output already exists
+at that point: add the line `![[<diagram-filename>.png]]` below the diagram's
+description.
+
+Leave `gate_status: pending` — the dispatcher (`propuesta.md`) flips it to
+`pass`/`fail` after the corresponding gate; you never set that field yourself.
+
 ## Output
 
 Write each section as a LaTeX file under `proposal/sections/`:

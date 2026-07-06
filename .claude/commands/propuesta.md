@@ -34,14 +34,20 @@ reales.)
 2. Crea/mantén un registro de estado del documento en
    `proposal/estado_propuesta.md` con: sección actual, artefactos clave
    (pregunta de investigación, subproblemas, objetivos, hipótesis) y estado de
-   cada gate.
+   cada gate. En esta misma Fase 0 asegúrate también de que existan
+   `vault/secciones/` y `vault/insumos/` (créalos si faltan) — el mirror
+   Obsidian de la propuesta (ver "Vault mirror" en `coordinador-propuesta.md`).
 3. Avanza fase por fase según el pipeline de `coordinador-propuesta.md`
    (resumido abajo). Tras cada gate, presenta al usuario: (a) resumen de lo
    producido, (b) veredicto del `revisor` (o `revisor-figuras` en la Fase 5),
    (c) petición de aprobación explícita. **NO avances sin aprobación.**
 4. Recuerda: toda la salida del documento es en español; los archivos van en
    `proposal/sections/*.tex` y `proposal/refs.bib`; ensambla `proposal/main.tex`
-   al final (Fase 7).
+   al final (Fase 7). También existen `vault/secciones/*.md` y
+   `vault/insumos/*.md`: un mirror visual en Markdown (Obsidian) mantenido por
+   los propios agentes que escriben secciones (`insumos-observador`,
+   `investigador`, `redactor`, `bibliografo-propuesta`) al escribir su `.tex`
+   o `.bib` correspondiente — tú no lo regeneras aparte.
 5. Consulta `guiaProyectosIA_Agente.md` para las instrucciones párrafo a
    párrafo de cada sección antes de despachar cualquier fase.
 
@@ -334,6 +340,14 @@ Fase 7  Task → revisor → auditoría final ──→ usuario. NO avances sin 
   con las correcciones exactas del revisor, y repite el gate.
 - No reescribas contenido de sección tú mismo; ese trabajo es de los
   subagentes especialistas.
+- Tras el veredicto PASS de cada gate, actualiza tú (el dispatcher) el campo
+  `gate_status` de `pending` a `pass` en el frontmatter de la(s) nota(s)
+  `vault/secciones/*.md` correspondientes a esa fase — el `revisor` solo tiene
+  herramientas de lectura (Read/Grep/Glob) y no puede escribir archivos, así
+  que esta responsabilidad es tuya, igual que ya lo es para
+  `proposal/estado_propuesta.md`. En FAIL, deja `gate_status` en `pending` (o
+  cámbialo a `fail` si el re-despacho vuelve a fallar) hasta que el
+  re-despacho apruebe.
 
 Comienza ahora confirmando la idea del usuario y listando los insumos
 detectados, luego arranca la Fase 0 despachando `insumos-observador` con

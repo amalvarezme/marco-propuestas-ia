@@ -81,6 +81,36 @@ most affects.
 
 Skip this extraction entirely when no file is classified as TDR.
 
+## Vault mirror (Fase 0)
+
+At Fase 0, if `vault/` does not exist, create `vault/secciones/` and
+`vault/insumos/` (a lightweight Obsidian-compatible Markdown mirror of the
+proposal — a visual/navigation layer only, not a source of truth; see
+`coordinador-propuesta.md`). For each user-provided insumo that is itself a
+paper or reference (not the TDR or the draft-base document), write a note at
+`vault/insumos/<slug>.md`:
+
+```markdown
+---
+cite_key: <bibtex cite key if it has one, else a slug>
+year: <year>
+venue: <journal/conference, if known>
+quartile: <Q1|Q2|null>
+source: user-insumo
+---
+
+# <Paper title>
+
+<one-line relevance note>
+
+## Usado en
+[[<section-note-that-cites-it>]]
+```
+
+The citing section is usually not known yet at Fase 0 — leave "Usado en"
+empty (or omit the wikilink) and let the agent that later cites the paper
+(Investigador, Redactor, Bibliografo-Propuesta) add it.
+
 ## Output
 
 Write `proposal/insumos.md` with the structured digest, plus a classification
