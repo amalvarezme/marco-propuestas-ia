@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "engram": {
+      "type": "stdio",
+      "command": "engram",
+      "args": ["mcp", "--tools=agent"]
+    },
+    "consensus": {
+      "type": "http",
+      "url": "https://mcp.consensus.app/mcp"
+    },
+    "openalex": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@cyanheads/openalex-mcp-server"]
+    },
+    "semanticscholar": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@xbghc/semanticscholar-mcp"]
+    }
+  }
+}
