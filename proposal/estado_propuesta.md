@@ -52,6 +52,24 @@ Orquestador: mantén este archivo actualizado tras cada fase/gate.
 | Grafo | _(ruta `proposal/scoping/graphify-out/` + extracto de `GRAPH_REPORT.md`: God Nodes, Surprising Connections, Suggested Questions)_ |
 | 3 subproblemas tempranos | _(cada uno con: gap, `paper-N` de origen, cruce de una línea contra el TDR/guía)_ |
 
+### G1b — Corpus y subsecciones SOTA
+
+| Campo | Valor |
+|---|---|
+| Estado | _(N/A sin G1a=APROBADA \| PENDIENTE \| EN REVISIÓN \| APROBADA)_ |
+| Corpus (30-40 papers) | _(conteo final + ruta a `proposal/scoping/papers/paper-{1..N}.md`; `paper-6..N` deduplicados contra el corpus semilla de G1a, `paper-1..5` byte-inalterados)_ |
+| Parámetros de búsqueda | _(query, filtro de cuartil, rango de años, hits por herramienta — `consensus`/`semanticscholar`/`openalex`, sub-paso corpus de MODE=sota)_ |
+| Grafo actualizado | _(ruta `proposal/scoping/graphify-out/` tras `graphify --update` + extracto de `GRAPH_REPORT.md` sobre el corpus ampliado; `proposal/scoping/graphify-out-g1a-snapshot/` = copia fija del grafo de G1a, nunca reconstruida)_ |
+| Tabla de subsecciones SOTA | _(3-5 subsecciones: paper → subsección → SP1/SP2/SP3, un paper por fila, ninguno repetido ni faltante)_ |
+
+> **G1a permanece intacta:** esta sub-tabla se agrega inmediatamente después
+> de "G1a — Scoping temprano" sin modificar ninguna de sus filas ni el
+> encabezado de la sección "Compuertas tempranas (G0.5, G1a)". Una
+> iteración de G1b que cambia solo el CORPUS siempre re-deriva también la
+> tabla de subsecciones SOTA (sub-paso grouping de MODE=sota) — eso es el
+> comportamiento esperado, no scope creep. Ver `propuesta.md`, "Fase 1b",
+> "Reglas de iteración por componente".
+
 ## Prioridad por sección
 
 > Esta tabla se **omite por completo** cuando no hay TDR clasificado/confirmado
