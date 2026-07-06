@@ -18,6 +18,26 @@
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@xbghc/semanticscholar-mcp"]
+    },
+    "crossref": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@botanicastudios/crossref-mcp"]
+    },
+    "pubmed": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@cyanheads/pubmed-mcp-server"]
+    },
+    "arxiv": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@cyanheads/arxiv-mcp-server"]
+    },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
     }
   }
 }
