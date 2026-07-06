@@ -207,7 +207,7 @@ across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
 
 | Source | MCP server | Key tools (verified against the installed package) |
 |--------|-----------|-----------|
-| OpenAlex (270M+ works, filters by year/quartile) | `openalex` | `openalex_resolve_name`, `openalex_search_entities`, `openalex_analyze_trends`. **No citation-graph tool exists** in `@cyanheads/openalex-mcp-server` — do not call `openalex_get_citation_graph`, it does not exist. Requires `OPENALEX_API_KEY` (an email, not a real key) set in `.mcp.json`. |
+| OpenAlex (270M+ works, filters by year/quartile, 1-hop citation graph) | `openalex` | `openalex_resolve_name`, `openalex_search_entities`, `openalex_analyze_trends`, `openalex_get_citation_graph` (one hop from a seed work: `cites`/`cited_by`/`related_to`, stackable with filters like `publication_year`/`is_oa` — a Connected-Papers-style relation, not a multi-hop map), `openalex_describe_fields`. Requires `OPENALEX_API_KEY` (an email, not a real key) set in `.mcp.json`. |
 | Crossref (DOI metadata lookup) | `crossref` | `searchByTitle`, `searchByAuthor`, `getWorkByDOI` (`@botanicastudios/crossref-mcp`). No combined-keyword search and **no outgoing-references tool** — use `getWorkByDOI` only to enrich/verify a DOI already found via OpenAlex/Semantic Scholar. |
 | Semantic Scholar (citation counts, recommendations) | `semanticscholar` | `search_papers`, `get_paper`, `get_paper_citations`, `get_paper_references`, `get_recommendations` (plus `search_authors`, `get_author`, `get_author_papers`). |
 | PubMed / Europe PMC (biomedical + preprints, full text) | `pubmed` | `pubmed_search_articles`, `pubmed_fetch_articles`, `pubmed_fetch_fulltext`, `pubmed_format_citations` (`@cyanheads/pubmed-mcp-server`). **No separate `pubmed_europepmc_search` tool** — Europe PMC/PMC/Unpaywall full text is covered by `pubmed_fetch_fulltext`, not a dedicated search tool. |
@@ -216,11 +216,14 @@ across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
 | Library docs | `context7` | `resolve-library-id`, `query-docs` (`@upstash/context7-mcp`) |
 
 - **Strategy:** start with OpenAlex + Semantic Scholar for breadth and citation
-  counts; use Crossref's `getWorkByDOI` only to verify/enrich a DOI already in
-  hand (it cannot resolve outgoing references — Semantic Scholar's
-  `get_paper_references` is the tool for that); use PubMed for biomedical
-  topics and arXiv for recent AI/ML preprints (filter by recognized
-  authors/labs). Use `openalex_analyze_trends` to confirm recency (≤3 years).
+  counts; use `openalex_get_citation_graph` or Semantic Scholar's
+  `get_paper_citations`/`get_paper_references` to walk citation relations from
+  a seed paper (OpenAlex is one hop only — `cites`/`cited_by`/`related_to` —
+  use Semantic Scholar for deeper reference-list traversal); use Crossref's
+  `getWorkByDOI` only to verify/enrich a DOI already in hand (it cannot
+  resolve outgoing references); use PubMed for biomedical topics and arXiv for
+  recent AI/ML preprints (filter by recognized authors/labs). Use
+  `openalex_analyze_trends` to confirm recency (≤3 years).
 - **Q1/Q2 constraint:** use `consensus` `search` with its SJR-quartile filter
   to satisfy the "≥30 Q1/Q2 references" hard constraint directly, instead of
   inferring quartile by cross-checking OpenAlex/Semantic Scholar manually.

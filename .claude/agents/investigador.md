@@ -99,10 +99,11 @@ hypothesis in prior work, use these MCP servers (shared with the Bibliografo-Pro
 plus `webfetch`:
 
 - `openalex` — `openalex_resolve_name`, `openalex_search_entities`,
-  `openalex_analyze_trends` (breadth, recency; requires `OPENALEX_API_KEY`,
-  an email, in `.mcp.json`). No citation-graph tool exists in this server —
-  use `semanticscholar`'s `get_paper_citations`/`get_paper_references` for
-  citation-graph navigation instead.
+  `openalex_analyze_trends`, `openalex_get_citation_graph` (one hop from a
+  seed work: `cites`/`cited_by`/`related_to` — breadth, recency; requires
+  `OPENALEX_API_KEY`, an email, in `.mcp.json`). For deeper multi-hop
+  reference-list traversal, use `semanticscholar`'s
+  `get_paper_citations`/`get_paper_references` instead.
 - `semanticscholar` — `search_papers`, `get_paper`, `get_paper_citations`,
   `get_paper_references` (citation counts, related work).
 - `crossref` — `searchByTitle`, `searchByAuthor`, `getWorkByDOI`. Use only to
