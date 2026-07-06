@@ -5,6 +5,9 @@
 .atl/
 .codegraph/
 
+# Obsidian local app state (workspace, plugin config)
+.obsidian/
+
 # Knowledge-graph scratch (from /graphify runs)
 graphify-out/
 
