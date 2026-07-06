@@ -174,6 +174,88 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         (G0.5, G1a)" → sub-tabla "G1a — Scoping temprano": 5 papers,
         parámetros de búsqueda, ruta del grafo + extracto del reporte, los 3
         subproblemas tempranos con su gap/`paper-N`, y Estado G1a).
+Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
+        siempre que la Fase 1a cerró con G1a = APROBADA (ver
+        `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano");
+        si G1a no corrió o no cerró en APROBADA, omite esta fase por
+        completo y continúa directo a la Fase 1.
+        (a) Task → bibliografo-propuesta MODE=sota, sub-paso **corpus** →
+        expande el corpus semilla de 5 papers de G1a a 30-40 papers
+        abstract-only (`paper-6.md`..`paper-N.md`, dedup por DOI/título
+        contra el corpus semilla, `paper-1..5.md` byte-inalterados). Ver
+        `bibliografo-propuesta.md`, "MODE=sota" → sub-paso "corpus", para el
+        contrato completo (herramientas, esquema de salida, Regla de
+        faltante).
+        (b) El DISPATCHER (no el subagente) actualiza el grafo sobre el
+        corpus ampliado, de forma incremental (NUNCA reconstruye desde
+        cero, a diferencia del paso (b) de la Fase 1a). Mecánica exacta:
+          1. `cp -R proposal/scoping/graphify-out/ proposal/scoping/graphify-out-g1a-snapshot/`
+             (snapshot plano del grafo de G1a — 34 nodos/57 edges/5
+             comunidades — antes de tocar nada; esta copia queda fija para
+             siempre, NUNCA se reconstruye, sirve de referencia/diff frente
+             al grafo ampliado).
+          2. NO borres `proposal/scoping/graphify-out/` ni la caché anidada
+             `proposal/scoping/papers/graphify-out/cache/` — déjala intacta
+             para que `graphify --update` la reutilice en `paper-1..5.md` y
+             solo compute embeddings nuevos para `paper-6..N.md`.
+          3. `cd proposal/scoping/` (cambio de CWD obligatorio, igual que en
+             Fase 1a).
+          4. `graphify --update papers/` (incremental — NUNCA `graphify
+             papers/` desde cero en esta fase).
+          5. `graphify export html` (obligatorio, regenera
+             `proposal/scoping/graphify-out/graph.html` sobre el corpus
+             ampliado).
+        NUNCA uses `--force`. La salida sigue en
+        `proposal/scoping/graphify-out/` (ahora refleja el corpus ampliado);
+        `proposal/scoping/graphify-out-g1a-snapshot/` queda fijo como la
+        foto de G1a.
+        (c) Task → bibliografo-propuesta MODE=sota, sub-paso **grouping**
+        (solo después de que el paso (b) complete) → propone 3-5
+        subsecciones SOTA como tabla de mapeo paper → subsección →
+        SP1/SP2/SP3.
+        ──→ COMPUERTA COMBINADA G1b: presenta juntos, en una sola solicitud
+        de aprobación:
+          1. El corpus ampliado: conteo final de papers y parámetros de
+             búsqueda (query, filtro de cuartil, rango de años, hits por
+             herramienta) del sub-paso corpus.
+          2. El grafo actualizado: la ruta del HTML interactivo
+             `proposal/scoping/graphify-out/graph.html` + las 3 secciones
+             del `GRAPH_REPORT.md` actualizado (God Nodes, Surprising
+             Connections, Suggested Questions) sobre el corpus ampliado.
+          3. La tabla de mapeo de 3-5 subsecciones SOTA (paper → subsección
+             → SP1/SP2/SP3).
+        Reglas de iteración por componente (NO es un rechazo en bloque):
+          - Cambio solo al CORPUS → re-despacha el sub-paso corpus con el
+            ajuste solicitado (repite el paso (a)) → re-ejecuta la
+            actualización incremental del grafo (repite el paso (b)) →
+            re-deriva la tabla de subsecciones (repite el paso (c) — el
+            sub-paso grouping SIEMPRE se re-ejecuta cuando cambia el
+            corpus, no es opcional ni un caso de scope creep) → vuelve a
+            presentar G1b.
+          - Cambio solo a la AGRUPACIÓN (subsecciones) → re-ejecuta
+            únicamente el sub-paso grouping (paso (c)) con el feedback
+            exacto del usuario; el corpus y el grafo quedan intactos;
+            vuelve a presentar G1b.
+        Regla de faltante G1b: si el bibliógrafo reporta menos de 30 papers
+        Q1/Q2 dentro de la ventana de recencia aplicable, el dispatcher NO
+        debe sustituir ni relajar filtros en silencio — preséntale al
+        usuario, en vivo, el mismo menú de la Regla de faltante G1a, ahora
+        al piso de 30:
+          (a) ampliar la ventana de años,
+          (b) relajar el cuartil (aceptar solo Q2 o un venue top nombrado),
+          (c) ampliar/reformular los términos de búsqueda,
+          (d) continuar con menos de 30,
+          (e) aceptar un paper específico que el usuario nombre.
+        Aplica la opción elegida y vuelve a presentar dentro de G1b.
+        ──→ Al aprobar G1b: Task → bibliografo-propuesta MODE=sota, sub-paso
+        **WRITE-REFS** → escribe `proposal/refs.bib` en una sola pasada
+        cubriendo el corpus completo (prohibido antes de esta aprobación).
+        Luego escribe el corpus aprobado + la tabla de subsecciones + G1b =
+        APROBADA en `proposal/estado_propuesta.md` ("Compuertas tempranas
+        (G0.5, G1a)" → sub-tabla "G1b — Corpus y subsecciones SOTA": conteo
+        de papers, parámetros de búsqueda, ruta del grafo actualizado +
+        extracto del reporte, tabla de mapeo de subsecciones, y Estado
+        G1b).
 Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
         archivo de salida), despachado ANTES del investigador.
@@ -187,6 +269,13 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         gap↔`paper-N`. Si la Fase 1a no corrió (o no cerró en APROBADA),
         omite por completo este bloque adicional: el despacho de esta Task
         es entonces idéntico al de hoy.
+        Si además la Fase 1b corrió y su gate cerró con G1b = APROBADA (ver
+        `proposal/estado_propuesta.md`, sub-tabla "G1b — Corpus y
+        subsecciones SOTA"), inyecta ADEMÁS, inline, el bloque "CORPUS Y
+        SUBSECCIONES APROBADAS (G1b)" con el conteo del corpus ampliado y la
+        tabla de mapeo de subsecciones; si la Fase 1b no corrió (o no cerró
+        en APROBADA), omite este bloque adicional y el despacho sigue el
+        comportamiento previo al cambio.
         ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.
 Fase 2  Task → redactor → §2.2 pertinencia, §3 alcance
         ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.
