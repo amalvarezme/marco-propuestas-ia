@@ -12,7 +12,10 @@
     "openalex": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@cyanheads/openalex-mcp-server"]
+      "args": ["-y", "@cyanheads/openalex-mcp-server"],
+      "env": {
+        "OPENALEX_API_KEY": "your-email@example.com"
+      }
     },
     "semanticscholar": {
       "type": "stdio",
