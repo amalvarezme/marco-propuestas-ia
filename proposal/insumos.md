@@ -195,48 +195,58 @@ Elementos clave recuperados:
 
 ## Clasificación de insumos (Fase 0)
 
-> **Nota (scaffold/plantilla):** esta sección es una plantilla para futuras
-> corridas del pipeline (Fase 0 del comando `/propuesta`). Los archivos reales
-> de `info_data/` usados en esta corrida específica —ya completada— **no se
-> clasifican retroactivamente aquí**; esta tabla se completa desde la Fase 0
-> del `insumos-observador` en corridas futuras.
+> Clasificación real, ejecutada por el `insumos-observador` sobre los dos
+> archivos presentes en `info_data/` en esta corrida (2026-07-05), aplicando
+> las señales heurísticas y la regla de ambigüedad de la Fase 0. Ningún
+> archivo requirió confirmación del usuario: cada uno produjo exactamente
+> **una** coincidencia confiada entre `{TDR, draft-base}` (0 en el otro rótulo
+> competidor), por lo que ninguno quedó **AMBIGUA**.
 
 | Archivo | Tipo | Confianza | Señales | Confirmado por |
 |---|---|---|---|---|
-| _(ejemplo)_ `TDR_convocatoria.pdf` | TDR | alta | "términos de referencia", tabla de criterios, plazos | auto |
-| _(ejemplo)_ `Anexo2_propuesta_previa.docx` | draft-base | media | estructura §1-§9 previa, objetivos ya declarados | usuario |
-| _(ejemplo)_ `paper_relacionado.pdf` | background | — | no coincide con señales de TDR ni draft-base | auto |
+| `Téminos_Conv_Alianzas_UNAL_2025-2027 (1).pdf` | TDR | alta | Es la propia convocatoria/TDR: título "Convocatoria nacional para el fortalecimiento de alianzas estratégicas..."; usa explícitamente "términos de referencia" (§8, §9, §16, §18); incluye tabla de criterios de evaluación ponderados con puntaje (§11.3.1, 100 pts, umbral ≥80); plazos explícitos de cronograma (§15: apertura 15-abr-2026, cierre ≤30-nov-2027, prórroga máx. 6 meses); reglas de elegibilidad/incompatibilidad (§8 Requisitos mínimos, §10 Incompatibilidades). Ninguna señal confiada de draft-base (no es una propuesta ya redactada; no declara objetivos propios como artefacto terminado). | auto |
+| `Anexo 2. Propuesta detallada_SemilleroCienciaDatoseIA.docx` | draft-base | alta | Título "Anexo 2. Documento técnico de la propuesta"; estructura previa completa y ya redactada, análoga a §1-§9 de la guía (justificación y pertinencia, alcance, objetivos, referente teórico, estado del arte, metodología en 4 fases, resultados/productos, plan de trabajo con Gantt a 12 meses, presupuesto, ~47 referencias bibliográficas); objetivo general, 3 objetivos específicos y 3 subproblemas ya declarados como artefacto terminado (no como requisito a cumplir). Menciona "convocatoria" solo como el llamado al que se sometió (semilleros UNAL Manizales 2026), no como tabla de criterios propia ni plazos propios — sin señal confiada de TDR. | auto |
 
 `Tipo ∈ {TDR, draft-base, background}` · `Confianza ∈ {alta, media, baja}` ·
 `Confirmado por ∈ {auto, usuario}`.
 
+No hay archivos `background` en este conjunto de insumos (solo 2 archivos,
+ambos clasificados como TDR y draft-base respectivamente).
+
 ## Extracción del TDR (si aplica)
 
-> **Nota (scaffold/plantilla):** se omite por completo cuando no hay TDR
-> clasificado/confirmado. No aplica a esta corrida (el conjunto real de
-> insumos de este proyecto no incluyó un TDR clasificado bajo este esquema).
+> TDR identificado: `Téminos_Conv_Alianzas_UNAL_2025-2027 (1).pdf`
+> ("Convocatoria nacional para el fortalecimiento de alianzas estratégicas
+> interdisciplinarias entre los actores del Sistema de Investigación de la
+> Universidad Nacional de Colombia - SIUN (2025–2027)"). El TDR normativo no
+> exige título, referente teórico ni volumen de referencias para la
+> propuesta; esos requisitos provienen de la guía interna (ver §E). Se marca
+> "_(no exigido explícitamente por el TDR)_" donde corresponde.
 
 Secciones requeridas mapeadas a las 9 secciones de la guía:
 
 | Sección guía | Contenido esperado del TDR |
 |---|---|
-| §1 Título | _(a extraer)_ |
-| §2 Justificación/pertinencia (2.1 problemática, 2.2 pertinencia) | _(a extraer)_ |
-| §3 Alcance | _(a extraer)_ |
-| §4 Objetivos | _(a extraer)_ |
-| §5 Referente teórico | _(a extraer)_ |
-| §6 Metodología | _(a extraer)_ |
-| §7 Plan de trabajo | _(a extraer)_ |
-| §8 Resultados/productos | _(a extraer)_ |
-| §9 Referencias | _(a extraer)_ |
+| §1 Título | _(no exigido explícitamente por el TDR)_ el documento no define título de propuesta; solo exige que la registre el docente líder vía Sistema de Información Hermes (§8). |
+| §2 Justificación/pertinencia (2.1 problemática, 2.2 pertinencia) | Enmarcado institucional obligatorio: Plan Global de Desarrollo UNAL 2025-2027, Eje 4 "Líneas integradas de trabajo académico con proyección nacional e internacional"; acción programática de alianzas interdisciplinarias e interinstitucionales "para responder a las necesidades territoriales y nacionales... y de apropiación social del conocimiento" (§2); Proyecto de Inversión 707-10-71; objetivo general de la convocatoria (§3): "Fortalecer las capacidades de investigación, creación artística e innovación de la UNAL mediante la conformación de alianzas estratégicas interdisciplinarias... para co-construir soluciones pertinentes a las problemáticas locales, nacionales y globales". |
+| §3 Alcance | Dirigida a actores fundamentales/principales del SIUN (Acuerdo 014 de 2006, art. 4) (§4); modalidad única (§5); duración de ejecución hasta 18 meses + 2 meses adicionales para productos, prórroga máx. 6 meses (§7); requisitos mínimos (§8): líder = docente de planta UNAL (excepción Tumaco), alianza con mínimo 1 grupo de investigación + 1 Centro/Instituto, evidenciar trabajo intersedes, vincular ≥1 estudiante de pregrado o posgrado, semillero opcional (o crearlo), actor externo opcional; incompatibilidades (§10): máx. 1 propuesta por docente líder (sedes Medellín/Manizales/Palmira/De La Paz), docentes de Bogotá y especiales no pueden ser líderes, un estudiante no puede estar en más de una propuesta. |
+| §4 Objetivos | El TDR no fija objetivos de proyecto; exige que la propuesta declare objetivo general y objetivos específicos "claros, medibles y alcanzables" (criterio de evaluación a, §11.3.1) coherentes con problema/metodología/plan/presupuesto/resultados. |
+| §5 Referente teórico | _(no exigido explícitamente por el TDR)_; se evalúa indirectamente vía "calidad técnica, metodológica y de innovación" dentro del criterio a. |
+| §6 Metodología | _(no exigido explícitamente por el TDR)_ como sección obligatoria; se evalúa como parte de la coherencia problema-justificación-metodología-plan-presupuesto-resultados (criterio a, §11.3.1). |
+| §7 Plan de trabajo | Duración hasta 18+2 meses (§7); informe semestral de avance + informe final técnico y presupuestal (§12), con al menos 50% de ejecución presupuestal a la mitad del proyecto; roles/responsabilidades/actividades de cada actor deben especificarse (§8). |
+| §8 Resultados/productos | Productos académicos mínimos exigidos (§12), según Anexo 1 de productos académicos (no incluido en el PDF de 18 páginas disponible): al menos 1 producto tipología A (nuevo conocimiento), 1 tipología B (formación en investigación), 1 tipología C (divulgación científica) y 1 tipología C (apropiación social del conocimiento); estrategia de divulgación científica obligatoria (§8); propiedad intelectual regida por Acuerdo 035 de 2003 (§14). |
+| §9 Referencias | _(no exigido explícitamente por el TDR)_; ningún mínimo de referencias ni formato bibliográfico se especifica en el documento; ese requisito (≥50 refs, IEEE/APA) proviene de la guía interna del equipo (ver §E). |
 
-Tabla de criterios ponderados (base para la regla ALTA = tercil superior por
-puntaje):
+Tabla de criterios ponderados (100 pts totales, umbral de selección ≥80/100;
+en empate desempata en orden: a → b → c → e, §11.4):
 
 | Criterio | Pts | Sección(es) afectada(s) |
 |---|---|---|
-| _(ejemplo)_ Calidad del proyecto | 30 | §4/§5/§6 |
-| _(ejemplo)_ Formación en investigación de estudiantes | 20 | §8 |
+| a. Calidad del proyecto (coherencia problema-justificación-metodología-plan-presupuesto-resultados 10 pts; claridad objetivo general/específicos 10 pts; relevancia/pertinencia/alcance 10 pts) | 30 | §2, §3, §4, §6, §7, §8 |
+| b. Articulación entre los diferentes actores del SIUN (investigadores, grupos, centros e institutos; trabajo colaborativo intersedes) | 25 | §2.2, §3 |
+| c. Articulación con actores externos (trabajo interinstitucional, contribución y compromisos) | 5 | §2.2, §3 |
+| d. Estrategia para el fortalecimiento de la formación en investigación de estudiantes de pregrado y/o posgrado o semilleros | 20 | §7, §8 |
+| e. Aportes que contribuyen a la atención de necesidades territoriales, nacionales o globales | 20 | §2.1, §2.2 |
 
 ---
 

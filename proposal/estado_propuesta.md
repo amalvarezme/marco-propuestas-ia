@@ -14,16 +14,18 @@ Orquestador: mantén este archivo actualizado tras cada fase/gate.
 
 ## Clasificación y ruta (Fase 0)
 
-> **Nota (scaffold/plantilla):** plantilla de guía para futuras corridas del
-> pipeline; no es una reclasificación retroactiva de los insumos reales de
-> esta corrida ya completada.
+> **Prueba parcial real (2026-07-05):** ejecución real de `insumos-observador`
+> sobre los 2 archivos de `info_data/`, seguida del cómputo de prioridad
+> (rol de dispatcher) y el pre-step de `bibliografo-propuesta` (MODE=explore).
+> No es una corrida completa del pipeline (no se despachó `investigador` ni
+> el gate `revisor`); ver nota de hallazgos al final de esta sección.
 
 | Campo | Valor |
 |---|---|
-| Ruta | _(DRAFT-EXISTS \| NO-DRAFT)_ |
-| Archivo TDR | _(nombre de archivo, o "ninguno")_ |
-| Archivo draft-base (confirmado por) | _(nombre de archivo — auto \| usuario)_ |
-| Confirmaciones de usuario | _(lista de ambigüedades/preguntas resueltas por el usuario, o "ninguna")_ |
+| Ruta | DRAFT-EXISTS |
+| Archivo TDR | `Téminos_Conv_Alianzas_UNAL_2025-2027 (1).pdf` (auto, confianza alta) |
+| Archivo draft-base (confirmado por) | `Anexo 2. Propuesta detallada_SemilleroCienciaDatoseIA.docx` (auto, confianza alta) |
+| Confirmaciones de usuario | Ninguna — ambos archivos produjeron exactamente una coincidencia confiada, sin AMBIGUA |
 
 ## Compuertas tempranas (G0.5, G1a)
 
@@ -38,19 +40,19 @@ Orquestador: mantén este archivo actualizado tras cada fase/gate.
 
 | Campo | Valor |
 |---|---|
-| Estado | _(N/A sin TDR \| OMITIDA-POR-USUARIO \| PENDIENTE \| EN REVISIÓN \| APROBADA)_ |
-| Guía aplicable | _(`guiaProyectosIA_Agente.md` \| `proposal/guia_ajustada_TDR.md`)_ |
-| Aprobada por / fecha | _(usuario y fecha, o "N/A" si OMITIDA-POR-USUARIO o sin TDR)_ |
+| Estado | APROBADA |
+| Guía aplicable | `proposal/guia_ajustada_TDR.md` |
+| Aprobada por / fecha | usuario, 2026-07-05 |
 
 ### G1a — Scoping temprano
 
 | Campo | Valor |
 |---|---|
-| Estado | _(PENDIENTE \| EN REVISIÓN \| APROBADA)_ |
-| 5 papers | _(lista `paper-1..5`: título, cuartil, año, DOI/URL — o ruta a `proposal/scoping/papers/`)_ |
-| Parámetros de búsqueda | _(query, filtro de cuartil, rango de años, hits por herramienta — `consensus`/`semanticscholar`/`openalex`)_ |
-| Grafo | _(ruta `proposal/scoping/graphify-out/` + extracto de `GRAPH_REPORT.md`: God Nodes, Surprising Connections, Suggested Questions)_ |
-| 3 subproblemas tempranos | _(cada uno con: gap, `paper-N` de origen, cruce de una línea contra el TDR/guía)_ |
+| Estado | APROBADA (usuario, 2026-07-05) |
+| 5 papers | `paper-1`: Adaptive intelligent tutoring systems for STEM education... (2025, Smart Learning Environments, Q1) · `paper-2`: Multi-Agent System for Students Cognitive Assessment in E-Learning Environment (2024, IEEE Access, Q1) · `paper-3`: Advancing Problem-Based Learning in Biomedical Engineering in the Era of Generative AI (2025, IEEE Trans. on Education, Q1) · `paper-4`: Integrating Generative AI into Programming Education... (2025, Int. J. of AI in Education, Q1) · `paper-5`: Impact of educational agents on student's learning outcomes: a meta-analysis (2026, Frontiers in Psychology, Q2). Archivos: `proposal/scoping/papers/paper-{1..5}.md`. |
+| Parámetros de búsqueda | `consensus` `search` como filtro primario (`sjr_max=2`, `year_min=2024`, `exclude_preprints=true`), complementado con `semanticscholar` para metadatos/DOI. Queries: tutoría personalizada + agentes IA + educación en ingeniería + aprendizaje profundo/motivación/argumentación/resolución de problemas. |
+| Grafo | `proposal/scoping/graphify-out/` (graph.html/json + GRAPH_REPORT.md). 34 nodos, 57 edges, 5 comunidades (una por paper). God Nodes: "Educational Agents" e ITS (7 y 6 edges). Surprising Connections (todas INFERRED): Educational Agents↔ITS, Personalized Feedback↔Cognitive Assessment, Adaptive Trajectory↔Multi-Agent System. Nodos aislados: "STEM Education", "E-Learning Environment". Repo-root `graphify-out/graph.json` verificado intacto (mismo md5/mtime). |
+| 3 subproblemas tempranos | **SP1** Caracterización unificada del estado cognitivo-motivacional del estudiante (gap: cognición/trayectoria/motivación evaluadas en silos monomodales; paper-1, paper-2, paper-5; cruza OE1/criterio a). **SP2** Ausencia de un ecosistema multiagente autónomo coordinado (gap: 5 comunidades disjuntas, integración solo INFERRED, nunca construida; paper-1 a paper-4; cruza OE2/criterio a-innovación). **SP3** Falta de validación empírica TRL 6/7 del aprendizaje profundo en ingeniería (gap: meta-análisis muestra efecto no significativo en resolución de problemas/engagement; paper-5, paper-1, paper-3, paper-4; cruza OE3/TRL 6-7/criterios a,d,e). |
 
 ### G1b — Corpus y subsecciones SOTA
 
@@ -72,21 +74,34 @@ Orquestador: mantén este archivo actualizado tras cada fase/gate.
 
 ## Prioridad por sección
 
-> Esta tabla se **omite por completo** cuando no hay TDR clasificado/confirmado
-> en Fase 0. Plantilla/guía únicamente — no es una clasificación real de esta
-> corrida.
+> Calculada por el dispatcher a partir de la tabla de criterios ponderados
+> extraída por `insumos-observador` (ver `proposal/insumos.md` §"Extracción
+> del TDR"), regla ALTA = tercil superior por puntaje (⌈5/3⌉=2 → criterios
+> **a** [30 pts] y **b** [25 pts] son ALTA-elegibles), usando el mapeo
+> Sección(es) afectada(s) que `insumos-observador` extrajo directamente del
+> TDR real (más específico que el crosswalk genérico de 4 temas fijado en
+> `propuesta.md`; ver hallazgo al final).
 
 | Sección guía | Prioridad (ALTA/NORMAL) | Justificación |
 |---|---|---|
-| §1 Título | _(ALTA/NORMAL)_ | _(a completar desde la tabla de criterios del TDR)_ |
-| §2 Justificación/pertinencia (2.1 problemática, 2.2 pertinencia) | _(ALTA/NORMAL)_ | _(a completar)_ |
-| §3 Alcance | _(ALTA/NORMAL)_ | _(a completar)_ |
-| §4 Objetivos | _(ALTA/NORMAL)_ | _(a completar)_ |
-| §5 Referente teórico | _(ALTA/NORMAL)_ | _(a completar)_ |
-| §6 Metodología | _(ALTA/NORMAL)_ | _(a completar)_ |
-| §7 Plan de trabajo | _(ALTA/NORMAL)_ | _(a completar)_ |
-| §8 Resultados/productos | _(ALTA/NORMAL)_ | _(a completar)_ |
-| §9 Referencias | _(ALTA/NORMAL)_ | _(a completar)_ |
+| §1 Título | NORMAL | Ningún criterio ALTA (a, b) lo referencia; el TDR no exige título de propuesta. |
+| §2 Justificación/pertinencia (2.1 problemática, 2.2 pertinencia) | ALTA | Criterio a (30 pts, calidad del proyecto — coherencia con justificación) y criterio b (25 pts, articulación SIUN, vía §2.2). |
+| §3 Alcance | ALTA | Criterio a (30 pts) y criterio b (25 pts). |
+| §4 Objetivos | ALTA | Criterio a (30 pts, exige objetivos "claros, medibles y alcanzables"). |
+| §5 Referente teórico | NORMAL | Ningún criterio ALTA lo referencia explícitamente (el TDR no lo exige como sección propia). |
+| §6 Metodología | ALTA | Criterio a (30 pts). |
+| §7 Plan de trabajo | ALTA | Criterio a (30 pts); también referenciado por d (20 pts, NORMAL). |
+| §8 Resultados/productos | ALTA | Criterio a (30 pts); también referenciado por d (20 pts, NORMAL). |
+| §9 Referencias | NORMAL | El TDR no exige referencias; ese mínimo (≥50, IEEE/APA) proviene de la guía interna del equipo, no del TDR. |
+
+> **Hallazgo de la prueba:** el crosswalk genérico de 4 temas fijado en
+> `.claude/commands/propuesta.md` (`calidad/innovación→§4/§5/§6,
+> formación→§8, impacto territorial/ODS→§2.2/§3, articulación→§2.2/§8`)
+> habría marcado ALTA un conjunto distinto (§2, §4, §5, §6, §8 — incluye §5,
+> excluye §3 y §7) frente al mapeo real extraído del TDR (§2, §3, §4, §6,
+> §7, §8 — sin §5). Se usó el mapeo específico del TDR real por ser más
+> preciso; el crosswalk fijo del dispatcher queda como una divergencia a
+> resolver (no bloqueante, ver reporte al usuario).
 
 ## Avance por fase
 | Fase | Sección | Agente | Estado | Gate |
