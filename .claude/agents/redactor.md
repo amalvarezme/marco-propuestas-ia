@@ -61,6 +61,14 @@ gate_status: pending
 <2-4 sentence summary of the section's content — NOT a copy of the .tex
 prose; the .tex file remains the source of truth>
 
+## Ideas principales
+- <Idea atómica en una frase>. [[<nota-relacionada-o-cite_key>]]
+- <Idea atómica>.
+<!-- 3-6 bullets total; each one a distinct, atomic declarative claim — NOT a
+copy of ## Resumen's 2-4 sentence gestalt. Embed a [[wikilink]]/[[cite_key]]
+only when the idea carries a hard cross-dependency (e.g. a subproblema that
+must map to an objetivo) or is grounded in a specific paper. -->
+
 ## Relaciones
 [[<other-section-note>]] — <one-line reason per `coordinador-propuesta.md`'s
 dependency rules: pertinencia/alcance↔problemática; metodología↔objetivos

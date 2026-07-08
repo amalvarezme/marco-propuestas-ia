@@ -37,6 +37,12 @@ reales.)
    cada gate. En esta misma Fase 0 asegúrate también de que existan
    `vault/secciones/` y `vault/insumos/` (créalos si faltan) — el mirror
    Obsidian de la propuesta (ver "Vault mirror" en `coordinador-propuesta.md`).
+   Más adelante (a partir de G1b, ver bloque "Fase 1b" abajo), el dispatcher
+   ejecuta `graphify` sobre `vault/` y escribe su salida en
+   `vault/graphify-out/` — scratch, gitignored (cubierto por la regla
+   existente `graphify-out/` en `.gitignore`), nunca se commitea, igual que
+   `proposal/scoping/graphify-out/` de la Fase 1a/1b (son dos corridas de
+   `graphify` completamente distintas, sobre entradas y salidas distintas).
 3. Avanza fase por fase según el pipeline de `coordinador-propuesta.md`
    (resumido abajo). Tras cada gate, presenta al usuario: (a) resumen de lo
    producido, (b) veredicto del `revisor` (o `revisor-figuras` en la Fase 5),
@@ -50,6 +56,38 @@ reales.)
    o `.bib` correspondiente — tú no lo regeneras aparte.
 5. Consulta `guiaProyectosIA_Agente.md` para las instrucciones párrafo a
    párrafo de cada sección antes de despachar cualquier fase.
+
+## Grafo de coherencia del vault (asesor, NO bloqueante)
+
+A partir de la aprobación de G1b, el DISPATCHER mantiene un grafo de ideas
+sobre `vault/` con `graphify` y lo inyecta como evidencia asesora en cada
+`Task → revisor` de las Fases 1-5 y 7 (ver los pasos "[NUEVO]" dentro de cada
+fase, abajo). Esta corrida es DISTINTA de la de la Fase 1a/1b (que indexa
+`proposal/scoping/papers/`, el corpus de papers de scoping, y escribe en
+`proposal/scoping/graphify-out/`): la corrida de esta sección indexa el
+mirror Obsidian (`vault/secciones/` + `vault/insumos/`) y escribe en
+`vault/graphify-out/`. Nunca la ejecuta `revisor` (solo tiene Read/Grep/Glob,
+sin Bash) — siempre la dispara el dispatcher.
+
+Formato exacto del bloque que el dispatcher inyecta inline en el prompt de
+`Task → revisor` (el mismo tag `ASESOR-GRAFO` que usa `revisor.md` en su
+HALLAZGOS debe leerse contra este bloque):
+
+```
+EVIDENCIA DE GRAFO (asesora, NO bloqueante) — vault/graphify-out/
+Dependencias duras (guia_ajustada_TDR "Nota de trazabilidad"): §2.1↔§4.2, §2.1↔§4.1, §5.2↔§4.1, §5.3↔§2.1.
+- Presentes: <edges hallados>
+- Ausentes/huérfanas: <p. ej. SP3 sin objetivo enlazado>
+- God nodes / conexiones sorprendentes: <extracto de GRAPH_REPORT.md>
+Es pista; tu checklist manual sigue siendo la autoridad del veredicto.
+```
+
+Si graphify revela un `[[wikilink]]` roto, una contradicción, o una idea
+huérfana frente a uno de los 4 pares de trazabilidad de arriba, el
+dispatcher además agrega una fila a `## Hallazgos de coherencia (grafo)` en
+`proposal/estado_propuesta.md` (crea la sección la primera vez que se usa),
+con fase, archivo, y tipo de problema. Este hallazgo NUNCA por sí solo hace
+que `revisor` cambie su VEREDICTO a FAIL.
 
 ## Pipeline (dispatch con `Task` fase por fase)
 
@@ -77,12 +115,46 @@ Fase 0  Task → insumos-observador → ingerir insumos (PDFs, papers, links, pr
         ──→ Escribe la decisión de ruta (DRAFT-EXISTS | NO-DRAFT, archivo
         TDR, archivo draft-base y quién confirmó cada uno) en
         `proposal/estado_propuesta.md` ("Clasificación y ruta (Fase 0)").
+        ──→ CORROBORACIÓN DE SECCIONES (solo si hay TDR): lee de insumos.md
+        "Secciones obligatorias declaradas por el TDR" y registra en
+        estado_propuesta.md ("Clasificación y ruta") los 3 campos nuevos (TDR
+        especifica secciones, Fuente, Evidencia).
 Fase 0.5 [COMPUERTA G0.5] Solo aplica si el campo "Archivo TDR" de la tabla
         "Clasificación y ruta (Fase 0)" quedó con un valor no vacío
         (confirmado auto o resuelto vía el gate de ambigüedad — ambos
         cuentan). Si no hay TDR, omite esta fase por completo: la guía
         aplicable sigue siendo `guiaProyectosIA_Agente.md` sin cambios y el
         dispatcher continúa directo a la Fase 1a.
+        ──→ [BLOQUEO DURO — corroboración de secciones] Verifica "TDR
+        especifica sus propias secciones":
+          - Sí (TDR mismo o `doc-secciones` que aporta la lista) → continúa
+            al opt-in; el investigador usará esa lista como estructura
+            obligatoria.
+          - No y SIN `doc-secciones` con la lista → DETENTE: no opt-in, no
+            despacho al investigador; G0.5 NO puede pasar. Muestra el
+            mensaje de bloqueo (abajo), registra G0.5 = BLOQUEADA. Exits:
+            (a) el usuario aporta el documento → re-corrobora y continúa;
+            (b) el usuario opta EXPLÍCITAMENTE por no ajustar → base guide,
+            G0.5 = OMITIDA-POR-USUARIO.
+          - Si el gate de ambigüedad de la Fase 0 sigue pendiente, combina
+            ambas peticiones en UN solo mensaje (misma lógica de combinación
+            existente).
+
+        > **Fase 0.5 en pausa — falta el documento de secciones obligatorias.**
+        > El TDR clasificado (`<archivo TDR>`) **no enumera explícitamente** la
+        > estructura/secciones que la propuesta debe contener; solo trae una tabla de
+        > criterios de evaluación ponderados. Para ajustar la guía a la estructura
+        > realmente exigida (y no solo a los pesos de los criterios) necesito el
+        > documento que liste las secciones obligatorias de la propuesta.
+        > Por favor aporta ese documento (un archivo de "secciones"/"estructura" de la
+        > propuesta, PDF o .docx) en `info_data/` y confírmame el nombre. Hasta
+        > entonces la compuerta **G0.5 queda BLOQUEADA**: no puedo generar
+        > `guia_ajustada_TDR.md` por la vía ajustada al TDR.
+        > Alternativa explícita: si no existe tal documento y prefieres seguir con la
+        > guía base (`guiaProyectosIA_Agente.md`) sin ajuste al TDR, dímelo y lo
+        > registro como G0.5 = OMITIDA-POR-USUARIO (no genero una guía "a medias" desde
+        > solo los criterios).
+
         ──→ OPT-IN G0.5 (concepto nuevo y separado del campo
         "Confirmaciones de usuario" de la Fase 0, que solo cubre el gate de
         ambigüedad): pregunta una sola vez, explícitamente, "Se detectó un
@@ -262,6 +334,29 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         de papers, parámetros de búsqueda, ruta del grafo actualizado +
         extracto del reporte, tabla de mapeo de subsecciones, y Estado
         G1b).
+        ──→ [NUEVO] Grafo de ideas del vault — build completo (primera vez):
+        inmediatamente después de lo anterior, en esta misma transición de
+        aprobación final de G1b (NO en cada iteración del bucle de G1b), el
+        DISPATCHER ejecuta una construcción completa de `graphify` sobre
+        `vault/`. Esta corrida es DISTINTA de la del paso (b) de esta misma
+        Fase 1b (que actualiza el grafo del corpus de papers de scoping en
+        `proposal/scoping/graphify-out/`): esta nueva corrida indexa el
+        mirror Obsidian (`vault/secciones/` + `vault/insumos/`), no el
+        corpus de papers, y escribe en una raíz de salida distinta. Ver
+        "Grafo de coherencia del vault" arriba para el detalle completo del
+        mecanismo asesor. Mecánica exacta:
+          1. Desde la raíz del repo (NO cambies de CWD a
+             `proposal/scoping/` — esa es la corrida del corpus SOTA, no
+             esta).
+          2. `graphify vault/` (build completo — baseline: en este punto
+             `vault/insumos/` ya tiene notas de insumos de la Fase 0;
+             `vault/secciones/` aún no tiene notas de sección, porque las
+             Fases 1-7 no han corrido todavía).
+          3. `graphify export html` → `vault/graphify-out/graph.html`.
+          4. La salida (`graph.json`, `graph.html`, `GRAPH_REPORT.md`) queda
+             en `vault/graphify-out/` — gitignored, scratch, nunca se
+             commitea.
+        NUNCA uses `--force`.
 Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
         archivo de salida), despachado ANTES del investigador.
@@ -282,15 +377,38 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         tabla de mapeo de subsecciones; si la Fase 1b no corrió (o no cerró
         en APROBADA), omite este bloque adicional y el despacho sigue el
         comportamiento previo al cambio.
-        ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` (incremental,
+        NUNCA `--force`, NUNCA reconstruye desde cero aquí) → `graphify
+        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
+        inyecta inline el bloque `EVIDENCIA DE GRAFO` (formato en "Grafo de
+        coherencia del vault" arriba) en el prompt de la Task → revisor de
+        este gate; si hay hallazgo de coherencia, agrégalo a `## Hallazgos
+        de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
 Fase 2  Task → redactor → §2.2 pertinencia, §3 alcance
-        ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` → `graphify
+        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
+        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
+        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
+        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
 Fase 3  Task → investigador → §4.1 objetivo general + §4.2 objetivos específicos
-        ──→ GATE Task → revisor (valida mapeo subproblema↔objetivo) ──→ usuario.
+        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` → `graphify
+        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
+        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
+        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
+        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ GATE Task → revisor (valida mapeo subproblema↔objetivo, con
+        bloque EVIDENCIA DE GRAFO inline) ──→ usuario.
         NO avances sin aprobación.
 Fase 4  Task → bibliografo-propuesta → §5.2 estado del arte (en paralelo)
         Task → investigador → §5.1, §5.3, hipótesis
-        ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` → `graphify
+        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
+        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
+        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
+        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
 Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
           Task → disenador-tikz (autor .tex)
           → Task → tikz-optimizer (compila a PNG, primer ajuste)
@@ -298,9 +416,22 @@ Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
           → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
           → en PASS, continúa
         Task → redactor → §7 plan de trabajo (Gantt)
-        ──→ GATE Task → revisor ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` → `graphify
+        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
+        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
+        Task → revisor de este gate (nota: este paso es distinto del bucle
+        de figuras arriba, que usa `revisor-figuras`, no `revisor`, y no
+        recibe evidencia de grafo); si hay hallazgo, agrégalo a `##
+        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
 Fase 6  Task → redactor → §8 resultados; Task → bibliografo-propuesta → §9 referencias (BibTeX)
-Fase 7  Task → revisor → auditoría final ──→ usuario. NO avances sin aprobación.
+Fase 7  ──→ [NUEVO] DISPATCHER: `graphify --update vault/` sobre el vault
+        completo (todas las secciones ya escritas) → `graphify export html`
+        → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
+        inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
+        revisor de la auditoría final; si hay hallazgo, agrégalo a `##
+        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        Task → revisor → auditoría final (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         Tú (el asistente primario) ensamblas `proposal/main.tex` una vez aprobado.
 ```
 

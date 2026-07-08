@@ -59,18 +59,46 @@ Fase 1a [GATE COMBINADO G1a] Scoping temprano: bibliografo-propuesta
         subproblemas) ──→ GATE combinado ──→ user. Descripción de
         referencia únicamente — ver `propuesta.md`, Fase 1a, para el
         detalle completo que ejecuta el dispatcher real.
-Fase 1  investigador → §2.1 subproblemas + pregunta ──→ GATE revisor ──→ user
-Fase 2  redactor → §2.2 pertinencia, §3 alcance ──→ GATE revisor ──→ user
-Fase 3  investigador → §4.1 + §4.2 ──→ GATE revisor (subproblema↔objetivo) ──→ user
+Fase 1b [GATE COMBINADO G1b] Expansión de corpus SOTA: bibliografo-propuesta
+        MODE=sota (corpus + grouping) → GATE combinado ──→ user. Al aprobar
+        G1b, el dispatcher además dispara, UNA sola vez, la construcción
+        completa de `graphify` sobre `vault/` (mirror Obsidian, distinta de
+        la corrida de scoping sobre `proposal/scoping/`) → salida en
+        `vault/graphify-out/`. Descripción de referencia únicamente — ver
+        `propuesta.md`, Fase 1b y "Grafo de coherencia del vault", para el
+        detalle completo que ejecuta el dispatcher real.
+Fase 1  investigador → §2.1 subproblemas + pregunta ──→ [NUEVO] dispatcher:
+        `graphify --update vault/` + inyecta bloque `EVIDENCIA DE GRAFO`
+        (asesor, NO bloqueante) en el prompt de revisor ──→ GATE revisor
+        ──→ user
+Fase 2  redactor → §2.2 pertinencia, §3 alcance ──→ [NUEVO] `graphify
+        --update vault/` + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor
+        ──→ user
+Fase 3  investigador → §4.1 + §4.2 ──→ [NUEVO] `graphify --update vault/` +
+        bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor (subproblema↔objetivo)
+        ──→ user
 Fase 4  bibliografo-propuesta → §5.2 estado del arte (paralelo)
-        investigador → §5.1, §5.3, hipótesis ──→ GATE revisor ──→ user
+        investigador → §5.1, §5.3, hipótesis ──→ [NUEVO] `graphify --update
+        vault/` + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
 Fase 5  redactor → §6 metodología → disenador-tikz (autor .tex) →
         tikz-optimizer (compila a PNG, refina) → revisor-figuras
-        (audita, PASS/FAIL) → en FAIL vuelve a tikz-optimizer → en PASS
-        continúa a redactor → §7 plan de trabajo (Gantt) ──→ GATE revisor ──→ user
+        (audita, PASS/FAIL, sin evidencia de grafo) → en FAIL vuelve a
+        tikz-optimizer → en PASS continúa a redactor → §7 plan de trabajo
+        (Gantt) ──→ [NUEVO] `graphify --update vault/` + bloque `EVIDENCIA
+        DE GRAFO` ──→ GATE revisor ──→ user
 Fase 6  redactor → §8 resultados; bibliografo-propuesta → §9 referencias (BibTeX)
-Fase 7  revisor → auditoría final ──→ user; coordinador-propuesta → ensambla main.tex
+Fase 7  [NUEVO] `graphify --update vault/` sobre el vault completo + bloque
+        `EVIDENCIA DE GRAFO` ──→ revisor → auditoría final ──→ user;
+        coordinador-propuesta → ensambla main.tex
 ```
+
+Cualquier hallazgo de coherencia que `graphify` revele en las Fases 1-5/7
+(wikilink roto, contradicción, idea huérfana frente a las 4 dependencias
+duras de "Nota de trazabilidad") se registra como fila advisory en `##
+Hallazgos de coherencia (grafo)` de `proposal/estado_propuesta.md` — nunca
+cambia el VEREDICTO de `revisor` por sí solo. `revisor` conserva sus
+herramientas `Read, Grep, Glob` (sin Bash); nunca ejecuta `graphify` — solo
+lee/cita el bloque `EVIDENCIA DE GRAFO` que el dispatcher le inyecta.
 
 ## Dependency rules you MUST enforce
 

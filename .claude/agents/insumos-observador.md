@@ -31,7 +31,8 @@ English source text where relevant.
 ## Clasificación de insumos (Fase 0)
 
 Before extracting content, classify every source file in `info_data/` into
-one of three labels: **TDR**, **draft-base**, or **background**.
+one of four labels: **TDR**, **draft-base**, **background**, or
+**doc-secciones**.
 
 ### Heuristic signals per label
 
@@ -45,6 +46,10 @@ one of three labels: **TDR**, **draft-base**, or **background**.
   requirement to satisfy).
 - **background**: everything else (reference papers, prior art, images,
   supporting data) — does not compete for TDR or draft-base classification.
+- **doc-secciones**: documento cuyo contenido principal es un esquema/lista de
+  secciones obligatorias de la propuesta (títulos numerados, poca o nula
+  prosa). NO compite con TDR/draft-base en el cómputo AMBIGUA (mismo estatus
+  no-competidor que background).
 
 ### Mandatory ambiguity rule
 
@@ -81,6 +86,61 @@ most affects.
 
 Skip this extraction entirely when no file is classified as TDR.
 
+### Corroboración de secciones obligatorias (Fase 0)
+
+On every TDR run, use LLM judgment (never regex/literal matching) to detect
+whether the TDR **itself** explicitly enumerates its own mandatory proposal
+sections/structure, as distinct from the scoring/evaluation-criteria table
+already extracted above.
+
+**Señal distintiva:** una **tabla de criterios/pesos** responde "¿cómo
+puntúan los evaluadores?" (puntos por criterio); una **lista de secciones
+obligatorias** responde "¿qué debe contener el documento de la propuesta?"
+(un esquema ordenado que el proponente debe reproducir, p. ej. "La propuesta
+deberá contener: 1. Título, 2. Planteamiento del problema, 3. ..."). Ante la
+duda → No. Una tabla de criterios sola = No. Esta es una decisión de juicio
+del agente, no un patrón regex; la aprobación del usuario en G0.5 sigue
+siendo el respaldo humano.
+
+Emite siempre, en `proposal/insumos.md` justo después de "## 2. Extracción
+del TDR", la siguiente subsección:
+
+```markdown
+### Secciones obligatorias declaradas por el TDR
+- Declara secciones propias: Sí | No
+- Fuente: TDR mismo | `<archivo doc-secciones>` | Ninguna
+- Evidencia: "<cita verbatim>" (§/página locator)
+- Lista de secciones exigidas (solo si Sí):
+  1. <título verbatim de la sección> — [→ §n de la guía]
+  2. ...
+```
+
+Si "Declara secciones propias: No" y ningún archivo fue clasificado como
+`doc-secciones`, deja "Fuente: Ninguna" y "Lista de secciones exigidas"
+vacía — el dispatcher usará esto para el bloqueo duro de la Fase 0.5 (ver
+`propuesta.md`, Fase 0.5). No autoresuelvas ni inventes una lista.
+
+### Lectura de insumos .docx
+
+El Read tool de Claude Code no puede leer archivos `.docx` binarios
+directamente ("cannot read binary files"). Antes de ingerir cualquier insumo
+`.docx`, conviértelo primero a texto plano:
+
+```bash
+textutil -convert txt "<archivo>.docx" -output "<ruta-temporal>.txt"
+```
+
+(nativo de macOS, siempre disponible en darwin). Si `textutil` no está
+disponible, usa como fallback:
+
+```bash
+unzip -p "<archivo>.docx" word/document.xml
+```
+
+Luego lee el `.txt` (o el XML extraído) con el Read tool normalmente. Esta
+conversión es un prerrequisito obligatorio antes de clasificar o extraer
+contenido de cualquier insumo `.docx`.
+
 ## Vault mirror (Fase 0)
 
 At Fase 0, if `vault/` does not exist, create `vault/secciones/` and
@@ -103,6 +163,14 @@ source: user-insumo
 
 <one-line relevance note>
 
+## Ideas principales
+- <Key claim extraído del paper, en una frase>.
+- <Key claim extraído del paper, en una frase>.
+<!-- OPTIONAL / best-effort: 2-4 bullets, extractive (from the paper's own
+text), not synthesized — you read raw papers, not authored prose. Omit this
+block entirely if the paper's claims can't be extracted with confidence at
+Fase 0. -->
+
 ## Usado en
 [[<section-note-that-cites-it>]]
 ```
@@ -115,8 +183,8 @@ empty (or omit the wikilink) and let the agent that later cites the paper
 
 Write `proposal/insumos.md` with the structured digest, plus a classification
 table: `Archivo | Tipo | Confianza | Señales | Confirmado por`, where
-`Tipo ∈ {TDR, draft-base, background}`, `Confianza ∈ {alta, media, baja}`, and
-`Confirmado por ∈ {auto, usuario}`. Return a short summary
+`Tipo ∈ {TDR, draft-base, background, doc-secciones}`, `Confianza ∈ {alta,
+media, baja}`, and `Confirmado por ∈ {auto, usuario}`. Return a short summary
 to the Orchestrator: domain, 3 candidate subproblems (tentative), candidate
 research-question direction, notable references found in the insumos, and the
 classification/ambiguity result (which files, if any, need user confirmation).

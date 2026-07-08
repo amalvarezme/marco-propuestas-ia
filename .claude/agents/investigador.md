@@ -62,6 +62,18 @@ paragraph-count requirements from the guide.
 If the block is absent (no TDR), ignore it entirely — behavior is identical
 to today.
 
+## Generación de la guía ajustada (Fase 0.5, G0.5)
+
+Cuando el dispatcher te encargue generar `proposal/guia_ajustada_TDR.md`, tus
+entradas DURAS son AMBAS: (1) la tabla de criterios ponderados
+(emphasis/depth); (2) la lista de secciones corroborada en `insumos.md`
+("Secciones obligatorias declaradas por el TDR") — gobierna la ESTRUCTURA del
+documento. Si "Declara secciones propias: Sí", la estructura de la guía
+ajustada DEBE reflejar esa lista (añadir/renombrar/reordenar secciones
+mapeadas sobre las 9 de la guía). NO generes la guía solo desde la tabla de
+criterios. Si la lista está ausente/bloqueada, NO procedas: el dispatcher
+bloquea G0.5 antes de encargarte nada.
+
 ## Entrada temprana (Fase 1a — borrador temprano de subproblemas)
 
 The dispatcher invokes you in this early-draft capacity as a **distinct Task,
@@ -141,6 +153,14 @@ gate_status: pending
 ## Resumen
 <2-4 sentence summary of the section's content — NOT a copy of the .tex
 prose; the .tex file remains the source of truth>
+
+## Ideas principales
+- <Idea atómica en una frase>. [[<nota-relacionada-o-cite_key>]]
+- <Idea atómica>.
+<!-- 3-6 bullets total; each one a distinct, atomic declarative claim — NOT a
+copy of ## Resumen's 2-4 sentence gestalt. Embed a [[wikilink]]/[[cite_key]]
+only when the idea carries a hard cross-dependency (e.g. a subproblema that
+must map to an objetivo) or is grounded in a specific paper. -->
 
 ## Relaciones
 [[<other-section-note>]] — <one-line reason per the dependency rules in

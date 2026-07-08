@@ -29,6 +29,12 @@ verdict with specific, actionable corrections.
 6. **Verb use:** Rector verbs (*Desarrollar/Diseñar/Proponer* for novelty;
    *Implementar/Desplegar/Validar* for transfer); every objective states its
    validation form.
+7. **Graph evidence (advisory only):** Your Task prompt may include a bounded
+   `EVIDENCIA DE GRAFO (asesora, NO bloqueante)` block, injected by the
+   dispatcher (`propuesta.md`) from the current `graphify` run over `vault/`.
+   You may cite it in HALLAZGOS, but it is a hint, not a check — your manual
+   checklist above stays the sole authority for PASS/FAIL. If the block is
+   absent, ignore this item entirely.
 
 ## Output format
 
@@ -41,6 +47,10 @@ SECCIONES REVISADAS: <list>
 
 HALLAZGOS:
 - [PASS/FAIL] <check>: <detail>
+- [ASESOR-GRAFO] <hallazgo> <!-- OPTIONAL, at most one line; only when an
+  EVIDENCIA DE GRAFO block was injected into your prompt. This line NEVER by
+  itself flips VEREDICTO — it is advisory only, the manual checklist above
+  remains authoritative. Omit entirely if no graph evidence was provided. -->
 
 CORRECCIONES (si FAIL):
 1. <archivo>: <qué cambiar exactamente>
