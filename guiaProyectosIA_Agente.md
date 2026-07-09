@@ -6,6 +6,7 @@
 1. **Insumos:** Debes basar la construcción de la propuesta en un *prompt* o idea inicial proporcionada por el usuario, complementada mediante la revisión analítica de archivos PDF, enlaces de productos, *papers* o cualquier información relevante suministrada.
 2. **Enfoque de la Propuesta:** Fomentar el desarrollo de productos o servicios de IA con innovación investigativa. La propuesta debe tener una transferencia tecnológica clara, orientada a obtener productos tangibles con un nivel de madurez tecnológica (TRL) de 6 o 7, demostrando utilidad e impacto real en el sector de aplicación.
 3. **Estructura:** Sigue rigurosamente la estructura y las instrucciones de redacción detalladas a continuación.
+4. **Redacción — prohibido el inciso "—texto—":** no uses la raya o el guion doble como recurso para intercalar una aclaración parentética (p. ej. "—no un esfuerzo aislado—", "—diagnóstico, planificación...—"). Reformula esas ideas como oración independiente, cláusula con comas, o paréntesis normal `(texto)`. Aplica a todas las secciones de la propuesta.
 
 ---
 
@@ -54,7 +55,9 @@
 
 ### 4. Objetivos
 
-**Instrucción para el agente:** La redacción de los objetivos debe ser rigurosa y técnica. Selecciona verbos rectores como *Desarrollar*, *Diseñar* o *Proponer* cuando abordes novedades metodológicas, conceptuales o teóricas en IA (por ejemplo, nuevas funciones de costo, regularizadores, arquitecturas novedosas, etc.). Utiliza verbos como *Implementar*, *Desplegar* o *Validar* para aquellos objetivos enfocados en la transferencia tecnológica y la aplicación en entornos relevantes. Para todos los casos, la redacción debe dejar explícita la forma de validación (cuantitativa o al menos cualitativa) que permitirá verificar su cumplimiento.
+**Instrucción para el agente:** La redacción de los objetivos debe ser rigurosa y técnica. Selecciona verbos rectores como *Desarrollar*, *Diseñar* o *Proponer* (elige uno) cuando abordes novedades metodológicas, conceptuales o teóricas en IA (por ejemplo, nuevas funciones de costo, regularizadores, arquitecturas novedosas, etc.). Utiliza verbos como *Implementar*, *Desplegar* o *Validar* (elige uno) para aquellos objetivos enfocados en la transferencia tecnológica y la aplicación en entornos relevantes. Para todos los casos, la redacción debe dejar explícita la forma de validación (cuantitativa o al menos cualitativa) que permitirá verificar su cumplimiento.
+
+**Regla de verbo rector único.** La pregunta de investigación, el objetivo general y CADA objetivo específico deben redactarse con EXACTAMENTE UN verbo rector en infinitivo (el más pertinente). Los listados de verbos son MENÚS: elige UNO, no los encadenes. Prohibido el encadenamiento de rectores coordinados (p. ej. «desarrollar, implementar y validar»). Se PERMITEN infinitivos subordinados de propósito («... para apoyar el diagnóstico»): solo se limitan los rectores coordinados de la cláusula principal.
 
 #### 4.1. Objetivo general
 El objetivo general debe derivarse directamente y ser la respuesta exacta a la pregunta de investigación formulada al final de la sección 2.1. Debe ser ambicioso pero totalmente alcanzable en el tiempo de duración de la convocatoria. Además, debe reflejar claramente la innovación propuesta, el valor agregado en IA y el impacto tecnológico esperado (alcanzando obligatoriamente un TRL 6 o 7).
@@ -62,9 +65,9 @@ El objetivo general debe derivarse directamente y ser la respuesta exacta a la p
 #### 4.2. Objetivos específicos
 Los objetivos específicos deben derivarse lógica y coherentemente del objetivo general, representando los pasos metodológicos y técnicos secuenciales del proyecto. Es un requisito estricto que cada objetivo específico esté directamente relacionado y dé respuesta a uno de los subproblemas planteados en el punto 2.1. El agente debe redactar al menos tres objetivos específicos estructurados de la siguiente manera:
 
-*   **Objetivo Específico 1 (Fundamentos y Caracterización de Datos):** Centrado en el levantamiento, curaduría, estructuración de los datos o en la caracterización fenomenológica del problema. Debe dar solución concreta al **subproblema 1**. *(Verbos sugeridos: Caracterizar, Estructurar, Analizar, Procesar).*
-*   **Objetivo Específico 2 (Novedad Teórica y Metodológica en IA):** Centrado en el núcleo de investigación: la conceptualización, diseño, entrenamiento y ajuste del modelo, metodología, algoritmo o arquitectura de IA propuesta como novedad. Debe dar solución concreta al **subproblema 2**. *(Verbos sugeridos: Desarrollar, Proponer, Diseñar, Modelar).*
-*   **Objetivo Específico 3 (Transferencia Tecnológica, Despliegue y Validación):** Orientado a la implementación, integración del sistema en el entorno de aplicación, despliegue del producto y su validación técnica/operativa (cuantitativa o cualitativa) para demostrar la transferencia del conocimiento y el alcance del TRL 6 o 7. Debe dar solución concreta al **subproblema 3**. *(Verbos sugeridos: Implementar, Desplegar, Validar, Evaluar).*
+*   **Objetivo Específico 1 (Fundamentos y Caracterización de Datos):** Centrado en el levantamiento, curaduría, estructuración de los datos o en la caracterización fenomenológica del problema. Debe dar solución concreta al **subproblema 1**. *(Verbos sugeridos — elige uno: Caracterizar, Estructurar, Analizar, Procesar).*
+*   **Objetivo Específico 2 (Novedad Teórica y Metodológica en IA):** Centrado en el núcleo de investigación: la conceptualización, diseño, entrenamiento y ajuste del modelo, metodología, algoritmo o arquitectura de IA propuesta como novedad. Debe dar solución concreta al **subproblema 2**. *(Verbos sugeridos — elige uno: Desarrollar, Proponer, Diseñar, Modelar).*
+*   **Objetivo Específico 3 (Transferencia Tecnológica, Despliegue y Validación):** Orientado a la implementación, integración del sistema en el entorno de aplicación, despliegue del producto y su validación técnica/operativa (cuantitativa o cualitativa) para demostrar la transferencia del conocimiento y el alcance del TRL 6 o 7. Debe dar solución concreta al **subproblema 3**. *(Verbos sugeridos — elige uno: Implementar, Desplegar, Validar, Evaluar).*
 
 ### 5. Referente teórico
 

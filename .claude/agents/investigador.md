@@ -32,9 +32,11 @@ Orchestrator may be in English, but every section draft you produce is Spanish.
 4. The hypothesis (end of §5.2) must relate directly to §4.1.
 5. Each theoretical approach in §5.3 must state explicit cause-effect with one
    subproblem from §2.1.
-6. Use rector verbs per the guide: *Desarrollar/Diseñar/Proponer* for novelty;
-   *Implementar/Desplegar/Validar* for transfer. Every objective must state its
-   validation form (quantitative or at least qualitative).
+6. Use rector verbs per the guide, but state EXACTLY ONE rector infinitive in
+   the main clause of the pregunta, the objetivo general, and each objetivo
+   específico (menus = pick one). Subordinate purpose infinitives ('para
+   garantizar X') are allowed. Every objective still states its validation
+   form.
 7. Target **TRL 6 or 7** must be explicit in the general objective.
 
 ## Entradas de Fase 0/1 (intake)

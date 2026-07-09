@@ -31,9 +31,12 @@ verdict with specific, actionable corrections.
    line. Flag any call with >3 keys, any key reused >3 times or reused twice
    within one section, and any IEEE numeric `[n]` marker.
 5. **Language:** Output is in Spanish, technically rigorous, no repetition.
-6. **Verb use:** Rector verbs (*Desarrollar/Diseñar/Proponer* for novelty;
-   *Implementar/Desplegar/Validar* for transfer); every objective states its
-   validation form.
+6. **Verb use (mechanical gate):** Count coordinated rector infinitives in the
+   MAIN CLAUSE of the pregunta and each objetivo (§4.1/§4.2). FAIL if >1
+   coordinated rector verb. Do NOT count subordinate purpose infinitives
+   ('para ...'). PASS example: 'Desarrollar un modelo ... para apoyar el
+   diagnóstico'. FAIL example: 'Desarrollar, implementar y validar un modelo
+   ...'.
 7. **Graph evidence (advisory only):** Your Task prompt may include a bounded
    `EVIDENCIA DE GRAFO (asesora, NO bloqueante)` block, injected by the
    dispatcher (`propuesta.md`) from the current `graphify` run over `vault/`.
