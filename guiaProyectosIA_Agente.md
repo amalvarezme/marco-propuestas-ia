@@ -134,6 +134,29 @@ Esta subsección es crucial para la evaluación de la calidad científica y debe
 #### 8.2. Productos académicos esperados
 **Instrucción:** Según lo descrito en el ítem 8.1, y cruzándolo rigurosamente con los términos de referencia de la convocatoria, el agente debe proponer y estructurar los resultados y productos académicos que garanticen la obtención del puntaje máximo estipulado para la evaluación de la propuesta.
 
+### 9. Presupuesto
+
+**Instrucción para el agente:** Esta sección presenta el presupuesto del proyecto en una **tabla única** (`tab:presupuesto`) y lo justifica en relación directa con la metodología (§6) y el plan de trabajo (§7). El presupuesto debe ser aritméticamente consistente y respetar los topes, la cofinanciación y la duración que establezca la convocatoria cuando los especifique.
+
+**Modo de operación (según insumos):**
+*   **Modo TDR** — existe un bloque `## Marco presupuestal (TDR)` en `proposal/insumos.md` (o en `guia_ajustada_TDR.md`) con tope no vacío: toma de allí el tope total, el esquema de cofinanciación **tal como lo define el TDR** (con sus condiciones de aplicabilidad — el porcentaje puede variar por sede o por quién lidera la alianza; p. ej. 70/30 nacional/contrapartida para unas sedes y 100% nacional para otras), la duración y los rubros permitidos. La suma total **no puede exceder el tope**; los subtotales por fuente deben respetar el split aplicable al caso de esta propuesta.
+*   **Modo base** — no hay datos presupuestales en el TDR (sentinel `sin datos presupuestales en TDR`): construye un presupuesto razonado a partir del alcance (§3), la metodología (§6) y el plan de trabajo (§7). Todo monto o cantidad que no se derive de un insumo se marca explícitamente como **[supuesto]** para que el usuario lo revise en la compuerta interactiva.
+
+**Estructura de la tabla.** Una fila por ítem, con columnas: **Ítem** | **Cantidad** | **Valor unitario** | **Valor total** | **Descripción** | **Justificación**. Cuando la convocatoria defina rubros, agrupa las filas por rubro con un **subtotal por rubro**, y cierra con una fila de **Total general**.
+
+**Reglas aritméticas (obligatorias, verificables a simple vista):**
+1.  En cada fila, `Valor total = Cantidad × Valor unitario`.
+2.  El subtotal de cada rubro es la suma de los `Valor total` de sus filas.
+3.  El **Total general** es la suma de los subtotales y, en Modo TDR, **no puede exceder el tope**.
+4.  Si el TDR define cofinanciación, los subtotales por fuente (p. ej. nacional vs contrapartida) deben cumplir el porcentaje **aplicable a esta propuesta según el TDR**, dentro de una tolerancia de redondeo explícita.
+5.  Usa una sola moneda y un formato de miles consistente en toda la tabla.
+
+**Justificación (regla dura).** La columna **Justificación** de cada ítem (o de cada rubro) debe (a) argumentar su pertinencia y (b) enlazarlo **explícitamente** con un elemento nombrado de la metodología (§6) o con una fase/actividad del plan de trabajo (§7) que lo requiere. No se admiten ítems sin ese enlace.
+
+**Cierre.** Cierra con un párrafo breve que sintetice cómo el presupuesto habilita el alcance (§3) y el logro del TRL 6/7, y —en Modo TDR— que confirme el cumplimiento del tope y de la cofinanciación aplicable.
+
+**LaTeX.** `\section` autocontenido, sin subsecciones; una `table` con `\label{tab:presupuesto}`, sombreado con `xcolor[table]` (mismos colores institucionales y estilo que la tabla Gantt de §7). No introduce paquetes nuevos.
+
 ### 10. Referencias bibliográficas
 
 **Instrucción para el agente:** La bibliografía debe consolidar la actualidad científica de la propuesta y cumplir con los siguientes parámetros de calidad:
@@ -158,7 +181,7 @@ Estas convenciones son la única fuente de verdad para el ensamble LaTeX; aplíc
 | Secciones | Convención |
 |---|---|
 | §2, §4, §5, §8 | `\section` que envuelve hijos NUMERADOS `\subsection` (renderizan 2.1/2.2, 4.1/4.2, 5.1/5.2/5.3, 8.1/8.2, espejo de los `####` de la guía). |
-| §1, §3, §7, §10 | `\section` autocontenido, sin subsecciones. |
+| §1, §3, §7, §9, §10 | `\section` autocontenido, sin subsecciones. |
 | §6 | `\section` autocontenido con encabezados internos de fase OPCIONALES y SIN numerar (`\subsection*`), no `\subsection` numerado. |
 
 **Paquetes del preámbulo**
