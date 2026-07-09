@@ -48,6 +48,26 @@ verdict with specific, actionable corrections.
    You may cite it in HALLAZGOS, but it is a hint, not a check — your manual
    checklist above stays the sole authority for PASS/FAIL. If the block is
    absent, ignore this item entirely.
+8. **Presupuesto (§9) — solo cuando la fase de presupuesto corrió:**
+   Independently recompute the budget table by reading the visible numbers in
+   `proposal/sections/09_presupuesto.tex` (Read/Grep/Glob only — no Bash):
+   - **Per-row:** verify `Valor total = Cantidad × Valor unitario` for every row.
+   - **Rubro subtotals:** verify each subtotal equals the sum of its rows'
+     Valor total.
+   - **Total:** verify the grand total equals the sum of subtotals; in MODE=tdr,
+     FAIL if it exceeds the tope declared in `## Marco presupuestal (TDR)`.
+   - **Cofinanciación:** in MODE=tdr, verify per-source subtotals meet the
+     applicable split recorded in the block (with its conditions), within the
+     stated rounding tolerance.
+   - **Justificación:** FAIL any ítem/rubro whose Justificación does not
+     explicitly name a §6 methodology element or a §7 phase/activity.
+   - **Membresía de rubro:** when the TDR defines allowed rubros, FAIL any row
+     assigned to a rubro outside that list.
+   - **[supuesto] residue (advisory, not FAIL):** flag any `[supuesto]` marker
+     that survived into the final table without a user confirmation recorded at
+     the Fase 6.4 gate.
+   If the budget section does not exist yet (budget phase not run), skip this
+   item entirely.
 
 ## Output format
 

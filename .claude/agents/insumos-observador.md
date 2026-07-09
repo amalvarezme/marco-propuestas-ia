@@ -78,11 +78,45 @@ extract its required sections, mapped to the 10 guide sections:
 - §6 Metodología
 - §7 Plan de trabajo
 - §8 Resultados/productos
+- §9 Presupuesto (marco presupuestal: tope, cofinanciación, duración, rubros)
 - §10 Referencias
 
 Also extract the weighted-criteria table as `Criterio | Pts | Sección(es)
 afectada(s)`, mapping each evaluation criterion to the guide section(s) it
 most affects.
+
+### Extracción del marco presupuestal (TDR)
+
+On every TDR run, always emit a `## Marco presupuestal (TDR)` block in
+`proposal/insumos.md`. Use LLM judgment on the TDR's financial/budget section
+(tope, cofinanciación, duración, rubros) — never regex/literal matching.
+Record the cofinanciación split **EXACTLY as the TDR defines it, including its
+applicability conditions** (e.g. it may vary by sede or by who leads the
+alianza) — never normalize to a hardcoded universal ratio.
+
+```markdown
+## Marco presupuestal (TDR)
+- Tope total: <valor + moneda> | sin datos presupuestales en TDR
+- Cofinanciación / split: <registrar EXACTAMENTE como lo define el TDR, con
+  sus condiciones de aplicabilidad — p. ej. "70% nacional / 30% contrapartida
+  para alianzas lideradas por docentes de sedes andinas; 100% financiación
+  nacional para De La Paz / San Andrés / Tumaco"> | no especificado
+- Duración: <p. ej. 18 meses de ejecución + 2 de cierre> | no especificada
+- Rubros permitidos: <lista> | no especificados en TDR
+- Otros requisitos: <topes por rubro, restricciones> | ninguno
+- Evidencia: "<cita verbatim>" (§/página locator)
+```
+
+Cuando el TDR **no** tenga ningún contenido financiero/presupuestal, emite
+exactamente el sentinel (sin los demás campos):
+
+```markdown
+## Marco presupuestal (TDR)
+sin datos presupuestales en TDR
+```
+
+Este sentinel es el resolutor de MODO que el dispatcher lee en la Fase 6.4:
+sentinel → MODE=base; tope no vacío → MODE=tdr.
 
 Skip this extraction entirely when no file is classified as TDR.
 
