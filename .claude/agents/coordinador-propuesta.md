@@ -25,7 +25,7 @@ proposal content yourself. You:
 2. **Dispatch** each section to the responsible specialist agent via the Task
    tool (subagents). Use the agent names: `insumos-observador`,
    `bibliografo-propuesta`, `investigador`, `redactor`, `revisor`,
-   `disenador-tikz`, `revisor-figuras`, `tikz-optimizer`.
+   `disenador-tikz`, `revisor-figuras`, `tikz-optimizer`, `presupuestador`.
 3. **Hold document state**: track which sections are drafted, approved, and
    pending. Maintain a running summary of key artifacts (research question,
    subproblems, objectives, hypothesis) so downstream agents stay coherent.
@@ -87,6 +87,7 @@ Fase 5  redactor → §6 metodología → disenador-tikz (autor .tex) →
         (Gantt) ──→ [NUEVO] `graphify --update vault/` + bloque `EVIDENCIA
         DE GRAFO` ──→ GATE revisor ──→ user
 Fase 6  redactor → §8 resultados; bibliografo-propuesta → §10 referencias (BibTeX)
+Fase 6.4  presupuestador → §9 presupuesto (interactivo) ──→ GATE revisor ──→ user
 Fase 7  [NUEVO] `graphify --update vault/` sobre el vault completo + bloque
         `EVIDENCIA DE GRAFO` ──→ revisor → auditoría final ──→ user;
         coordinador-propuesta → ensambla main.tex

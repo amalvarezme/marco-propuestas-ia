@@ -18,9 +18,9 @@ $ARGUMENTS
 ## Roster de subagentes (`.claude/agents/`)
 
 `insumos-observador`, `investigador`, `redactor`, `bibliografo-propuesta`,
-`disenador-tikz`, `tikz-optimizer`, `revisor-figuras`, `revisor`. (No existen
-`orquestador`, `observador` ni `bibliotecario` — usa siempre estos 8 nombres
-reales.)
+`disenador-tikz`, `tikz-optimizer`, `revisor-figuras`, `revisor`,
+`presupuestador`. (No existen `orquestador`, `observador` ni `bibliotecario`
+— usa siempre estos 9 nombres reales.)
 
 ## Instrucciones de inicio
 
@@ -52,8 +52,8 @@ reales.)
    al final (Fase 7). También existen `vault/secciones/*.md` y
    `vault/insumos/*.md`: un mirror visual en Markdown (Obsidian) mantenido por
    los propios agentes que escriben secciones (`insumos-observador`,
-   `investigador`, `redactor`, `bibliografo-propuesta`) al escribir su `.tex`
-   o `.bib` correspondiente — tú no lo regeneras aparte.
+   `investigador`, `redactor`, `bibliografo-propuesta`, `presupuestador`) al
+   escribir su `.tex` o `.bib` correspondiente — tú no lo regeneras aparte.
 5. Consulta `guiaProyectosIA_Agente.md` para las instrucciones párrafo a
    párrafo de cada sección antes de despachar cualquier fase.
 

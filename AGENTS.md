@@ -55,6 +55,7 @@ verdad):
 | `insumos-observador` | sonnet | Ingesta y estructuración de insumos del usuario |
 | `bibliografo-propuesta` | sonnet | Bibliografía (§5.2, §10) |
 | `revisor` | sonnet | Validación de coherencia/calidad en cada gate |
+| `presupuestador` | sonnet | Presupuesto (§9): tabla de rubros + aritmética + cofinanciación |
 | `disenador-tikz` | sonnet | Autoría de diagramas TikZ |
 | `revisor-figuras` | sonnet | Auditoría visual publication-ready de figuras (PNG) |
 | `tikz-optimizer` | sonnet | Compilación y optimización visual de diagramas TikZ |
@@ -79,6 +80,7 @@ Fase 5  Redactor → §6 metodología, luego bucle de figuras:
           → en PASS, continúa
         Redactor → §7 plan de trabajo (Gantt) ──→ GATE Revisor ──→ user
 Fase 6  Redactor → §8 resultados; Bibliografo-Propuesta → §10 referencias (BibTeX)
+Fase 6.4  Presupuestador → §9 presupuesto (interactivo) ──→ GATE Revisor ──→ user
 Fase 7  Revisor → auditoría final ──→ user; Coordinador-Propuesta → ensambla main.tex
 ```
 
@@ -105,6 +107,7 @@ por el pipeline completo de `coordinador-propuesta`**. El pipeline completo de
 | `revisor` | Validar coherencia y calidad de secciones ya redactadas |
 | `bibliografo-propuesta` | Construir o actualizar la bibliografía (§5.2, §10) |
 | `insumos-observador` | Ingerir y estructurar insumos del usuario (PDFs, papers) |
+| `presupuestador` | Construir o ajustar el presupuesto (§9): rubros, montos, cofinanciación |
 
 Cuando despaches un agente de propuesta directamente, incluye en el prompt
 todo el contexto necesario (sección asignada, artefactos clave, dependencias
@@ -136,6 +139,7 @@ su sección asignada. Resumen de asignación:
 | Compilación/optimización visual de diagramas (loop PNG) | Tikz-Optimizer |
 | §7 Plan de trabajo | Redactor |
 | §8 Resultados y productos | Redactor |
+| §9 Presupuesto | Presupuestador |
 | §10 Referencias | Bibliografo-Propuesta |
 | Revisión de coherencia y calidad | Revisor |
 | Coordinación del pipeline de propuesta | Coordinador-Propuesta |
