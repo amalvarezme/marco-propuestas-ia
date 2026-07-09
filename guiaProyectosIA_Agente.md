@@ -134,10 +134,12 @@ Esta subsección es crucial para la evaluación de la calidad científica y debe
 ### 9. Referencias bibliográficas
 
 **Instrucción para el agente:** La bibliografía debe consolidar la actualidad científica de la propuesta y cumplir con los siguientes parámetros de calidad:
-1.  **Formato:** Utilizar formato APA o IEEE. Se debe seleccionar el más adecuado según los requerimientos de la convocatoria o priorizar IEEE si existe una restricción estricta de espacio y límite de páginas.
-2.  **Calidad y Actualidad:** Se debe favorecer e incluir mayoritariamente artículos publicados en revistas indexadas en **cuartiles Q1 y Q2 de los últimos tres años**. 
-3.  **Volumen:** Para demostrar rigor en proyectos de investigación aplicada, se recomienda integrar un soporte bibliográfico sólido con **más de 50 citas**.
-4.  **Fuentes Permitidas:** 
+1.  **Formato:** Utilizar **APA, autor-año** (no numeración estilo IEEE `[1]`). En LaTeX esto implica `natbib` con `\citet{clave}` (autor como sujeto gramatical: "Pérez (2025) encontró que...") o `\citep{clave}` (cita parentética: "...se ha reportado (Pérez, 2025)") — nunca `\cite{}` genérico ni reemplazo mecánico ciego entre `\citet`/`\citep`, la elección depende del rol gramatical de la cita en la oración. `\bibliographystyle{apalike}` (o equivalente `natbib`/`plainnat` en autor-año) en el ensamble final.
+2.  **Tope de citas por referenciación:** máximo **3 claves** por cada llamada de cita (`\citet{}`/`\citep{}`). Si un punto del texto tiene soporte de más de 3 referencias relevantes, citar solo las **más relevantes y más recientes**, no acumularlas todas en un solo cluster (evitar patrones como `\cite{a, b, c, d, e}`, que consumen espacio sin aportar lectura útil). Una misma llamada `\citet{}`/`\citep{}` puede estar partida en varias líneas físicas del fuente `.tex`; el tope de 3 claves se mide sobre la llamada LÓGICA (uniendo las líneas partidas y contando las claves entre `{` y `}`), no por línea física.
+3.  **Tope de reutilización por clave:** una misma referencia **no puede citarse más de 3 veces** en todo el documento. Si se reutiliza (2ª o 3ª vez), cada reutilización debe estar en una **sección distinta** del documento — nunca repetida dos veces dentro de la misma sección. El conteo de reutilización también se mide sobre llamadas lógicas: una llamada partida en varias líneas cuenta una sola vez.
+4.  **Calidad y Actualidad:** Se debe favorecer e incluir mayoritariamente artículos publicados en revistas indexadas en **cuartiles Q1 y Q2 de los últimos tres años**.
+5.  **Volumen:** Para demostrar rigor en proyectos de investigación aplicada, se recomienda integrar un soporte bibliográfico sólido con **más de 50 citas**.
+6.  **Fuentes Permitidas:** 
     *   **Evitar** explícitamente citar tesis de grado o maestría.
     *   Se permite incluir libros teóricos de alto impacto.
     *   Se permite incluir artículos en pre-impresión (tipo *arXiv*) **solo** si provienen de laboratorios de empresas líderes en IA, investigadores reconocidos mundialmente o universidades de alto prestigio.
