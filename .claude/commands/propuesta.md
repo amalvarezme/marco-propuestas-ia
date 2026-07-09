@@ -645,6 +645,12 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
         maquetados con `\section*{}`. Orden del cuerpo: `\input{sections/09_presupuesto}`
         va DESPUÉS de `08_resultados` y ANTES del bloque de bibliografía
         (`\bibliographystyle{apalike}` + `\bibliography{refs}`, §10).
+        Tras ensamblar y compilar `proposal/main.pdf` (`proposal/build.sh`),
+        genera también la versión Word con `./build.sh --docx` desde
+        `proposal/`: produce `proposal/main.docx` con los 3 diagramas
+        rasterizados como imágenes y §3/§9 como tablas editables (el sombreado
+        de §9 no se conserva; el Gantt de §7 queda como imagen). Es un paso
+        mecánico post-compilación que corres tú (asistente primario), no un agente.
 ```
 
 ## Reglas de dependencia (haz que `revisor` las valide en cada gate)

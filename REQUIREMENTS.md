@@ -59,7 +59,7 @@ All loaded in `proposal/main.tex`. Install via `tlmgr install <pkg>` or MacTeX/f
 | `fontenc` | latex-base | T1 font encoding |
 | `babel` (spanish, es-tabla) | babel-spanish | Spanish hyphenation + tabla naming |
 | `geometry` | geometry | Page margins (2.5cm) |
-| `graphicx` | graphics | Logo embedding (footer) |
+| `graphicx` | graphics | Logo embedding (header/footer) |
 | `amsmath` | amsmath | Math environments |
 | `amssymb` | amsfonts | Math symbols (\bigstar) |
 | `booktabs` | booktabs | Professional tables |
@@ -70,7 +70,7 @@ All loaded in `proposal/main.tex`. Install via `tlmgr install <pkg>` or MacTeX/f
 | `hyperref` | hyperref | Clickable cross-references |
 | `url` | url | URL formatting |
 | `csquotes` | csquotes | Quote environments |
-| `fancyhdr` | fancyhdr | Footer with institutional logos |
+| `fancyhdr` | fancyhdr | Split header/footer with institutional logos (UNAL header; GCPDS/LabIA footer) |
 | `biblatex` (style=ieee, backend=biber) | biblatex + biber | IEEE-style bibliography |
 | `cm-super` | cm-super | T1-compatible Computer Modern fonts (Spanish) |
 
@@ -117,7 +117,7 @@ Graphify is a Claude Code skill file + the `graphifyy` Python package (in `requi
 │       └── propuesta.md      # Comando /propuesta — dispatcher real del pipeline
 ├── info_data/                # User inputs (PDFs, DOCX)
 ├── proposal/
-│   ├── main.tex              # LaTeX assembly (footer with logos)
+│   ├── main.tex              # LaTeX assembly (header/footer logos)
 │   ├── refs.bib              # BibTeX (87 entries, IEEE)
 │   ├── sections/             # One .tex per section + 3 TikZ diagrams
 │   ├── logos/                # LabIA, UNAL, GCPDS logos

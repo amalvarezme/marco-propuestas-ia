@@ -8,9 +8,10 @@
 #   ./build.sh --clean-only Solo limpia artefactos (no compila)
 #   ./build.sh --manual     Usa la secuencia manual pdflatex→biber→pdflatex×2
 #   ./build.sh --watch      Recompila automáticamente al detectar cambios
+#   ./build.sh --docx       Exporta a Word (proposal/main.docx) vía pandoc
 #   ./build.sh --help       Muestra esta ayuda
 #
-# Requisitos: pdflatex, biber, latexmk (todos en PATH).
+# Requisitos: pdflatex, biber, latexmk; para --docx: pandoc, pdftoppm (todos en PATH).
 #
 set -euo pipefail
 
@@ -55,15 +56,20 @@ clean_artifacts() {
 
 # --- Verificación de dependencias --------------------------------------------
 check_deps() {
+  local mode="${1:-latexmk}"
   local missing=()
-  for tool in "${ENGINE}" "${BIBENGINE}"; do
+  local tools=("${ENGINE}" "${BIBENGINE}")
+  if [[ "${mode}" == "docx" ]]; then
+    tools+=("pandoc" "pdftoppm")   # docx: conversión y rasterizado de diagramas
+  fi
+  for tool in "${tools[@]}"; do
     if ! command -v "${tool}" >/dev/null 2>&1; then
       missing+=("${tool}")
     fi
   done
   if [[ ${#missing[@]} -gt 0 ]]; then
     err "Faltan dependencias: ${missing[*]}"
-    err "Instala TeX Live (pdflatex, biber) o MiKTeX."
+    err "Instala TeX Live (pdflatex, biber) o MiKTeX; para --docx: 'brew install pandoc' (pdftoppm viene con poppler)."
     exit 1
   fi
 }
@@ -158,6 +164,64 @@ build_watch() {
     "${MAIN}"
 }
 
+# --- Exportación a Word (.docx vía pandoc) -----------------------------------
+build_docx() {
+  cd "${SCRIPT_DIR}"
+
+  # The .docx is derived from the already-compiled PDF: require main.pdf first.
+  if [[ ! -f "${PDF}" ]]; then
+    err "No existe ${PDF}. Compila primero (./build.sh) antes de --docx."
+    exit 1
+  fi
+
+  local docx_abs="${SCRIPT_DIR}/main.docx"
+  local ref_abs="${SCRIPT_DIR}/templates/reference.docx"
+  local stage
+  stage="$(mktemp -d)"
+
+  # 1) Rasterize TikZ/pgfgantt diagrams to PNG and stage a docx-safe tex tree
+  #    (pandoc's LaTeX reader cannot render raw TikZ/ganttchart).
+  log "Preparando árbol docx (rasterizando diagramas TikZ/pgfgantt → PNG)..."
+  if ! python3 scripts/prep_docx.py --stage "${stage}"; then
+    err "Falló la preparación docx (rasterizado/sustitución). Revisa prep_docx.py."
+    rm -rf "${stage}"
+    exit 1
+  fi
+
+  # 2) Institutional-branding reference template (--reference-doc).
+  if [[ ! -f "${ref_abs}" ]]; then
+    warn "No existe ${ref_abs}. Generando plantilla por defecto (SIN logos)."
+    mkdir -p "${SCRIPT_DIR}/templates"
+    if ! pandoc --print-default-data-file reference.docx > "${ref_abs}"; then
+      err "No se pudo generar la plantilla por defecto."
+      rm -rf "${stage}"; exit 1
+    fi
+    warn "Edita ${ref_abs} UNA sola vez en Word/LibreOffice e inserta los 3 logos"
+    warn "(UNAL cabecera-der, GCPDS pie-izq, LabIA pie-der) para igualar el PDF."
+  fi
+
+  # 3) LaTeX -> docx conversion. Surface the known cosmetic limitations at build time.
+  #    IMPORTANT: pandoc resolves bare `\input{...}` relative to the process
+  #    CWD, not --resource-path. We MUST cd into the staging tree so
+  #    `\input{sections/diag_*}` resolves to the substituted image stubs
+  #    there, not to the real (unprocessed, raw-TikZ) proposal/sections/.
+  log "Convirtiendo a Word con pandoc..."
+  warn "El sombreado de filas (xcolor[table]) de §9 NO se preserva en .docx;"
+  warn "la tabla conserva estructura, datos y totales. El Gantt de §7 va como imagen."
+  if (cd "${stage}" && pandoc "main.tex" \
+      --from=latex \
+      --reference-doc="${ref_abs}" \
+      --citeproc --bibliography="refs.bib" \
+      -o "${docx_abs}"); then
+    local size; size=$(du -h "${docx_abs}" | cut -f1)
+    ok "Exportación exitosa: main.docx (${size})"
+  else
+    err "pandoc falló al generar main.docx."
+    rm -rf "${stage}"; exit 1
+  fi
+  rm -rf "${stage}"
+}
+
 # --- Ayuda -------------------------------------------------------------------
 show_help() {
   sed -n '2,/^$/p' "${BASH_SOURCE[0]}" | sed 's/^# \?//'
@@ -174,13 +238,14 @@ main() {
       --clean-only)   clean_artifacts; exit 0 ;;
       --manual)       mode="manual" ;;
       --watch)        mode="watch" ;;
+      --docx)         mode="docx" ;;
       --help|-h)      show_help; exit 0 ;;
       *) err "Opción desconocida: $1"; show_help; exit 1 ;;
     esac
     shift
   done
 
-  check_deps
+  check_deps "${mode}"
 
   if [[ "${do_clean}" == true ]]; then
     clean_artifacts
@@ -190,6 +255,7 @@ main() {
     latexmk) build_latexmk ;;
     manual)  build_manual ;;
     watch)   build_watch ;;
+    docx)    build_docx ;;
   esac
 }
 

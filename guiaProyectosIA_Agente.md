@@ -210,3 +210,53 @@ Definidos una única vez aquí (fuente de verdad); estos tres colores están act
 |---|---|
 | `fig:*` | Figuras |
 | `tab:*` | Tablas |
+
+**Encabezado y pie institucional (logos)**
+
+Regla única de colocación de los tres logos institucionales en `main.tex`
+(fuente de verdad; los agentes de diagramación NO deben añadir logos a las
+figuras). Los archivos residen en `proposal/logos/` (ruta preservada entre
+ciclos de archivado). Como el build compila dentro de `proposal/`, se
+referencian de forma relativa como `logos/*.png`.
+
+| Logo | Posición | Campo `fancyhdr` | Alto |
+|---|---|---|---|
+| UNAL (`logo_unal.png`) | superior derecha | `\fancyhead[R]` | 1.1 cm |
+| GCPDS (`logogcpds.png`) | inferior izquierda | `\fancyfoot[L]` | 1.0 cm |
+| LabIA (`logo_labIA.png`) | inferior derecha | `\fancyfoot[R]` | 1.0 cm |
+
+Preámbulo canónico: `\usepackage{fancyhdr}`, `\pagestyle{fancy}`,
+`\fancyhf{}` (reset), `\headrulewidth`/`\footrulewidth` a `0pt` (sin líneas),
+`\geometry{headheight=38pt}` para alojar el logo de cabecera (usa la opción
+en tiempo de ejecución del propio paquete `geometry` ya cargado por
+`main.tex`; no uses `\addtolength{\topmargin}{...}` para compensar, ya que
+`geometry` puede ignorar o sobrescribir un ajuste manual del margen una vez
+que ha fijado la geometría de página). La página del título usa estilo
+`plain`; para mostrar los logos también en la página 1, añade
+`\thispagestyle{fancy}` justo después del bloque de título. Los tamaños son
+cosméticos y ajustables.
+
+Preámbulo canónico (fuente de verdad para el ensamble en Fase 7; copia y
+pega este bloque en `main.tex`, omitiendo `\usepackage{graphicx}` si el
+preámbulo ya lo carga — main.tex lo requiere para figuras y NO debe
+duplicarse):
+
+```latex
+% --- Encabezado/pie institucional (fancyhdr) ---------------------------------
+% Fuente de verdad: guiaProyectosIA_Agente.md > "Encabezado y pie institucional".
+\usepackage{fancyhdr}
+% \usepackage{graphicx}               % NO dupliques: ya cargado por main.tex
+\geometry{headheight=38pt}            % opción en tiempo de ejecución de geometry
+                                       % (ya cargado); NO uses \addtolength{\topmargin}
+\pagestyle{fancy}
+\fancyhf{}                            % limpia todos los campos (head/foot L/C/R)
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[R]{\includegraphics[height=1.1cm]{logos/logo_unal.png}}   % UNAL arriba-derecha
+\fancyfoot[L]{\includegraphics[height=1.0cm]{logos/logogcpds.png}}   % GCPDS abajo-izquierda
+\fancyfoot[R]{\includegraphics[height=1.0cm]{logos/logo_labIA.png}}  % LabIA abajo-derecha
+```
+
+Añade `\thispagestyle{fancy}` justo después del bloque de título para que
+los logos también aparezcan en la página 1 (por defecto `\maketitle` fuerza
+el estilo `plain`).
