@@ -89,10 +89,103 @@ dispatcher además agrega una fila a `## Hallazgos de coherencia (grafo)` en
 con fase, archivo, y tipo de problema. Este hallazgo NUNCA por sí solo hace
 que `revisor` cambie su VEREDICTO a FAIL.
 
+## Grafo de pipeline (`proposal/pipeline/`, tercer grafo, distinto de papers y vault)
+
+Un TERCER grafo, independiente de los otros dos, indexa la estructura del
+pipeline mismo (fases/compuertas/agentes/artefactos), no el corpus de
+papers ni el mirror Obsidian. Corpus y CWD dedicados: `proposal/pipeline/`
+— NUNCA corre desde la raíz del repo.
+
+Corpus: el DISPATCHER escribe/actualiza un archivo `proposal/pipeline/<NN>-<fase>.md`
+por cada evento de fase (p. ej. `00-fase0.md`, `10-fase1a.md`,
+`11-fase1b.md`, `20-fase1.md`, ...), más un `proposal/pipeline/_estado.md`
+compacto que espeja la tabla de compuertas en cada actualización (mantiene
+el corpus autocontenido bajo el único CWD `proposal/pipeline/`, ya que
+`estado_propuesta.md` vive un nivel arriba). Plantilla mínima por evento:
+
+```markdown
+---
+fase: <id>
+agentes: [<subagente(s)>]
+gate: <Gx | none>
+veredicto: <PASS | FAIL | pending | n/a>
+fecha: <YYYY-MM-DD>
+---
+# Fase <id> — <nombre>
+## Entradas
+- <artefacto/sección consumida>
+## Salidas
+- <sección/artefacto producido>  [[<nota-vault-o-sección>]]
+## Dependencias
+- <fase previa de la que depende>
+```
+
+Cuándo actualiza: en CADA transición de compuerta (los mismos puntos donde
+el dispatcher voltea `gate_status`, ver "Reglas de gate (obligatorias)"
+abajo) — ver el bloque `[NUEVO] DISPATCHER: pipeline-graph` dentro de cada
+fase/compuerta. Mecánica: `cd proposal/pipeline/ && graphify [--update] . &&
+graphify export html` → salida en `proposal/pipeline/graphify-out/`
+(gitignored, scratch, nunca se commitea). Build completo la PRIMERA vez que
+el bloque produce un archivo de evento; `--update` después. NUNCA
+`--force`. Nunca lo ejecuta `revisor` (solo Read/Grep/Glob) — siempre lo
+dispara el dispatcher.
+
 ## Pipeline (dispatch con `Task` fase por fase)
 
 ```
-Fase 0  Task → insumos-observador → ingerir insumos (PDFs, papers, links, prompt)
+Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
+        continuar, resuelve el run-id de esta corrida. Esquema
+        `<YYYY-MM>-<slug>` (p. ej. `2026-07-siun-alianzas`). `<YYYY-MM>` sale
+        de la fecha del sistema. `<slug>` = 2-4 palabras clave en
+        kebab-case, en minúsculas, sin tildes/ñ (ASCII-folded), derivadas de
+        la idea en `$ARGUMENTS` descartando stopwords. Override: si
+        `$ARGUMENTS` empieza con `run-id=<valor>` o `--run-id <valor>`,
+        valida `<valor>` contra `[a-z0-9-]+` y úsalo tal cual (el resto de
+        `$ARGUMENTS` es la idea); si no hay override, usa el slug
+        auto-derivado. Escribe el run-id resuelto en
+        `proposal/estado_propuesta.md` ("## Identidad de la corrida
+        (run-id)": `run_id`, `slug_source` [auto|user], `idea`, `creada`
+        [YYYY-MM-DD], `estado` [activa]) y agrega una fila a
+        `proposals/registry.md` (crea el archivo con su tabla de encabezado
+        si no existe: `| run-id | creada | cerrada | estado | idea (breve) |
+        archivo | commit |`).
+        ──→ GUARDIA DE COLISIÓN (corrida sin terminar): si
+        `proposal/estado_propuesta.md` ya existe con `estado: activa` en su
+        bloque "Identidad de la corrida" y no todas las compuertas están
+        cerradas, DETENTE y exige confirmación explícita: "Existe una
+        corrida SIN terminar (`<run-id>`, última compuerta `<Gx>`).
+        ¿Archivarla y empezar una nueva? (sí/no)". Solo "sí" continúa con
+        ARCHIVADO-Y-REINICIO (abajo); "no" ofrece reanudar la corrida
+        existente en vez de iniciar una nueva.
+        ──→ ARCHIVADO-Y-REINICIO (solo corridas futuras, tras "sí" arriba):
+          1. Lee el `run_id` previo de `estado_propuesta.md`.
+          2. `mkdir -p proposals/<run-id-previo>/`; copia el contenido de la
+             corrida activa a `proposals/<run-id-previo>/proposal/` y
+             `proposals/<run-id-previo>/vault/` (misma superficie que la
+             eliminación única de la corrida actual, ver Fase de limpieza
+             única en el diseño).
+          3. Escribe `proposals/<run-id-previo>/run.md` (manifiesto: run-id,
+             idea, fechas, estado final de cada compuerta, conteo de
+             referencias, commit); marca la fila del registro como
+             `archivada`, fija `cerrada` y `archivo`.
+          4. Commit `chore(proposals): archive run <run-id-previo>`;
+             force-add los tres `graph.json`/`GRAPH_REPORT.md`/`graph.html`
+             (viven bajo `graphify-out/`, gitignored) para que la corrida
+             archivada quede autocontenida en el historial.
+          5. Reinicia el árbol activo a scaffolding: vacía
+             `proposal/sections/`, `proposal/scoping/papers/`,
+             `proposal/pipeline/`; reescribe vacíos
+             `proposal/estado_propuesta.md`, `proposal/refs.bib`,
+             `proposal/insumos.md`; vacía `vault/secciones/` y
+             `vault/insumos/` (conserva `.gitkeep`); borra los tres árboles
+             scratch `graphify-out/` (scoping, pipeline, vault). CONSERVA
+             `proposal/build.sh`, `proposal/scripts/`, `proposal/logos/`.
+          6. Continúa con el nuevo run-id (paso "RESOLUCIÓN DE RUN-ID"
+             arriba).
+        ──→ SIN CORRIDA PREVIA: si no existe una corrida anterior, omite
+        GUARDIA DE COLISIÓN y ARCHIVADO-Y-REINICIO por completo; continúa
+        directo con el resto de la Fase 0.
+        Task → insumos-observador → ingerir insumos (PDFs, papers, links, prompt)
         y clasificarlos (TDR / draft-base / background, ver
         `insumos-observador.md`); si hay TDR, extraer sus secciones + tabla
         de criterios ponderados.
@@ -252,6 +345,11 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         (G0.5, G1a)" → sub-tabla "G1a — Scoping temprano": 5 papers,
         parámetros de búsqueda, ruta del grafo + extracto del reporte, los 3
         subproblemas tempranos con su gap/`paper-N`, y Estado G1a).
+        ──→ [NUEVO] DISPATCHER: pipeline-graph (primera inicialización):
+        escribe `proposal/pipeline/00-fase0.md` + `10-fase1a.md` (evento de
+        esta compuerta) y `proposal/pipeline/_estado.md`; luego `cd
+        proposal/pipeline/ && graphify . && graphify export html` (build
+        completo — primer archivo de evento del corpus). NUNCA `--force`.
 Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         siempre que la Fase 1a cerró con G1a = APROBADA (ver
         `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano");
@@ -340,6 +438,11 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         `cd proposal/scoping/ && graphify --update papers/ && graphify
         export html`. NUNCA `--force`. La salida sigue en
         `proposal/scoping/graphify-out/`.
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/11-fase1b.md` (evento de esta compuerta) y
+        actualiza `proposal/pipeline/_estado.md`; luego `cd
+        proposal/pipeline/ && graphify --update . && graphify export html`.
+        NUNCA `--force`.
         ──→ [NUEVO] Grafo de ideas del vault — build completo (primera vez):
         inmediatamente después de lo anterior, en esta misma transición de
         aprobación final de G1b (NO en cada iteración del bucle de G1b), el
@@ -351,10 +454,10 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         corpus de papers, y escribe en una raíz de salida distinta. Ver
         "Grafo de coherencia del vault" arriba para el detalle completo del
         mecanismo asesor. Mecánica exacta:
-          1. Desde la raíz del repo (NO cambies de CWD a
-             `proposal/scoping/` — esa es la corrida del corpus SOTA, no
-             esta).
-          2. `graphify vault/` (build completo — baseline: en este punto
+          1. `cd vault/` (cambio de CWD obligatorio — distinto del `cd
+             proposal/scoping/` de la corrida del corpus SOTA; ningún grafo
+             corre desde la raíz del repo).
+          2. `graphify .` (build completo — baseline: en este punto
              `vault/insumos/` ya tiene notas de insumos de la Fase 0;
              `vault/secciones/` aún no tiene notas de sección, porque las
              Fases 1-7 no han corrido todavía).
@@ -389,7 +492,7 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
           → Task → revisor-figuras (audita, PASS/FAIL)
           → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
           → en PASS, continúa
-        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` (incremental,
+        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` (incremental,
         NUNCA `--force`, NUNCA reconstruye desde cero aquí) → `graphify
         export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
         inyecta inline el bloque `EVIDENCIA DE GRAFO` (formato en "Grafo de
@@ -397,15 +500,25 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         este gate; si hay hallazgo de coherencia, agrégalo a `## Hallazgos
         de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/20-fase1.md` (evento de esta compuerta) y
+        actualiza `proposal/pipeline/_estado.md`; luego `cd
+        proposal/pipeline/ && graphify --update . && graphify export html`.
+        NUNCA `--force`.
 Fase 2  Task → redactor → §2.2 pertinencia, §3 alcance
-        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` → `graphify
+        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
         export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
         inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
         Task → revisor de este gate; si hay hallazgo, agrégalo a `##
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/30-fase2.md` (evento de esta compuerta) y
+        actualiza `proposal/pipeline/_estado.md`; luego `cd
+        proposal/pipeline/ && graphify --update . && graphify export html`.
+        NUNCA `--force`.
 Fase 3  Task → investigador → §4.1 objetivo general + §4.2 objetivos específicos
-        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` → `graphify
+        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
         export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
         inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
         Task → revisor de este gate; si hay hallazgo, agrégalo a `##
@@ -413,14 +526,24 @@ Fase 3  Task → investigador → §4.1 objetivo general + §4.2 objetivos espec
         ──→ GATE Task → revisor (valida mapeo subproblema↔objetivo, con
         bloque EVIDENCIA DE GRAFO inline) ──→ usuario.
         NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/40-fase3.md` (evento de esta compuerta) y
+        actualiza `proposal/pipeline/_estado.md`; luego `cd
+        proposal/pipeline/ && graphify --update . && graphify export html`.
+        NUNCA `--force`.
 Fase 4  Task → bibliografo-propuesta → §5.2 estado del arte (en paralelo)
         Task → investigador → §5.1, §5.3, hipótesis
-        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` → `graphify
+        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
         export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
         inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
         Task → revisor de este gate; si hay hallazgo, agrégalo a `##
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/50-fase4.md` (evento de esta compuerta) y
+        actualiza `proposal/pipeline/_estado.md`; luego `cd
+        proposal/pipeline/ && graphify --update . && graphify export html`.
+        NUNCA `--force`.
 Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
           Task → disenador-tikz (autor .tex)
           → Task → tikz-optimizer (compila a PNG, primer ajuste)
@@ -428,7 +551,7 @@ Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
           → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
           → en PASS, continúa
         Task → redactor → §7 plan de trabajo (Gantt)
-        ──→ [NUEVO] DISPATCHER: `graphify --update vault/` → `graphify
+        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
         export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
         inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
         Task → revisor de este gate (nota: este paso es distinto del bucle
@@ -436,6 +559,11 @@ Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
         recibe evidencia de grafo); si hay hallazgo, agrégalo a `##
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/60-fase5.md` (evento de esta compuerta) y
+        actualiza `proposal/pipeline/_estado.md`; luego `cd
+        proposal/pipeline/ && graphify --update . && graphify export html`.
+        NUNCA `--force`.
 Fase 6  Task → redactor → §8 resultados; Task → bibliografo-propuesta → §9 referencias (BibTeX)
         ──→ [NUEVO] DISPATCHER: papers-graph refresh (post-Fase-6): guardia —
         ejecuta este bloque solo si `proposal/refs.bib` cambió en esta fase
@@ -445,13 +573,23 @@ Fase 6  Task → redactor → §8 resultados; Task → bibliografo-propuesta →
         `proposal/scoping/graphify-out/`.
 Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§9 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
-Fase 7  ──→ [NUEVO] DISPATCHER: `graphify --update vault/` sobre el vault
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.5, evento de
+        esta compuerta) y actualiza `proposal/pipeline/_estado.md`; luego
+        `cd proposal/pipeline/ && graphify --update . && graphify export
+        html`. NUNCA `--force`.
+Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre el vault
         completo (todas las secciones ya escritas) → `graphify export html`
         → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de la auditoría final; si hay hallazgo, agrégalo a `##
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         Task → revisor → auditoría final (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/80-fase7.md` (evento de la auditoría final) y
+        actualiza `proposal/pipeline/_estado.md`; luego `cd
+        proposal/pipeline/ && graphify --update . && graphify export html`.
+        NUNCA `--force`.
         Tú (el asistente primario) ensamblas `proposal/main.tex` una vez aprobado.
         Los 3 archivos `00_*.tex` (Resumen → Resumen ejecutivo → Palabras
         clave, en ese orden) DEBEN incluirse antes del contenido de §2,
