@@ -12,6 +12,22 @@
 ### 1. Título de la propuesta
 **Instrucción para el agente:** El título debe ser conciso, utilizando preferiblemente entre 12 y 15 palabras. Debe estar alineado con el propósito de la convocatoria y proporcionar claridad sobre la novedad de la investigación, su impacto esperado y las herramientas o modelos de IA asociados, desarrollados o implementados en el proyecto. Asimismo, debe mantener coherencia directa con la pregunta de investigación y el objetivo general.
 
+**Secciones preliminares (front-matter, sin numerar).** Las tres secciones siguientes (Resumen, Resumen ejecutivo, Palabras clave) son preliminares: se redactan como SÍNTESIS del documento completo en una fase tardía del pipeline (Fase 6.5, ver `.claude/commands/propuesta.md`) y en el documento final se renderizan ANTES de la sección 2, inmediatamente después del Título. NO llevan número (no alteran la numeración §2–§9); en el ensamble LaTeX se maquetan con `\section*{}` (sin numerar).
+
+### Resumen
+**Instrucción para el agente:** Redacta un resumen de máximo 400 palabras, en un solo bloque de texto (sin subdivisión en párrafos nombrados), que cubra en este orden: (1) el problema o contexto que motiva el proyecto; (2) el objetivo general; (3) una síntesis del enfoque metodológico; (4) el resultado o impacto esperado, incluyendo el TRL objetivo (6 o 7).
+
+### Resumen ejecutivo
+**Instrucción para el agente:** Redacta exactamente 5 párrafos:
+* **Primer párrafo:** contexto y problemática que motiva el proyecto.
+* **Segundo párrafo:** objetivo general y objetivos específicos, en síntesis.
+* **Tercer párrafo:** síntesis del enfoque metodológico y técnico en IA.
+* **Cuarto párrafo:** resultados y productos esperados, incluyendo el TRL alcanzado.
+* **Quinto párrafo:** impacto esperado y transferencia tecnológica, a modo de cierre.
+
+### Palabras clave
+**Instrucción para el agente:** Selecciona las 5 palabras clave más representativas del proyecto, separadas por comas, en minúscula salvo nombres propios o siglas (p. ej. "aprendizaje automático, visión por computador, IA generativa, transferencia tecnológica, TRL").
+
 ### 2. Justificación y pertinencia de la propuesta
 
 **Instrucción para el agente:** Esta sección busca argumentar la necesidad y viabilidad del proyecto. Se deben redactar al menos dos párrafos iniciales que den contexto a la temática, relacionándolos con el propósito de la investigación, los Objetivos de Desarrollo Sostenible (ODS) y los planes de desarrollo (Nacional o Departamental), según corresponda. Además, el segundo párrafo debe conectar el contexto de la investigación con los objetivos específicos de la convocatoria, basándose en los términos de referencia (si se adjuntan).
