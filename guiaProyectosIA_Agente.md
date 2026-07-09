@@ -13,7 +13,7 @@
 ### 1. Título de la propuesta
 **Instrucción para el agente:** El título debe ser conciso, utilizando preferiblemente entre 12 y 15 palabras. Debe estar alineado con el propósito de la convocatoria y proporcionar claridad sobre la novedad de la investigación, su impacto esperado y las herramientas o modelos de IA asociados, desarrollados o implementados en el proyecto. Asimismo, debe mantener coherencia directa con la pregunta de investigación y el objetivo general.
 
-**Secciones preliminares (front-matter, sin numerar).** Las tres secciones siguientes (Resumen, Resumen ejecutivo, Palabras clave) son preliminares: se redactan como SÍNTESIS del documento completo en una fase tardía del pipeline (Fase 6.5, ver `.claude/commands/propuesta.md`) y en el documento final se renderizan ANTES de la sección 2, inmediatamente después del Título. NO llevan número (no alteran la numeración §2–§9); en el ensamble LaTeX se maquetan con `\section*{}` (sin numerar).
+**Secciones preliminares (front-matter, sin numerar).** Las tres secciones siguientes (Resumen, Resumen ejecutivo, Palabras clave) son preliminares: se redactan como SÍNTESIS del documento completo en una fase tardía del pipeline (Fase 6.5, ver `.claude/commands/propuesta.md`) y en el documento final se renderizan ANTES de la sección 2, inmediatamente después del Título. NO llevan número (no alteran la numeración §2–§10); en el ensamble LaTeX se maquetan con `\section*{}` (sin numerar).
 
 ### Resumen
 **Instrucción para el agente:** Redacta un resumen de máximo 400 palabras, en un solo bloque de texto (sin subdivisión en párrafos nombrados), que cubra en este orden: (1) el problema o contexto que motiva el proyecto; (2) el objetivo general; (3) una síntesis del enfoque metodológico; (4) el resultado o impacto esperado, incluyendo el TRL objetivo (6 o 7).
@@ -134,7 +134,7 @@ Esta subsección es crucial para la evaluación de la calidad científica y debe
 #### 8.2. Productos académicos esperados
 **Instrucción:** Según lo descrito en el ítem 8.1, y cruzándolo rigurosamente con los términos de referencia de la convocatoria, el agente debe proponer y estructurar los resultados y productos académicos que garanticen la obtención del puntaje máximo estipulado para la evaluación de la propuesta.
 
-### 9. Referencias bibliográficas
+### 10. Referencias bibliográficas
 
 **Instrucción para el agente:** La bibliografía debe consolidar la actualidad científica de la propuesta y cumplir con los siguientes parámetros de calidad:
 1.  **Formato:** Utilizar **APA, autor-año** (no numeración estilo IEEE `[1]`). En LaTeX esto implica `natbib` con `\citet{clave}` (autor como sujeto gramatical: "Pérez (2025) encontró que...") o `\citep{clave}` (cita parentética: "...se ha reportado (Pérez, 2025)") — nunca `\cite{}` genérico ni reemplazo mecánico ciego entre `\citet`/`\citep`, la elección depende del rol gramatical de la cita en la oración. `\bibliographystyle{apalike}` (o equivalente `natbib`/`plainnat` en autor-año) en el ensamble final.
@@ -158,7 +158,7 @@ Estas convenciones son la única fuente de verdad para el ensamble LaTeX; aplíc
 | Secciones | Convención |
 |---|---|
 | §2, §4, §5, §8 | `\section` que envuelve hijos NUMERADOS `\subsection` (renderizan 2.1/2.2, 4.1/4.2, 5.1/5.2/5.3, 8.1/8.2, espejo de los `####` de la guía). |
-| §1, §3, §7, §9 | `\section` autocontenido, sin subsecciones. |
+| §1, §3, §7, §10 | `\section` autocontenido, sin subsecciones. |
 | §6 | `\section` autocontenido con encabezados internos de fase OPCIONALES y SIN numerar (`\subsection*`), no `\subsection` numerado. |
 
 **Paquetes del preámbulo**

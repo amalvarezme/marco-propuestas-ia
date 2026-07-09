@@ -23,7 +23,7 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
    extrae/estructura esos insumos en un contexto compartido.
 3. **Enfoque:** Productos/servicios de IA con innovación investigativa,
    transferencia tecnológica clara, productos tangibles con **TRL 6 o 7**.
-4. **Estructura:** Sigue rigurosamente las 9 secciones de la
+4. **Estructura:** Sigue rigurosamente las 10 secciones de la
    `guiaProyectosIA_Agente.md`. No omitas ni renumeraciones secciones.
 5. **Dependencias cruzadas (obligatorias):**
    - Los 3 subproblemas (§2.1) ↔ 3 objetivos específicos (§4.2), mapeo 1:1.
@@ -34,7 +34,7 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
    - Plan de trabajo (§7) ↔ fases de la Metodología (§6).
    - Resultados (§8) ↔ productos entregados en hitos del plan (§7).
 6. **Calidad bibliográfica:** ≥30 refs Q1/Q2 (≤3 años) para §5.2; ≥50 refs
-   totales para §9; formato APA o IEEE (priorizar IEEE). Sin tesis; preprints
+   totales para §10; formato APA o IEEE (priorizar IEEE). Sin tesis; preprints
    solo de labs/líderes reconocidos.
 7. **Salida LaTeX:** Cada sección se escribe como archivo `.tex` en
    `proposal/sections/`; referencias en `proposal/refs.bib`; ensamblaje en
@@ -44,7 +44,7 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
 
 ## Roster de agentes (`.claude/agents/`) y modelos por defecto
 
-El marco tiene **9 agentes**, todos definidos en `.claude/agents/` (fuente de
+El marco tiene **10 agentes**, todos definidos en `.claude/agents/` (fuente de
 verdad):
 
 | Agente | Modelo por defecto | Rol |
@@ -53,7 +53,7 @@ verdad):
 | `investigador` | opus | Subproblemas, pregunta, objetivos, hipótesis, enfoques |
 | `redactor` | opus | Secciones narrativas (§1–§3, §6–§8) |
 | `insumos-observador` | sonnet | Ingesta y estructuración de insumos del usuario |
-| `bibliografo-propuesta` | sonnet | Bibliografía (§5.2, §9) |
+| `bibliografo-propuesta` | sonnet | Bibliografía (§5.2, §10) |
 | `revisor` | sonnet | Validación de coherencia/calidad en cada gate |
 | `disenador-tikz` | sonnet | Autoría de diagramas TikZ |
 | `revisor-figuras` | sonnet | Auditoría visual publication-ready de figuras (PNG) |
@@ -78,7 +78,7 @@ Fase 5  Redactor → §6 metodología, luego bucle de figuras:
           → en FAIL, vuelve a Tikz-Optimizer con los hallazgos
           → en PASS, continúa
         Redactor → §7 plan de trabajo (Gantt) ──→ GATE Revisor ──→ user
-Fase 6  Redactor → §8 resultados; Bibliografo-Propuesta → §9 referencias (BibTeX)
+Fase 6  Redactor → §8 resultados; Bibliografo-Propuesta → §10 referencias (BibTeX)
 Fase 7  Revisor → auditoría final ──→ user; Coordinador-Propuesta → ensambla main.tex
 ```
 
@@ -93,7 +93,7 @@ El **asistente primario de Claude Code** puede despachar directamente
 cualquier subagente de propuesta para tareas puntuales —arreglar figuras,
 revisar una sección, actualizar bibliografía, refinar objetivos— **sin pasar
 por el pipeline completo de `coordinador-propuesta`**. El pipeline completo de
-9 secciones con gates sigue el comando `/propuesta`.
+10 secciones con gates sigue el comando `/propuesta`.
 
 | Agente | Cuándo despacharlo directamente |
 |--------|--------------------------------|
@@ -103,7 +103,7 @@ por el pipeline completo de `coordinador-propuesta`**. El pipeline completo de
 | `investigador` | Definir/refinar subproblemas, pregunta, objetivos, hipótesis, enfoques |
 | `redactor` | Redactar o revisar secciones narrativas (§1–§3, §6–§8) |
 | `revisor` | Validar coherencia y calidad de secciones ya redactadas |
-| `bibliografo-propuesta` | Construir o actualizar la bibliografía (§5.2, §9) |
+| `bibliografo-propuesta` | Construir o actualizar la bibliografía (§5.2, §10) |
 | `insumos-observador` | Ingerir y estructurar insumos del usuario (PDFs, papers) |
 
 Cuando despaches un agente de propuesta directamente, incluye en el prompt
@@ -136,7 +136,7 @@ su sección asignada. Resumen de asignación:
 | Compilación/optimización visual de diagramas (loop PNG) | Tikz-Optimizer |
 | §7 Plan de trabajo | Redactor |
 | §8 Resultados y productos | Redactor |
-| §9 Referencias | Bibliografo-Propuesta |
+| §10 Referencias | Bibliografo-Propuesta |
 | Revisión de coherencia y calidad | Revisor |
 | Coordinación del pipeline de propuesta | Coordinador-Propuesta |
 

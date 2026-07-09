@@ -41,7 +41,7 @@ one of four labels: **TDR**, **draft-base**, **background**, or
   scoring/evaluation-criteria table (points per criterion); explicit
   deadlines; eligibility rules.
 - **draft-base** (borrador previo reutilizable): mentions of "propuesta",
-  "anexo"; a prior full-proposal structure resembling §1-§9 of the guide;
+  "anexo"; a prior full-proposal structure resembling §1-§10 of the guide;
   objectives or subproblemas already stated as a finished artifact (not a
   requirement to satisfy).
 - **background**: everything else (reference papers, prior art, images,
@@ -68,7 +68,7 @@ unambiguous case.
 ## Extracción del TDR
 
 When a file is classified as **TDR** (auto-confident or user-confirmed),
-extract its required sections, mapped to the 9 guide sections:
+extract its required sections, mapped to the 10 guide sections:
 
 - §1 Título
 - §2 Justificación/pertinencia (2.1 problemática, 2.2 pertinencia)
@@ -78,7 +78,7 @@ extract its required sections, mapped to the 9 guide sections:
 - §6 Metodología
 - §7 Plan de trabajo
 - §8 Resultados/productos
-- §9 Referencias
+- §10 Referencias
 
 Also extract the weighted-criteria table as `Criterio | Pts | Sección(es)
 afectada(s)`, mapping each evaluation criterion to the guide section(s) it

@@ -58,7 +58,7 @@ inline into your Task prompt by the dispatcher.
 If the dispatcher threads a "PRIORIDAD TDR" text block into your Task prompt
 (a `Criterio | Pts | Sección(es) afectada(s)` table computed in Fase 0 from a
 classified/confirmed TDR), weight the ALTA-flagged guide sections in emphasis
-and depth **without altering** the mandated 9-section structure or the
+and depth **without altering** the mandated 10-section structure or the
 paragraph-count requirements from the guide.
 
 If the block is absent (no TDR), ignore it entirely — behavior is identical
@@ -72,7 +72,7 @@ entradas DURAS son AMBAS: (1) la tabla de criterios ponderados
 ("Secciones obligatorias declaradas por el TDR") — gobierna la ESTRUCTURA del
 documento. Si "Declara secciones propias: Sí", la estructura de la guía
 ajustada DEBE reflejar esa lista (añadir/renombrar/reordenar secciones
-mapeadas sobre las 9 de la guía). NO generes la guía solo desde la tabla de
+mapeadas sobre las 10 de la guía). NO generes la guía solo desde la tabla de
 criterios. Si la lista está ausente/bloqueada, NO procedas: el dispatcher
 bloquea G0.5 antes de encargarte nada.
 

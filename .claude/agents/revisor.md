@@ -24,7 +24,7 @@ verdict with specific, actionable corrections.
    - Results (§8) ↔ products at §7 milestones.
 3. **TRL:** TRL 6 or 7 is explicit in objectives, pertinence, and results.
 4. **Bibliographic quality:** ≥30 Q1/Q2 refs (≤3 yrs) for §5.2; ≥50 total for
-   §9; APA author-year format (no IEEE numeric); no theses; preprints only
+   §10; APA author-year format (no IEEE numeric); no theses; preprints only
    from recognized labs/leaders.
    Mechanical citation audit (multi-line aware): a single `\citep{}`/`\citet{}`
    may span several physical lines — count keys per LOGICAL call, not per

@@ -564,14 +564,14 @@ Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
         actualiza `proposal/pipeline/_estado.md`; luego `cd
         proposal/pipeline/ && graphify --update . && graphify export html`.
         NUNCA `--force`.
-Fase 6  Task → redactor → §8 resultados; Task → bibliografo-propuesta → §9 referencias (BibTeX)
+Fase 6  Task → redactor → §8 resultados; Task → bibliografo-propuesta → §10 referencias (BibTeX)
         ──→ [NUEVO] DISPATCHER: papers-graph refresh (post-Fase-6): guardia —
         ejecuta este bloque solo si `proposal/refs.bib` cambió en esta fase
-        (la consolidación MODE=deliverable §5.2+§9 lo acaba de extender).
+        (la consolidación MODE=deliverable §5.2+§10 lo acaba de extender).
         Mecánica: `cd proposal/scoping/ && graphify --update papers/ &&
         graphify export html`. NUNCA `--force`. La salida sigue en
         `proposal/scoping/graphify-out/`.
-Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§9 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
+Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§10 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.5, evento de

@@ -157,7 +157,7 @@ scoping-stage modes that add `consensus` to the tool scope.
 
 ### MODE=deliverable (Fase 4 existente)
 
-This is the mode documented in the rest of this file — §5.2 + §9, with the
+This is the mode documented in the rest of this file — §5.2 + §10, with the
 "Hard constraints" and "Literature search stack" as specified below. It
 keeps the full existing tool stack: `openalex`, `semanticscholar`,
 `crossref`, `pubmed`, `arxiv`, `context7`. Only constraint 1 below narrows to
@@ -175,7 +175,7 @@ additionally have `consensus` as their primary Q1/Q2 tool.
   philosophy / limitation type, tied to §2.1 subproblems; team starting point;
   gaps; novelty positioning). Note: the **closing hypothesis paragraph** is
   drafted by the Investigador; you supply the evidence base.
-- **§9 Referencias bibliográficas** (consolidated BibTeX).
+- **§10 Referencias bibliográficas** (consolidated BibTeX).
 
 ## Hard constraints (MODE=deliverable)
 
@@ -186,10 +186,10 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
    (`proposal/scoping/papers/paper-{1..N}.md`, 30-40 Q1/Q2 references) and
    its approved subsection mapping table instead of re-searching from
    scratch — the ≥30 Q1/Q2 floor is satisfied by that corpus. Additional
-   searching is allowed only insofar as needed to satisfy the §9 ≥50-total
+   searching is allowed only insofar as needed to satisfy the §10 ≥50-total
    floor (constraint 2).
-2. Consolidate ≥50 total references for §9.
-3. Format: **APA author-year only** (natbib `\citet`/`\citep`, `\bibliographystyle{apalike}`), per `guiaProyectosIA_Agente.md` §9 item 1. Do NOT use IEEE numeric `[1]` style.
+2. Consolidate ≥50 total references for §10.
+3. Format: **APA author-year only** (natbib `\citet`/`\citep`, `\bibliographystyle{apalike}`), per `guiaProyectosIA_Agente.md` §10 item 1. Do NOT use IEEE numeric `[1]` style.
 4. **No theses.** Preprints (arXiv) only from recognized labs/leaders/universities.
 5. Group state-of-the-art strategies by approach philosophy or limitation type,
    and relate each group explicitly to the §2.1 subproblems.
@@ -242,7 +242,7 @@ TODOS los modos que escriban `proposal/refs.bib` deben cumplir este
 invariante (redacción a prueba de futuro), vinculante hoy en los dos
 caminos reales que existen: **MODE=sota**, sub-paso WRITE-REFS (`:142-156`,
 solo tras aprobación G1b) y **MODE=deliverable** (`:172-178`, Fase 6,
-§5.2+§9). Ningún otro camino escribe `refs.bib`: MODE=explore devuelve
+§5.2+§10). Ningún otro camino escribe `refs.bib`: MODE=explore devuelve
 referencias en línea sin escribir archivo; MODE=scope no produce BibTeX;
 Fase 5 solo despacha al redactor y no toca `refs.bib` — el invariante NO
 aplica a esos caminos.
