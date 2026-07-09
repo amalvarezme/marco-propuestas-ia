@@ -143,3 +143,42 @@ Esta subsección es crucial para la evaluación de la calidad científica y debe
     *   Se permite incluir artículos en pre-impresión (tipo *arXiv*) **solo** si provienen de laboratorios de empresas líderes en IA, investigadores reconocidos mundialmente o universidades de alto prestigio.
 
 ---
+
+### Convenciones técnicas de LaTeX
+
+Estas convenciones son la única fuente de verdad para el ensamble LaTeX; aplícalas al redactar cada sección, no al ensamblar.
+
+**Anidamiento de encabezados**
+
+| Secciones | Convención |
+|---|---|
+| §2, §4, §5, §8 | `\section` que envuelve hijos NUMERADOS `\subsection` (renderizan 2.1/2.2, 4.1/4.2, 5.1/5.2/5.3, 8.1/8.2, espejo de los `####` de la guía). |
+| §1, §3, §7, §9 | `\section` autocontenido, sin subsecciones. |
+| §6 | `\section` autocontenido con encabezados internos de fase OPCIONALES y SIN numerar (`\subsection*`), no `\subsection` numerado. |
+
+**Paquetes del preámbulo**
+
+| Paquete | Propósito |
+|---|---|
+| `natbib` + `apalike` | Citas autor-año |
+| `cleveref` | `\Cref` |
+| `enumitem` | Listas |
+| `pgfgantt` + `tikz` + `shapes.geometric` | Gantt / figuras |
+| `xcolor[table]` | Colores / tablas |
+
+**Colores institucionales**
+
+Definidos una única vez aquí (fuente de verdad); estos tres colores están actualmente duplicados en `main.tex`, `compile_tikz.py` y comentarios de `diag_*.tex` — los agentes de diagramación deben referenciar estos nombres canónicos, no redefinir los valores.
+
+```latex
+\definecolor{azulUNAL}{HTML}{0066B3}
+\definecolor{grisLabIA}{HTML}{666666}
+\definecolor{verdeGCPDS}{HTML}{2E8B57}
+```
+
+**Convención `\label{}`/`\Cref{}`**
+
+| Prefijo | Elemento |
+|---|---|
+| `fig:*` | Figuras |
+| `tab:*` | Tablas |
