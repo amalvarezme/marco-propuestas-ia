@@ -377,6 +377,12 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         tabla de mapeo de subsecciones; si la Fase 1b no corrió (o no cerró
         en APROBADA), omite este bloque adicional y el despacho sigue el
         comportamiento previo al cambio.
+        ──→ luego bucle de figura (árbol de problemas):
+          Task → disenador-tikz (autor diag_arbol_problemas.tex)
+          → Task → tikz-optimizer (compila a PNG, primer ajuste)
+          → Task → revisor-figuras (audita, PASS/FAIL)
+          → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
+          → en PASS, continúa
         ──→ [NUEVO] DISPATCHER: `graphify --update vault/` (incremental,
         NUNCA `--force`, NUNCA reconstruye desde cero aquí) → `graphify
         export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
@@ -425,6 +431,8 @@ Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
 Fase 6  Task → redactor → §8 resultados; Task → bibliografo-propuesta → §9 referencias (BibTeX)
+Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§9 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
+        ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
 Fase 7  ──→ [NUEVO] DISPATCHER: `graphify --update vault/` sobre el vault
         completo (todas las secciones ya escritas) → `graphify export html`
         → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
@@ -433,6 +441,9 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `graphify --update vault/` sobre el vault
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         Task → revisor → auditoría final (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         Tú (el asistente primario) ensamblas `proposal/main.tex` una vez aprobado.
+        Los 3 archivos `00_*.tex` (Resumen → Resumen ejecutivo → Palabras
+        clave, en ese orden) DEBEN incluirse antes del contenido de §2,
+        maquetados con `\section*{}`.
 ```
 
 ## Reglas de dependencia (haz que `revisor` las valide en cada gate)
