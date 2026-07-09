@@ -6,3 +6,4 @@ corrida agrega una fila al resolver su run-id; el dispatcher actualiza
 
 | run-id | creada | cerrada | estado | idea (breve) | archivo | commit |
 |---|---|---|---|---|---|---|
+| `pre-run-id` (corrida anterior al esquema de run-id) | 2026-06-25 | 2026-07-08 | eliminada | Ecosistema de agentes autónomos de IA para aprendizaje profundo (alianza intersedes SIUN) | — | `7886ff3` |
