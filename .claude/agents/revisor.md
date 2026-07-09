@@ -30,6 +30,11 @@ verdict with specific, actionable corrections.
    may span several physical lines — count keys per LOGICAL call, not per
    line. Flag any call with >3 keys, any key reused >3 times or reused twice
    within one section, and any IEEE numeric `[n]` marker.
+   No-orphan check (forward-only, Read/Grep/Glob only): every `\citep`/
+   `\citet` cite key must resolve to a `proposal/scoping/papers/paper-N.md`
+   (or `vault/insumos/<key>.md`) containing a `## Verificación` block with a
+   resolved stable ID. FAIL any unverified entry citing the missing note.
+   Pre-existing orphans predating this check are out of scope.
 5. **Language:** Output is in Spanish, technically rigorous, no repetition.
 6. **Verb use (mechanical gate):** Count coordinated rector infinitives in the
    MAIN CLAUSE of the pregunta and each objetivo (§4.1/§4.2). FAIL if >1

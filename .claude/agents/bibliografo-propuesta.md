@@ -236,10 +236,40 @@ across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
 - Never fabricate references. Every BibTeX entry must trace to a real record
   returned by these tools or to user-provided insumos.
 
-## Vault mirror (MODE=deliverable only)
+## Invariante de escritura de referencias
 
-_Applies only to MODE=deliverable. MODE=explore stays inline-only — see
-"Modos de operación" above; do not write any vault notes in that mode._
+TODOS los modos que escriban `proposal/refs.bib` deben cumplir este
+invariante (redacción a prueba de futuro), vinculante hoy en los dos
+caminos reales que existen: **MODE=sota**, sub-paso WRITE-REFS (`:142-156`,
+solo tras aprobación G1b) y **MODE=deliverable** (`:172-178`, Fase 6,
+§5.2+§9). Ningún otro camino escribe `refs.bib`: MODE=explore devuelve
+referencias en línea sin escribir archivo; MODE=scope no produce BibTeX;
+Fase 5 solo despacha al redactor y no toca `refs.bib` — el invariante NO
+aplica a esos caminos.
+
+Invariante: cada entrada nueva en `refs.bib` debe tener:
+1. Un `proposal/scoping/papers/paper-N.md` con un bloque `## Verificación`.
+2. Una nota `vault/insumos/<cite_key>.md`.
+
+Plantilla mínima de paper `.md` (extiende el esquema de MODE=scope):
+
+```markdown
+# {Título}
+- Autores: ... | Año: ... | Venue: ... | Cuartil: Q1|Q2 | DOI: ...
+## Verificación
+- Herramienta: <crossref|openalex|semanticscholar>
+- ID estable: <DOI o ID>  | Resuelto: sí
+## Relevancia
+{una línea}
+## Abstract
+{verbatim}
+```
+
+## Vault mirror
+
+Aplica a los dos caminos reales que escriben `refs.bib` (MODE=sota
+WRITE-REFS y MODE=deliverable) — ver "Invariante de escritura de
+referencias" arriba; no está limitado a MODE=deliverable.
 
 When writing `proposal/sections/05_2_estado_arte.tex` and `proposal/refs.bib`,
 also write/update:

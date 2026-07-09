@@ -334,6 +334,12 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         de papers, parámetros de búsqueda, ruta del grafo actualizado +
         extracto del reporte, tabla de mapeo de subsecciones, y Estado
         G1b).
+        ──→ [NUEVO] DISPATCHER: papers-graph refresh (post-WRITE-REFS):
+        guardia — ejecuta este bloque solo si `proposal/refs.bib` cambió en
+        este sub-paso (WRITE-REFS lo acaba de escribir). Mecánica:
+        `cd proposal/scoping/ && graphify --update papers/ && graphify
+        export html`. NUNCA `--force`. La salida sigue en
+        `proposal/scoping/graphify-out/`.
         ──→ [NUEVO] Grafo de ideas del vault — build completo (primera vez):
         inmediatamente después de lo anterior, en esta misma transición de
         aprobación final de G1b (NO en cada iteración del bucle de G1b), el
@@ -431,6 +437,12 @@ Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
 Fase 6  Task → redactor → §8 resultados; Task → bibliografo-propuesta → §9 referencias (BibTeX)
+        ──→ [NUEVO] DISPATCHER: papers-graph refresh (post-Fase-6): guardia —
+        ejecuta este bloque solo si `proposal/refs.bib` cambió en esta fase
+        (la consolidación MODE=deliverable §5.2+§9 lo acaba de extender).
+        Mecánica: `cd proposal/scoping/ && graphify --update papers/ &&
+        graphify export html`. NUNCA `--force`. La salida sigue en
+        `proposal/scoping/graphify-out/`.
 Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§9 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
 Fase 7  ──→ [NUEVO] DISPATCHER: `graphify --update vault/` sobre el vault
