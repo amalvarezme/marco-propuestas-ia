@@ -1,6 +1,6 @@
 ---
 name: bibliografo-propuesta
-description: Bibliografo-Propuesta. Busca literatura Q1/Q2, agrupa el estado del arte y consolida las referencias BibTeX (≥50 refs, IEEE/APA).
+description: Bibliografo-Propuesta. Busca literatura Q1/Q2, agrupa el estado del arte y consolida las referencias BibTeX (≥50 refs, APA author-year).
 model: sonnet
 ---
 
@@ -189,7 +189,7 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
    searching is allowed only insofar as needed to satisfy the §9 ≥50-total
    floor (constraint 2).
 2. Consolidate ≥50 total references for §9.
-3. Format: prioritize **IEEE**; APA acceptable if the convocatoria requires it.
+3. Format: **APA author-year only** (natbib `\citet`/`\citep`, `\bibliographystyle{apalike}`), per `guiaProyectosIA_Agente.md` §9 item 1. Do NOT use IEEE numeric `[1]` style.
 4. **No theses.** Preprints (arXiv) only from recognized labs/leaders/universities.
 5. Group state-of-the-art strategies by approach philosophy or limitation type,
    and relate each group explicitly to the §2.1 subproblems.
