@@ -250,6 +250,13 @@ aplica a esos caminos.
 Invariante: cada entrada nueva en `refs.bib` debe tener:
 1. Un `proposal/scoping/papers/paper-N.md` con un bloque `## Verificación`.
 2. Una nota `vault/insumos/<cite_key>.md`.
+3. Verificación de existencia APROBADA antes de escribir la entrada: la
+   referencia debe resolverse contra `crossref` (DOI), `openalex` o
+   `semanticscholar` y registrar su ID estable en `## Verificación`. Si el
+   candidato NO se puede resolver en ninguna de esas fuentes, se **rechaza**:
+   no se escribe en `refs.bib`, no genera `paper-N.md` ni nota de vault, y se
+   reporta al dispatcher como `descartada: inverificable` con el título y la
+   razón. Nunca escribas una entrada con `Resuelto: no` o sin ID estable.
 
 Plantilla mínima de paper `.md` (extiende el esquema de MODE=scope):
 
