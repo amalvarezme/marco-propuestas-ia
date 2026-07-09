@@ -571,6 +571,55 @@ Fase 6  Task → redactor → §8 resultados; Task → bibliografo-propuesta →
         Mecánica: `cd proposal/scoping/ && graphify --update papers/ &&
         graphify export html`. NUNCA `--force`. La salida sigue en
         `proposal/scoping/graphify-out/`.
+Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
+        Precondición: §3, §6, §7 y §8 ya aprobadas (el presupuesto justifica
+        cada ítem contra la metodología/fases). DEBE cerrar ANTES de la Fase
+        6.5 (el front-matter sintetiza §1–§10 ya aprobadas).
+        ──→ RESOLUCIÓN DE MODO: si `proposal/insumos.md` (o
+        `guia_ajustada_TDR.md`) trae un bloque `## Marco presupuestal (TDR)`
+        con tope no vacío → MODE=tdr; si trae el sentinel `sin datos
+        presupuestales en TDR` o no hay bloque → MODE=base.
+        (a) Task → presupuestador (MODE=tdr | MODE=base) → primer borrador de
+        `proposal/sections/09_presupuesto.tex` + su mirror de vault, con el
+        self-audit aritmético ya aplicado; cada monto/cantidad no derivable de
+        un insumo va marcado `[supuesto]`.
+        ──→ BUCLE INTERACTIVO (sin tope de rondas; termina SOLO con
+        aprobación explícita del usuario):
+          1. El DISPATCHER presenta al usuario: (i) la tabla renderizada
+             (ítem/cantidad/valor unitario/valor total/justificación,
+             subtotales por rubro y total general); (ii) la lista de ítems
+             marcados `[supuesto]`; (iii) en MODE=tdr, tope, cofinanciación
+             aplicable, duración y el margen restante frente al tope.
+          2. El usuario responde por línea (agregar/quitar/editar ítems,
+             cantidades, valores unitarios, rubros, justificaciones) o aprueba.
+          3. Si hay feedback → Task → presupuestador con las correcciones
+             EXACTAS del usuario → regenera la tabla + re-corre el self-audit →
+             el DISPATCHER resume los DELTAS respecto de la ronda anterior (qué
+             filas/valores cambiaron y el nuevo total) y vuelve al paso 1.
+             NUNCA auto-apruebes ni asumas conformidad por silencio.
+          4. Si el usuario aprueba explícitamente → sale del bucle.
+        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` →
+        `graphify export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`;
+        arma e inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
+        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
+        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline; aplica
+        el ítem 8 Presupuesto: recomputo aritmético independiente,
+        tope/cofinanciación, justificación→§6/§7, membresía de rubro) ──→
+        usuario. NO avances sin aprobación.
+        ──→ Al aprobar: el DISPATCHER voltea `gate_status` a `pass` en
+        `vault/secciones/09_presupuesto.md` y registra la fila de la fase en
+        `proposal/estado_propuesta.md` (tabla "Presupuesto (Fase 6.4)": modo
+        [tdr|base], tope [valor+moneda o "n/a (base)"], total general, margen
+        frente al tope, cofinanciación/split aplicable + cumplimiento, número
+        de rondas interactivas, supuestos `[supuesto]` confirmados por el
+        usuario, estado del gate G-Presupuesto [APROBADA (quién/fecha) |
+        pending]).
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/65-fase6_4.md` (evento de esta compuerta, misma
+        plantilla mínima descrita arriba en "Grafo de pipeline") y actualiza
+        `proposal/pipeline/_estado.md`; luego `cd proposal/pipeline/ &&
+        graphify --update . && graphify export html`. NUNCA `--force`.
 Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§10 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
@@ -593,7 +642,9 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
         Tú (el asistente primario) ensamblas `proposal/main.tex` una vez aprobado.
         Los 3 archivos `00_*.tex` (Resumen → Resumen ejecutivo → Palabras
         clave, en ese orden) DEBEN incluirse antes del contenido de §2,
-        maquetados con `\section*{}`.
+        maquetados con `\section*{}`. Orden del cuerpo: `\input{sections/09_presupuesto}`
+        va DESPUÉS de `08_resultados` y ANTES del bloque de bibliografía
+        (`\bibliographystyle{apalike}` + `\bibliography{refs}`, §10).
 ```
 
 ## Reglas de dependencia (haz que `revisor` las valide en cada gate)
