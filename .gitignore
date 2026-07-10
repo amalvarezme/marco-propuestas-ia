@@ -30,3 +30,30 @@ __pycache__/
 **/*.lof
 **/*.lot
 proposal/*.pdf
+
+# --- Contenido generado por corridas de /propuesta -----------------------
+# El repo solo versiona el esqueleto del framework (build.sh, scripts/,
+# logos/, templates/); todo lo que /propuesta produce por corrida se
+# descarta aquí para que un `git add -A` después de una corrida real nunca
+# vuelva a subir contenido de una propuesta específica.
+proposal/main.tex
+proposal/main.docx
+proposal/refs.bib
+proposal/insumos.md
+proposal/estado_propuesta.md
+proposal/guia_ajustada_TDR.md
+proposal/sections/
+proposal/pipeline/
+proposal/scoping/
+proposal/pixelshot-out/
+
+# Insumos y notas de vault por corrida (se conserva el placeholder de carpeta)
+vault/insumos/*
+!vault/insumos/.gitkeep
+vault/secciones/*
+!vault/secciones/.gitkeep
+
+# Insumos de usuario (PDFs/DOCX de la convocatoria) — específicos de cada
+# corrida, no del framework base
+info_data/*
+!info_data/.gitkeep
