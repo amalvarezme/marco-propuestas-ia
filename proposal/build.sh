@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 #
-# build.sh — Compila la propuesta de investigación (LaTeX + BibLaTeX/Biber).
+# build.sh — Compila la propuesta de investigación (LaTeX + natbib/apalike, BibTeX).
 #
 # Uso:
 #   ./build.sh              Compilación normal (latexmk)
 #   ./build.sh --clean      Limpia artefactos auxiliares y recompila desde cero
 #   ./build.sh --clean-only Solo limpia artefactos (no compila)
-#   ./build.sh --manual     Usa la secuencia manual pdflatex→biber→pdflatex×2
+#   ./build.sh --manual     Usa la secuencia manual pdflatex→bibtex→pdflatex×2
 #   ./build.sh --watch      Recompila automáticamente al detectar cambios
 #   ./build.sh --docx       Exporta a Word (proposal/main.docx) vía pandoc
 #   ./build.sh --help       Muestra esta ayuda
 #
-# Requisitos: pdflatex, biber, latexmk; para --docx: pandoc, pdftoppm (todos en PATH).
+# Requisitos: pdflatex, bibtex, latexmk; para --docx: pandoc, pdftoppm (todos en PATH).
 #
 set -euo pipefail
 
@@ -20,7 +20,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MAIN="main.tex"
 PDF="main.pdf"
 ENGINE="pdflatex"
-BIBENGINE="biber"
+# La guía (guiaProyectosIA_Agente.md > "Convenciones técnicas de LaTeX") exige
+# natbib + apalike (citas autor-año), no biblatex/biber: apalike es un .bst
+# clásico procesado por bibtex, no genera el .bcf que biber requiere.
+BIBENGINE="bibtex"
 
 # Colores (si la terminal los soporta)
 if [[ -t 1 ]]; then
@@ -69,7 +72,13 @@ check_deps() {
   done
   if [[ ${#missing[@]} -gt 0 ]]; then
     err "Faltan dependencias: ${missing[*]}"
-    err "Instala TeX Live (pdflatex, biber) o MiKTeX; para --docx: 'brew install pandoc' (pdftoppm viene con poppler)."
+    err "Instala TeX Live (pdflatex, bibtex) o MiKTeX; para --docx: 'brew install pandoc' (pdftoppm viene con poppler)."
+    exit 1
+  fi
+  if [[ ! -f "${SCRIPT_DIR}/${MAIN}" ]]; then
+    err "No existe ${SCRIPT_DIR}/${MAIN}."
+    err "main.tex se genera por cada corrida de /propuesta (Fase 7, ensamble); no está committeado."
+    err "Ejecuta /propuesta en Claude Code hasta completar la Fase 7 antes de compilar."
     exit 1
   fi
 }
@@ -114,28 +123,28 @@ build_latexmk() {
   fi
 }
 
-# --- Compilación manual (pdflatex → biber → pdflatex × 2) --------------------
+# --- Compilación manual (pdflatex → bibtex → pdflatex × 2) -------------------
 build_manual() {
   log "Compilación manual: pdflatex → ${BIBENGINE} → pdflatex × 2"
   cd "${SCRIPT_DIR}"
 
-  log "Paso 1/4: pdflatex (pass 1 — genera .bcf)..."
-  if ! ${ENGINE} -interaction=nonstopmode -synctex=1 "${MAIN}" > /dev/null 2>&1; then
+  log "Paso 1/4: pdflatex (pass 1 — genera .aux con las citas)..."
+  if ! ${ENGINE} -interaction=nonstopmode -synctex=1 "${MAIN}" 2>&1 | sed 's/^/  /'; then
     warn "pdflatex (pass 1) reportó errores. Continuando (nonstopmode)..."
   fi
 
-  log "Paso 2/4: ${BIBENGINE} (procesa bibliografía)..."
-  if ! ${BIBENGINE} "$(basename "${MAIN}" .tex)" > /dev/null 2>&1; then
-    warn "biber reportó advertencias. Continuando..."
+  log "Paso 2/4: ${BIBENGINE} (procesa bibliografía apalike)..."
+  if ! ${BIBENGINE} "$(basename "${MAIN}" .tex)" 2>&1 | sed 's/^/  /'; then
+    warn "${BIBENGINE} reportó advertencias. Continuando..."
   fi
 
   log "Paso 3/4: pdflatex (pass 2 — incorpora bibliografía)..."
-  if ! ${ENGINE} -interaction=nonstopmode -synctex=1 "${MAIN}" > /dev/null 2>&1; then
+  if ! ${ENGINE} -interaction=nonstopmode -synctex=1 "${MAIN}" 2>&1 | sed 's/^/  /'; then
     warn "pdflatex (pass 2) reportó errores. Continuando (nonstopmode)..."
   fi
 
   log "Paso 4/4: pdflatex (pass 3 — resuelve referencias cruzadas)..."
-  if ! ${ENGINE} -interaction=nonstopmode -synctex=1 "${MAIN}" > /dev/null 2>&1; then
+  if ! ${ENGINE} -interaction=nonstopmode -synctex=1 "${MAIN}" 2>&1 | sed 's/^/  /'; then
     warn "pdflatex (pass 3) reportó errores. Continuando (nonstopmode)..."
   fi
 
@@ -146,7 +155,7 @@ build_manual() {
     size=$(du -h "${PDF}" | cut -f1)
     ok "Compilación exitosa: ${PDF} (${pages} páginas, ${size})"
   else
-    err "No se generó ${PDF}."
+    err "No se generó ${PDF}. Revisa los errores arriba."
     exit 1
   fi
 }

@@ -10,7 +10,7 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 | **uv** | 0.11+ | Python package manager (recommended) | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | **Node.js** | 20+ | MCP servers via npx | `brew install node` |
 | **npm / npx** | 10+ | MCP server fetching | bundled with Node |
-| **TeX Live** | 2024+ | LaTeX compilation (pdflatex + biber) | `brew install --cask mactex` |
+| **TeX Live** | 2024+ | LaTeX compilation (pdflatex + bibtex) | `brew install --cask mactex` |
 | **git** | 2.40+ | Version control | `brew install git` |
 
 ## 2. Python packages (`requirements.txt`)
@@ -71,14 +71,14 @@ All loaded in `proposal/main.tex`. Install via `tlmgr install <pkg>` or MacTeX/f
 | `url` | url | URL formatting |
 | `csquotes` | csquotes | Quote environments |
 | `fancyhdr` | fancyhdr | Split header/footer with institutional logos (UNAL header; GCPDS/LabIA footer) |
-| `biblatex` (style=ieee, backend=biber) | biblatex + biber | IEEE-style bibliography |
+| `natbib` (style=apalike, backend=bibtex) | natbib + apalike.bst | Citas autor-año APA (ver guiaProyectosIA_Agente.md §16) |
 | `cm-super` | cm-super | T1-compatible Computer Modern fonts (Spanish) |
 
-Compile sequence:
+Compile sequence (or just run `./build.sh` / `./build.sh --manual`):
 ```bash
 cd proposal
 pdflatex main.tex
-biber main
+bibtex main
 pdflatex main.tex
 pdflatex main.tex
 ```
@@ -109,19 +109,20 @@ Graphify is a Claude Code skill file + the `graphifyy` Python package (in `requi
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
 ├── .claude/                  # CANONICAL runtime — single source of truth
-│   ├── agents/               # 9 subagentes de propuesta (coordinador-propuesta,
+│   ├── agents/               # 10 subagentes de propuesta (coordinador-propuesta,
 │   │                         #   investigador, redactor, insumos-observador,
-│   │                         #   bibliografo-propuesta, revisor, disenador-tikz,
-│   │                         #   revisor-figuras, tikz-optimizer)
+│   │                         #   bibliografo-propuesta, presupuestador, revisor,
+│   │                         #   disenador-tikz, revisor-figuras, tikz-optimizer)
 │   └── commands/
 │       └── propuesta.md      # Comando /propuesta — dispatcher real del pipeline
-├── info_data/                # User inputs (PDFs, DOCX)
-├── proposal/
-│   ├── main.tex              # LaTeX assembly (header/footer logos)
-│   ├── refs.bib              # BibTeX (87 entries, IEEE)
-│   ├── sections/             # One .tex per section + 3 TikZ diagrams
-│   ├── logos/                # LabIA, UNAL, GCPDS logos
-│   ├── insumos.md            # Shared context digest (Insumos-Observador output)
-│   └── estado_propuesta.md   # Phase tracker
+├── info_data/                # User inputs (PDFs, DOCX) — vacío hasta la próxima corrida
+├── proposal/                 # Framework skeleton committed to git:
+│   ├── build.sh              # Compilación PDF/DOCX (logos header/footer)
+│   ├── scripts/               # compile_tikz.py, prep_docx.py
+│   ├── logos/                 # LabIA, UNAL, GCPDS logos
+│   └── templates/reference.docx  # Plantilla pandoc para export DOCX
+│   # Generados por cada corrida de /propuesta (no committeados, ver .gitignore):
+│   #   main.tex, refs.bib, sections/*.tex, insumos.md, estado_propuesta.md,
+│   #   guia_ajustada_TDR.md, pipeline/, scoping/
 └── graphify-out/             # Knowledge graph outputs (gitignored)
 ```

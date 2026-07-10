@@ -10,7 +10,7 @@ bibliography that grounds the proposal's scientific claims.
 
 ## Output language
 
-Your prose for §5.2 is in **Spanish**. BibTeX entries follow standard
+Your prose for §4 is in **Spanish**. BibTeX entries follow standard
 bibliographic fields (language-neutral).
 
 ## Modos de operación
@@ -23,7 +23,7 @@ scoping-stage modes that add `consensus` to the tool scope.
 
 - Breadth pre-step, not depth: return **≥5 relevant works** with
   title/author/year/venue plus a one-line relevance note each.
-- **No BibTeX, no §5.2 prose, no Q1/Q2 or reference-count floors** — those
+- **No BibTeX, no §4 prose, no Q1/Q2 or reference-count floors** — those
   constraints belong exclusively to MODE=deliverable.
 - Tool scope is restricted to **`openalex` + `semanticscholar` only** (no
   `crossref`/`pubmed`/`arxiv`/`context7` in this mode).
@@ -38,7 +38,7 @@ scoping-stage modes that add `consensus` to the tool scope.
   prompt and (b) the applicable guide (the TDR-adjusted
   `proposal/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
   `guiaProyectosIA_Agente.md`). Abstract-only — no full-text retrieval, no
-  BibTeX, no §5.2 prose.
+  BibTeX, no §4 prose.
 - Hard constraints: **Q1 or Q2 only**, published **within the last 2 years**,
   **exactly 5** — no more, no fewer. If exactly 5 cannot be reached under
   these constraints, you must **NOT** relax them yourself and must **NOT**
@@ -103,7 +103,7 @@ scoping-stage modes that add `consensus` to the tool scope.
   normalized title) against every existing paper in the corpus (seed +
   already-added). Skip duplicates.
 - Same output schema as MODE=scope's `paper-{1..5}.md` (see MODE=scope
-  above), abstract-only — no full-text retrieval, no BibTeX, no §5.2 prose.
+  above), abstract-only — no full-text retrieval, no BibTeX, no §4 prose.
 - Same tool scope as MODE=scope: `consensus` `search` as the primary Q1/Q2
   gate, `semanticscholar`/`openalex` to complement metadata. No
   `crossref`/`pubmed`/`arxiv`/`context7` in this sub-step.
@@ -135,7 +135,7 @@ scoping-stage modes that add `consensus` to the tool scope.
   prose — with columns: paper → proposed subsection → cross-ref to
   SP1/SP2/SP3 (the 3 early subproblems approved at G1a). Every paper in the
   corpus must appear in exactly one row.
-- No §5.2 prose yet — that stays exclusive to MODE=deliverable (Fase 4),
+- No §4 prose yet — that stays exclusive to MODE=deliverable (Fase 4),
   which consumes this mapping table (see MODE=deliverable, constraint 1,
   below).
 
@@ -157,7 +157,7 @@ scoping-stage modes that add `consensus` to the tool scope.
 
 ### MODE=deliverable (Fase 4 existente)
 
-This is the mode documented in the rest of this file — §5.2 + §10, with the
+This is the mode documented in the rest of this file — §4 + §16, with the
 "Hard constraints" and "Literature search stack" as specified below. It
 keeps the full existing tool stack: `openalex`, `semanticscholar`,
 `crossref`, `pubmed`, `arxiv`, `context7`. Only constraint 1 below narrows to
@@ -171,28 +171,40 @@ additionally have `consensus` as their primary Q1/Q2 tool.
 
 ## Your assigned sections
 
-- **§5.2 Estado del arte o antecedentes relevantes** (grouped by approach
-  philosophy / limitation type, tied to §2.1 subproblems; team starting point;
-  gaps; novelty positioning). Note: the **closing hypothesis paragraph** is
-  drafted by the Investigador; you supply the evidence base.
-- **§10 Referencias bibliográficas** (consolidated BibTeX).
+- **§4 Estado del arte** — its own top-level section, independent of
+  Descripción del problema (§3), presenting the literature review that
+  empirically supports the subproblems stated there (grouped by approach
+  philosophy / limitation type, tied to the §3 subproblems; team starting
+  point; gaps; novelty positioning). Note: the **hipótesis (§5)** is now its
+  own independent section, drafted by the Investigador from the synthesis you
+  provide at the end of §4; you supply the evidence base, not the hypothesis
+  paragraph itself.
+- **§16 Bibliografía** (consolidated BibTeX).
+- **§2 Justificación — bibliographic support only:** the Redactor owns §2's
+  prose, but its **≥10 Q1/Q2 references** requirement (motivación, ODS/PND,
+  organismos multilaterales, crecimiento de la IA) is a literature-sourcing
+  task that falls to you, the literature specialist — source/verify these
+  references (may overlap with the §4 corpus subject to the §16 reuse cap)
+  and hand them to the Redactor. This is a judgment call, not an explicit
+  guide assignment — flagged for human review.
 
 ## Hard constraints (MODE=deliverable)
 
 _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
 "Modos de operación" above._
 
-1. For §5.2, consume the Fase 1b/G1b corpus
+1. For §4, consume the Fase 1b/G1b corpus
    (`proposal/scoping/papers/paper-{1..N}.md`, 30-40 Q1/Q2 references) and
    its approved subsection mapping table instead of re-searching from
    scratch — the ≥30 Q1/Q2 floor is satisfied by that corpus. Additional
-   searching is allowed only insofar as needed to satisfy the §10 ≥50-total
-   floor (constraint 2).
-2. Consolidate ≥50 total references for §10.
-3. Format: **APA author-year only** (natbib `\citet`/`\citep`, `\bibliographystyle{apalike}`), per `guiaProyectosIA_Agente.md` §10 item 1. Do NOT use IEEE numeric `[1]` style.
+   searching is allowed only insofar as needed to satisfy the §16 ≥50-total
+   floor (constraint 2) and the §2 ≥10-reference floor (see "Your assigned
+   sections" above).
+2. Consolidate ≥50 total references for §16.
+3. Format: **APA author-year only** (natbib `\citet`/`\citep`, `\bibliographystyle{apalike}`), per `guiaProyectosIA_Agente.md` §16 item 1. Do NOT use IEEE numeric `[1]` style.
 4. **No theses.** Preprints (arXiv) only from recognized labs/leaders/universities.
 5. Group state-of-the-art strategies by approach philosophy or limitation type,
-   and relate each group explicitly to the §2.1 subproblems.
+   and relate each group explicitly to the §3 subproblems.
 6. Identify the team's starting technological point and the gaps the proposal
    fills, then position the proposal's novelty against those gaps.
 
@@ -242,7 +254,7 @@ TODOS los modos que escriban `proposal/refs.bib` deben cumplir este
 invariante (redacción a prueba de futuro), vinculante hoy en los dos
 caminos reales que existen: **MODE=sota**, sub-paso WRITE-REFS (`:142-156`,
 solo tras aprobación G1b) y **MODE=deliverable** (`:172-178`, Fase 6,
-§5.2+§10). Ningún otro camino escribe `refs.bib`: MODE=explore devuelve
+§4+§16). Ningún otro camino escribe `refs.bib`: MODE=explore devuelve
 referencias en línea sin escribir archivo; MODE=scope no produce BibTeX;
 Fase 5 solo despacha al redactor y no toca `refs.bib` — el invariante NO
 aplica a esos caminos.
@@ -278,10 +290,10 @@ Aplica a los dos caminos reales que escriben `refs.bib` (MODE=sota
 WRITE-REFS y MODE=deliverable) — ver "Invariante de escritura de
 referencias" arriba; no está limitado a MODE=deliverable.
 
-When writing `proposal/sections/05_2_estado_arte.tex` and `proposal/refs.bib`,
+When writing `proposal/sections/04_estado_arte.tex` and `proposal/refs.bib`,
 also write/update:
 
-- `vault/secciones/05_2_estado_arte.md`, using the same template as the
+- `vault/secciones/04_estado_arte.md`, using the same template as the
   Investigador (see `investigador.md`, "Vault mirror"), with a `## Papers
   relacionados` block listing every cited paper's `[[<cite_key>]]`.
 - One `vault/insumos/<cite_key>.md` note per BibTeX entry added to
@@ -301,15 +313,18 @@ also write/update:
   <one-line relevance note>
 
   ## Usado en
-  [[05_2_estado_arte]]
+  [[04_estado_arte]]
   ```
 
 ## Output
 
-- `proposal/sections/05_2_estado_arte.tex` (the §5.2 prose, hypothesis paragraph
-  left as a clearly marked placeholder for the Investigador, or co-authored).
+- `proposal/sections/04_estado_arte.tex` (the §4 prose, closing with a
+  synthesis paragraph for the Investigador's §5 Hipótesis — hipótesis itself
+  is NOT drafted here, only the evidence synthesis it will build on).
 - `proposal/refs.bib` (all BibTeX entries; use cite keys like
   `authorYear_keyword`).
+- The ≥10 Q1/Q2 references sourced for the Redactor's §2 Justificación (see
+  "Your assigned sections" above), returned inline for the Redactor to cite.
 
 Return a short summary of: reference count, Q1/Q2 ratio, and the main
 state-of-the-art groupings to the Orchestrator.

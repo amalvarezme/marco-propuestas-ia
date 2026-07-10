@@ -23,19 +23,35 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
    extrae/estructura esos insumos en un contexto compartido.
 3. **Enfoque:** Productos/servicios de IA con innovación investigativa,
    transferencia tecnológica clara, productos tangibles con **TRL 6 o 7**.
-4. **Estructura:** Sigue rigurosamente las 10 secciones de la
+4. **Estructura:** Sigue rigurosamente las 16 secciones de la
    `guiaProyectosIA_Agente.md`. No omitas ni renumeraciones secciones.
 5. **Dependencias cruzadas (obligatorias):**
-   - Los 3 subproblemas (§2.1) ↔ 3 objetivos específicos (§4.2), mapeo 1:1.
-   - La pregunta de investigación (cierre §2.1) ↔ objetivo general (§4.1).
-   - La hipótesis (cierre §5.2) ↔ objetivo general.
-   - Enfoques teóricos (§5.3) ↔ subproblemas (§2.1), causa-efecto explícito.
-   - Metodología (§6) ↔ objetivos específicos, cadena de valor.
-   - Plan de trabajo (§7) ↔ fases de la Metodología (§6).
-   - Resultados (§8) ↔ productos entregados en hitos del plan (§7).
-6. **Calidad bibliográfica:** ≥30 refs Q1/Q2 (≤3 años) para §5.2; ≥50 refs
-   totales para §10; formato APA o IEEE (priorizar IEEE). Sin tesis; preprints
-   solo de labs/líderes reconocidos.
+   - Los 3 subproblemas (§3) ↔ 3 objetivos específicos (§7), mapeo 1:1.
+   - La pregunta de investigación (cierre §3) ↔ objetivo general (§6).
+   - La hipótesis (§5) ↔ objetivo general (§6).
+   - Metodología (§10) ↔ objetivos específicos (§7), marco conceptual (§8) y
+     equipo de trabajo (§9), cadena de valor. El punto 2 de Metodología nombra
+     el enfoque/algoritmo por subproblema con razonamiento causa-efecto
+     explícito referenciando el marco conceptual (§8) — función que antes
+     cubría el desaparecido §5.3 Enfoques teóricos.
+   - Equipo de trabajo (§9) deriva sus roles de los objetivos específicos
+     (§7); nunca de la Metodología (§10).
+   - Cronograma de actividades (§14) ↔ fases de la Metodología (§10).
+   - Resultados esperados (§11) ↔ productos entregados en hitos del
+     cronograma (§14).
+   - Presupuesto (§13) ↔ Metodología (§10) y Cronograma (§14) —referencia
+     hacia adelante válida, ya que Presupuesto se redacta antes que Cronograma
+     en el pipeline pero ambos referencian las mismas fases de Metodología.
+   - TRL 6 o 7 debe ser explícito en pertinencia (§2) y resultados esperados
+     (§11); **nunca** se nombra en objetivo general (§6) ni en objetivos
+     específicos (§7).
+6. **Calidad bibliográfica:** ≥10 refs Q1/Q2 para §2 Justificación y
+   pertinencia (mínimo 6 párrafos); ≥30 refs Q1/Q2 (≤3 años) para §4 Estado
+   del arte; ≥50 refs totales para §16 Bibliografía; formato **APA
+   author-year únicamente** (natbib+apalike, `\citet{}`/`\citep{}`) — el
+   estilo numérico IEEE (`[1]`) está prohibido, conforme a
+   `guiaProyectosIA_Agente.md` §16 Bibliografía. Sin tesis; preprints solo de
+   labs/líderes reconocidos.
 7. **Salida LaTeX:** Cada sección se escribe como archivo `.tex` en
    `proposal/sections/`; referencias en `proposal/refs.bib`; ensamblaje en
    `proposal/main.tex`. El template `main.tex` incluye un footer con los logos
@@ -50,12 +66,12 @@ verdad):
 | Agente | Modelo por defecto | Rol |
 |--------|--------------------|-----|
 | `coordinador-propuesta` | sonnet | Referencia canónica del pipeline (no despachable como subagente activo) |
-| `investigador` | opus | Subproblemas, pregunta, objetivos, hipótesis, enfoques |
-| `redactor` | opus | Secciones narrativas (§1–§3, §6–§8) |
+| `investigador` | opus | Subproblemas, pregunta, objetivos, hipótesis, marco conceptual |
+| `redactor` | opus | Secciones narrativas (§1, §2, §9–§12, §14–§15) |
 | `insumos-observador` | sonnet | Ingesta y estructuración de insumos del usuario |
-| `bibliografo-propuesta` | sonnet | Bibliografía (§5.2, §10) |
+| `bibliografo-propuesta` | sonnet | Bibliografía (§4, §16) |
 | `revisor` | sonnet | Validación de coherencia/calidad en cada gate |
-| `presupuestador` | sonnet | Presupuesto (§9): tabla de rubros + aritmética + cofinanciación |
+| `presupuestador` | sonnet | Presupuesto (§13): tabla de rubros + aritmética + cofinanciación |
 | `disenador-tikz` | sonnet | Autoría de diagramas TikZ |
 | `revisor-figuras` | sonnet | Auditoría visual publication-ready de figuras (PNG) |
 | `tikz-optimizer` | sonnet | Compilación y optimización visual de diagramas TikZ |
@@ -67,20 +83,27 @@ No existen agentes llamados `orquestador`, `observador` (a secas) ni
 
 ```
 Fase 0  Insumos-Observador → ingerir insumos
-Fase 1  Investigador → §2.1 subproblemas + pregunta ──→ GATE Revisor ──→ user
-Fase 2  Redactor → §2.2 pertinencia, §3 alcance ──→ GATE Revisor ──→ user
-Fase 3  Investigador → §4.1 + §4.2 ──→ GATE Revisor (subproblema↔objetivo) ──→ user
-Fase 4  Bibliografo-Propuesta → §5.2 estado del arte (paralelo)
-        Investigador → §5.1, §5.3, hipótesis ──→ GATE Revisor ──→ user
-Fase 5  Redactor → §6 metodología, luego bucle de figuras:
+Fase 1  Investigador → §3 descripción del problema + pregunta ──→ GATE Revisor ──→ user
+Fase 2  Bibliografo-Propuesta → §4 estado del arte (paralelo)
+        Investigador → §5 hipótesis ──→ GATE Revisor ──→ user
+Fase 3  Redactor → §2 justificación y pertinencia ──→ GATE Revisor ──→ user
+Fase 4  Investigador → §6 objetivo general + §7 objetivos específicos ──→ GATE Revisor
+        (subproblema↔objetivo específico; también valida hipótesis↔objetivo general) ──→ user
+Fase 5  Investigador → §8 marco conceptual
+        Redactor → §9 equipo de trabajo (deriva roles de §7, nunca de Metodología) ──→ GATE Revisor ──→ user
+Fase 6  Redactor → §10 metodología, luego bucle de figuras:
           Diseñador-TikZ (autor .tex)
           → Tikz-Optimizer (compila a PNG, primer ajuste)
           → Revisor-Figuras (audita, PASS/FAIL)
           → en FAIL, vuelve a Tikz-Optimizer con los hallazgos
           → en PASS, continúa
-        Redactor → §7 plan de trabajo (Gantt) ──→ GATE Revisor ──→ user
-Fase 6  Redactor → §8 resultados; Bibliografo-Propuesta → §10 referencias (BibTeX)
-Fase 6.4  Presupuestador → §9 presupuesto (interactivo) ──→ GATE Revisor ──→ user
+        ──→ GATE Revisor ──→ user
+        Redactor → §11 resultados esperados; §12 consideraciones éticas (sin gate propio)
+Fase 6.4  Presupuestador → §13 presupuesto (interactivo) ──→ GATE Revisor ──→ user
+Fase 6.45 Redactor → §14 cronograma de actividades (Gantt); §15 productos esperados
+          Bibliografo-Propuesta → §16 bibliografía (BibTeX) (sin gate propio)
+Fase 6.5  Redactor → front-matter (Resumen, Resumen ejecutivo, Palabras clave),
+          síntesis de §1–§16 ya aprobadas ──→ GATE Revisor ──→ user
 Fase 7  Revisor → auditoría final ──→ user; Coordinador-Propuesta → ensambla main.tex
 ```
 
@@ -95,19 +118,19 @@ El **asistente primario de Claude Code** puede despachar directamente
 cualquier subagente de propuesta para tareas puntuales —arreglar figuras,
 revisar una sección, actualizar bibliografía, refinar objetivos— **sin pasar
 por el pipeline completo de `coordinador-propuesta`**. El pipeline completo de
-10 secciones con gates sigue el comando `/propuesta`.
+16 secciones con gates sigue el comando `/propuesta`.
 
 | Agente | Cuándo despacharlo directamente |
 |--------|--------------------------------|
 | `disenador-tikz` | Rediseñar o crear diagramas TikZ de la propuesta |
 | `revisor-figuras` | Auditar visualmente figuras renderizadas (PNG) y describir problemas publication-ready |
 | `tikz-optimizer` | Compilar y optimizar visualmente diagramas TikZ existentes |
-| `investigador` | Definir/refinar subproblemas, pregunta, objetivos, hipótesis, enfoques |
-| `redactor` | Redactar o revisar secciones narrativas (§1–§3, §6–§8) |
+| `investigador` | Definir/refinar subproblemas, pregunta, objetivos, hipótesis, marco conceptual |
+| `redactor` | Redactar o revisar secciones narrativas (§1, §2, §9–§12, §14–§15) |
 | `revisor` | Validar coherencia y calidad de secciones ya redactadas |
-| `bibliografo-propuesta` | Construir o actualizar la bibliografía (§5.2, §10) |
+| `bibliografo-propuesta` | Construir o actualizar la bibliografía (§4, §16) |
 | `insumos-observador` | Ingerir y estructurar insumos del usuario (PDFs, papers) |
-| `presupuestador` | Construir o ajustar el presupuesto (§9): rubros, montos, cofinanciación |
+| `presupuestador` | Construir o ajustar el presupuesto (§13): rubros, montos, cofinanciación |
 
 Cuando despaches un agente de propuesta directamente, incluye en el prompt
 todo el contexto necesario (sección asignada, artefactos clave, dependencias
@@ -125,22 +148,25 @@ su sección asignada. Resumen de asignación:
 |---------|--------------------|
 | Ingesta insumos | Insumos-Observador |
 | §1 Título | Redactor |
-| §2.1 Problemática + pregunta | Investigador |
-| §2.2 Pertinencia | Redactor |
-| §3 Alcance | Redactor |
-| §4.1 Objetivo general | Investigador |
-| §4.2 Objetivos específicos | Investigador |
-| §5.1 Marco conceptual | Investigador |
-| §5.2 Estado del arte + hipótesis | Bibliografo-Propuesta (refs) + Investigador (hipótesis) |
-| §5.3 Enfoques teóricos | Investigador |
-| §6 Metodología | Redactor |
-| Diagramas (árbol problemas, metodológico, Gantt) | Diseñador-TikZ |
+| §2 Justificación y pertinencia | Redactor |
+| §3 Descripción del problema + pregunta de investigación | Investigador |
+| §4 Estado del arte | Bibliografo-Propuesta |
+| §5 Hipótesis | Investigador |
+| §6 Objetivo general | Investigador |
+| §7 Objetivos específicos | Investigador |
+| §8 Marco conceptual | Investigador |
+| §9 Equipo de trabajo | Redactor |
+| §10 Metodología | Redactor |
+| Diagramas (árbol de problemas, metodológico, Gantt) | Diseñador-TikZ |
 | Auditoría visual de figuras (publication-ready) | Revisor-Figuras |
 | Compilación/optimización visual de diagramas (loop PNG) | Tikz-Optimizer |
-| §7 Plan de trabajo | Redactor |
-| §8 Resultados y productos | Redactor |
-| §9 Presupuesto | Presupuestador |
-| §10 Referencias | Bibliografo-Propuesta |
+| §11 Resultados esperados | Redactor |
+| §12 Consideraciones éticas | Redactor |
+| §13 Presupuesto | Presupuestador |
+| §14 Cronograma de actividades | Redactor |
+| §15 Productos esperados | Redactor |
+| §16 Bibliografía | Bibliografo-Propuesta |
+| Front-matter (Resumen, Resumen ejecutivo, Palabras clave) | Redactor |
 | Revisión de coherencia y calidad | Revisor |
 | Coordinación del pipeline de propuesta | Coordinador-Propuesta |
 

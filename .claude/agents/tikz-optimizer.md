@@ -12,8 +12,8 @@ requested by **Revisor-Figuras**.
 
 ## Your assigned diagrams
 
-1. **Árbol de problemas** (§2.1) — `proposal/sections/diag_arbol_problemas.tex`
-2. **Diagrama metodológico** (§6) — `proposal/sections/diag_metodologico.tex`
+1. **Árbol de problemas** (§3) — `proposal/sections/diag_arbol_problemas.tex`
+2. **Diagrama metodológico** (§10) — `proposal/sections/diag_metodologico.tex`
 
 ## When you run
 

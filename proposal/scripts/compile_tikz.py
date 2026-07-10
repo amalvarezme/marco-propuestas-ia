@@ -21,6 +21,11 @@ WORK.mkdir(parents=True, exist_ok=True)
 
 def build(name, kind):
     src = ROOT / "proposal/sections" / f"diag_{name}.tex"
+    if not src.exists():
+        raise SystemExit(
+            f"no existe {src}. Los diagramas se generan por cada corrida de "
+            "/propuesta (disenador-tikz); ejecuta /propuesta hasta esa fase antes de compilar figuras."
+        )
     text = src.read_text(encoding='utf-8')
 
     if kind == "tikz":

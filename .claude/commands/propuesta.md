@@ -75,12 +75,18 @@ HALLAZGOS debe leerse contra este bloque):
 
 ```
 EVIDENCIA DE GRAFO (asesora, NO bloqueante) — vault/graphify-out/
-Dependencias duras (guia_ajustada_TDR "Nota de trazabilidad"): §2.1↔§4.2, §2.1↔§4.1, §5.2↔§4.1, §5.3↔§2.1.
+Dependencias duras (guia_ajustada_TDR "Nota de trazabilidad"): §3↔§7, §3↔§6, §5↔§6, §10↔§8.
 - Presentes: <edges hallados>
 - Ausentes/huérfanas: <p. ej. SP3 sin objetivo enlazado>
 - God nodes / conexiones sorprendentes: <extracto de GRAPH_REPORT.md>
 Es pista; tu checklist manual sigue siendo la autoridad del veredicto.
 ```
+
+Nota de renumeración: el 4º par (antes `§5.3↔§2.1`, Enfoques teóricos ↔
+subproblemas) ya no existe como sección propia — `§5.3 Enfoques teóricos` fue
+eliminada y su función (nombrar el enfoque/algoritmo por subproblema con
+causa-efecto explícito) quedó absorbida en Metodología (§10), punto 2, que
+referencia el marco conceptual (§8); de ahí el par `§10↔§8`.
 
 Si graphify revela un `[[wikilink]]` roto, una contradicción, o una idea
 huérfana frente a uno de los 4 pares de trazabilidad de arriba, el
@@ -197,8 +203,9 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
         calcula la tabla de prioridad por sección (regla ALTA = tercil
         superior por puntaje de criterios ponderados del TDR, empates en el
         límite del tercil se incluyen como ALTA; crosswalk:
-        calidad/innovación→§4/§5/§6, formación→§8, impacto
-        territorial/ODS→§2.2/§3, articulación→§2.2/§8) y escríbela en
+        calidad/innovación→§6/§7 (objetivos), §4/§5/§8 (estado del
+        arte/hipótesis/marco conceptual), §10 (metodología); formación→§15;
+        impacto territorial/ODS→§2; articulación→§2/§15) y escríbela en
         `proposal/estado_propuesta.md` ("Prioridad por sección"). Si no hay
         TDR, omite este paso por completo.
         ──→ RAMA DRAFT: si hay draft-base confirmado → ruta DRAFT-EXISTS.
@@ -469,8 +476,8 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
 Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
         archivo de salida), despachado ANTES del investigador.
-        Task → investigador → §2.1 subproblemas + pregunta de investigación.
-        Inyecta inline en el prompt de esta Task el mapa de MODE=explore y,
+        Task → investigador → §3 descripción del problema (subproblemas +
+        pregunta de investigación). Inyecta inline en el prompt de esta Task el mapa de MODE=explore y,
         si existe, el bloque "PRIORIDAD TDR" de la Fase 0.
         Si la Fase 1a corrió y su gate cerró con G1a = APROBADA (ver
         `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano"),
@@ -505,7 +512,8 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         actualiza `proposal/pipeline/_estado.md`; luego `cd
         proposal/pipeline/ && graphify --update . && graphify export html`.
         NUNCA `--force`.
-Fase 2  Task → redactor → §2.2 pertinencia, §3 alcance
+Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo)
+        Task → investigador → §5 hipótesis
         ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
         export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
         inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
@@ -517,22 +525,7 @@ Fase 2  Task → redactor → §2.2 pertinencia, §3 alcance
         actualiza `proposal/pipeline/_estado.md`; luego `cd
         proposal/pipeline/ && graphify --update . && graphify export html`.
         NUNCA `--force`.
-Fase 3  Task → investigador → §4.1 objetivo general + §4.2 objetivos específicos
-        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
-        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
-        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
-        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
-        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
-        ──→ GATE Task → revisor (valida mapeo subproblema↔objetivo, con
-        bloque EVIDENCIA DE GRAFO inline) ──→ usuario.
-        NO avances sin aprobación.
-        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/40-fase3.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`; luego `cd
-        proposal/pipeline/ && graphify --update . && graphify export html`.
-        NUNCA `--force`.
-Fase 4  Task → bibliografo-propuesta → §5.2 estado del arte (en paralelo)
-        Task → investigador → §5.1, §5.3, hipótesis
+Fase 3  Task → redactor → §2 justificación y pertinencia
         ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
         export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
         inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
@@ -540,17 +533,34 @@ Fase 4  Task → bibliografo-propuesta → §5.2 estado del arte (en paralelo)
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/40-fase3.md` (evento de esta compuerta) y
+        actualiza `proposal/pipeline/_estado.md`; luego `cd
+        proposal/pipeline/ && graphify --update . && graphify export html`.
+        NUNCA `--force`.
+Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específicos
+        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
+        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
+        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
+        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
+        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ GATE Task → revisor (valida mapeo subproblema↔objetivo específico
+        1:1; valida también hipótesis (§5, ya aprobada en la Fase 2)
+        ↔objetivo general, con bloque EVIDENCIA DE GRAFO inline) ──→ usuario.
+        NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/50-fase4.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`; luego `cd
         proposal/pipeline/ && graphify --update . && graphify export html`.
         NUNCA `--force`.
-Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
-          Task → disenador-tikz (autor .tex)
+Fase 5  Task → investigador → §8 marco conceptual
+        Task → redactor → §9 equipo de trabajo (deriva roles de §7 objetivos
+        específicos; nunca de la metodología)
+        Task → redactor → §10 metodología, luego bucle de figuras:
+          Task → disenador-tikz (autor diag_metodologico.tex)
           → Task → tikz-optimizer (compila a PNG, primer ajuste)
           → Task → revisor-figuras (audita, PASS/FAIL)
           → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
           → en PASS, continúa
-        Task → redactor → §7 plan de trabajo (Gantt)
         ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
         export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
         inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
@@ -564,23 +574,24 @@ Fase 5  Task → redactor → §6 metodología, luego bucle de figuras:
         actualiza `proposal/pipeline/_estado.md`; luego `cd
         proposal/pipeline/ && graphify --update . && graphify export html`.
         NUNCA `--force`.
-Fase 6  Task → redactor → §8 resultados; Task → bibliografo-propuesta → §10 referencias (BibTeX)
-        ──→ [NUEVO] DISPATCHER: papers-graph refresh (post-Fase-6): guardia —
-        ejecuta este bloque solo si `proposal/refs.bib` cambió en esta fase
-        (la consolidación MODE=deliverable §5.2+§10 lo acaba de extender).
-        Mecánica: `cd proposal/scoping/ && graphify --update papers/ &&
-        graphify export html`. NUNCA `--force`. La salida sigue en
-        `proposal/scoping/graphify-out/`.
+Fase 6  Task → redactor → §11 resultados esperados; Task → redactor →
+        §12 consideraciones éticas (sin gate propio; se auditan en la Fase 7
+        junto con el resto del documento, igual que antes).
 Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
-        Precondición: §3, §6, §7 y §8 ya aprobadas (el presupuesto justifica
-        cada ítem contra la metodología/fases). DEBE cerrar ANTES de la Fase
-        6.5 (el front-matter sintetiza §1–§10 ya aprobadas).
+        Precondición: §10, §11 y §12 ya aprobadas/producidas (el presupuesto
+        justifica cada ítem contra la metodología, §10). El Cronograma (§14)
+        todavía NO existe en este punto del pipeline —se redacta después,
+        en la Fase 6.45— así que la verificación cruzada
+        Presupuesto↔Cronograma queda diferida a la auditoría final de la
+        Fase 7 (referencia hacia adelante válida, ver "Reglas de
+        dependencia"). DEBE cerrar ANTES de la Fase 6.45 y de la Fase 6.5
+        (el front-matter sintetiza §1–§16 ya aprobadas).
         ──→ RESOLUCIÓN DE MODO: si `proposal/insumos.md` (o
         `guia_ajustada_TDR.md`) trae un bloque `## Marco presupuestal (TDR)`
         con tope no vacío → MODE=tdr; si trae el sentinel `sin datos
         presupuestales en TDR` o no hay bloque → MODE=base.
         (a) Task → presupuestador (MODE=tdr | MODE=base) → primer borrador de
-        `proposal/sections/09_presupuesto.tex` + su mirror de vault, con el
+        `proposal/sections/13_presupuesto.tex` + su mirror de vault, con el
         self-audit aritmético ya aplicado; cada monto/cantidad no derivable de
         un insumo va marcado `[supuesto]`.
         ──→ BUCLE INTERACTIVO (sin tope de rondas; termina SOLO con
@@ -604,11 +615,12 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         Task → revisor de este gate; si hay hallazgo, agrégalo a `##
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline; aplica
-        el ítem 8 Presupuesto: recomputo aritmético independiente,
-        tope/cofinanciación, justificación→§6/§7, membresía de rubro) ──→
-        usuario. NO avances sin aprobación.
+        el criterio de Presupuesto del checklist de `revisor.md`: recomputo
+        aritmético independiente, tope/cofinanciación, justificación→§10
+        (Metodología; el cruce contra §14 Cronograma se valida recién en la
+        Fase 7), membresía de rubro) ──→ usuario. NO avances sin aprobación.
         ──→ Al aprobar: el DISPATCHER voltea `gate_status` a `pass` en
-        `vault/secciones/09_presupuesto.md` y registra la fila de la fase en
+        `vault/secciones/13_presupuesto.md` y registra la fila de la fase en
         `proposal/estado_propuesta.md` (tabla "Presupuesto (Fase 6.4)": modo
         [tdr|base], tope [valor+moneda o "n/a (base)"], total general, margen
         frente al tope, cofinanciación/split aplicable + cumplimiento, número
@@ -620,20 +632,36 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         plantilla mínima descrita arriba en "Grafo de pipeline") y actualiza
         `proposal/pipeline/_estado.md`; luego `cd proposal/pipeline/ &&
         graphify --update . && graphify export html`. NUNCA `--force`.
-Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§10 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
+Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt); Task →
+        redactor → §15 productos esperados; Task → bibliografo-propuesta →
+        §16 bibliografía (BibTeX, consolidación final MODE=deliverable
+        §4+§16, cubre todas las referencias citadas a lo largo del
+        documento). Sin gate propio (mismo patrón que la Fase 6: se audita
+        en conjunto en la Fase 7).
+        ──→ [NUEVO] DISPATCHER: papers-graph refresh: guardia — ejecuta este
+        bloque solo si `proposal/refs.bib` cambió en esta fase (la
+        consolidación MODE=deliverable lo acaba de extender). Mecánica: `cd
+        proposal/scoping/ && graphify --update papers/ && graphify export
+        html`. NUNCA `--force`. La salida sigue en
+        `proposal/scoping/graphify-out/`.
+Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§16 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.5, evento de
-        esta compuerta) y actualiza `proposal/pipeline/_estado.md`; luego
-        `cd proposal/pipeline/ && graphify --update . && graphify export
-        html`. NUNCA `--force`.
+        `proposal/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.45 + Fase 6.5,
+        evento de esta compuerta) y actualiza `proposal/pipeline/_estado.md`;
+        luego `cd proposal/pipeline/ && graphify --update . && graphify
+        export html`. NUNCA `--force`.
 Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre el vault
         completo (todas las secciones ya escritas) → `graphify export html`
         → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de la auditoría final; si hay hallazgo, agrégalo a `##
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
-        Task → revisor → auditoría final (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
+        Task → revisor → auditoría final (con bloque EVIDENCIA DE GRAFO inline;
+        incluye AHORA la verificación cruzada Presupuesto (§13) ↔ Cronograma
+        de actividades (§14) diferida desde la Fase 6.4, ya que ambas
+        secciones existen recién en este punto) ──→ usuario. NO avances sin
+        aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/80-fase7.md` (evento de la auditoría final) y
         actualiza `proposal/pipeline/_estado.md`; luego `cd
@@ -642,27 +670,52 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
         Tú (el asistente primario) ensamblas `proposal/main.tex` una vez aprobado.
         Los 3 archivos `00_*.tex` (Resumen → Resumen ejecutivo → Palabras
         clave, en ese orden) DEBEN incluirse antes del contenido de §2,
-        maquetados con `\section*{}`. Orden del cuerpo: `\input{sections/09_presupuesto}`
-        va DESPUÉS de `08_resultados` y ANTES del bloque de bibliografía
-        (`\bibliographystyle{apalike}` + `\bibliography{refs}`, §10).
+        maquetados con `\section*{}`. Orden del cuerpo (`\input{sections/...}`,
+        16 secciones en este orden exacto): `02_justificacion`,
+        `03_descripcion_problema` (con `diag_arbol_problemas`),
+        `04_estado_arte`, `05_hipotesis`, `06_objetivo_general`,
+        `07_objetivos_especificos`, `08_marco_conceptual`,
+        `09_equipo_trabajo`, `10_metodologia` (con `diag_metodologico`),
+        `11_resultados_esperados`, `12_consideraciones_eticas`,
+        `13_presupuesto`, `14_cronograma_actividades`,
+        `15_productos_esperados`, y por último el bloque de bibliografía
+        (`16_bibliografia` + `\bibliographystyle{apalike}` +
+        `\bibliography{refs}`, §16). Nota de reordenamiento: `13_presupuesto`
+        va ANTES de `14_cronograma_actividades` en el cuerpo ensamblado,
+        aunque ambas secciones referencian las mismas fases de la
+        Metodología (§10) — es la posición mandada por
+        `guiaProyectosIA_Agente.md`, no un error de orden.
         Tras ensamblar y compilar `proposal/main.pdf` (`proposal/build.sh`),
         genera también la versión Word con `./build.sh --docx` desde
         `proposal/`: produce `proposal/main.docx` con los 3 diagramas
-        rasterizados como imágenes y §3/§9 como tablas editables (el sombreado
-        de §9 no se conserva; el Gantt de §7 queda como imagen). Es un paso
-        mecánico post-compilación que corres tú (asistente primario), no un agente.
+        rasterizados como imágenes y §13 Presupuesto como tabla editable (el
+        sombreado de §13 no se conserva; el Gantt de §14 Cronograma de
+        actividades queda como imagen). Es un paso mecánico
+        post-compilación que corres tú (asistente primario), no un agente.
 ```
 
 ## Reglas de dependencia (haz que `revisor` las valide en cada gate)
 
-- 3 subproblemas (§2.1) ↔ 3 objetivos específicos (§4.2), mapeo 1:1.
-- Pregunta de investigación (cierre §2.1) ↔ objetivo general (§4.1).
-- Hipótesis (cierre §5.2) ↔ objetivo general.
-- Enfoques teóricos (§5.3) ↔ subproblemas (§2.1), causa-efecto explícito.
-- Metodología (§6) ↔ objetivos específicos, cadena de valor.
-- Plan de trabajo (§7) ↔ fases de la Metodología (§6).
-- Resultados (§8) ↔ productos entregados en hitos del plan (§7).
-- TRL 6 o 7 debe ser explícito en objetivos, pertinencia y resultados.
+- 3 subproblemas (§3) ↔ 3 objetivos específicos (§7), mapeo 1:1.
+- Pregunta de investigación (cierre §3) ↔ objetivo general (§6).
+- Hipótesis (§5) ↔ objetivo general (§6).
+- Metodología (§10) ↔ objetivos específicos (§7), marco conceptual (§8) y
+  equipo de trabajo (§9), cadena de valor. El punto 2 de Metodología nombra
+  el enfoque/algoritmo por subproblema con razonamiento causa-efecto
+  explícito referenciando el marco conceptual (§8) — función que antes
+  cubría el desaparecido §5.3 Enfoques teóricos.
+- Equipo de trabajo (§9) deriva sus roles de los objetivos específicos (§7);
+  nunca de la Metodología (§10).
+- Cronograma de actividades (§14) ↔ fases de la Metodología (§10).
+- Resultados esperados (§11) ↔ productos entregados en hitos del cronograma
+  (§14) — referencia hacia adelante en el pipeline (§11 se redacta en la
+  Fase 6, antes de que §14 exista en la Fase 6.45); se verifica en firme en
+  la auditoría final de la Fase 7.
+- Presupuesto (§13) ↔ Metodología (§10) y Cronograma (§14) — misma
+  referencia hacia adelante, verificada en firme en la Fase 7.
+- TRL 6 o 7 debe ser explícito en pertinencia (§2) y resultados esperados
+  (§11); **nunca** se nombra en objetivo general (§6) ni en objetivos
+  específicos (§7).
 
 ## Reglas de clasificación y ambigüedad
 

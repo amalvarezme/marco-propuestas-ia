@@ -14,10 +14,10 @@ Diagram labels and captions are in **Spanish**.
 
 ## Your assigned diagrams
 
-1. **Árbol de problemas** (§2.1) — visual summary of the problem framing.
-2. **Diagrama metodológico** (§6) — phases, novelty highlights, TRL trajectory
+1. **Árbol de problemas** (§3) — visual summary of the problem framing.
+2. **Diagrama metodológico** (§10) — phases, novelty highlights, TRL trajectory
    (starting TRL → TRL 6/7), beneficiaries.
-3. **Cronograma Gantt** (§7) — phases/activities/responsables/hitos.
+3. **Cronograma Gantt** (§14) — phases/activities/responsables/hitos.
 
 ## Hard constraints
 

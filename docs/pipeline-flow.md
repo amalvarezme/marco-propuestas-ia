@@ -1,0 +1,170 @@
+# Flujo del pipeline `/propuesta`
+
+Diagrama tipo BPMN (fases, compuertas de aprobación, bucles de corrección y los
+tres grafos de conocimiento transversales) del pipeline multi-agente descrito
+en `.claude/commands/propuesta.md` y `.claude/agents/coordinador-propuesta.md`,
+alineado a las 16 secciones de `guiaProyectosIA_Agente.md`.
+
+- **Casillas amarillas**: compuertas de decisión/aprobación (usuario o `revisor`).
+- **Casillas azules**: los tres grafos de conocimiento (papers, vault, pipeline),
+  que corren en paralelo al flujo principal, no como un paso secuencial más.
+- Fuente editable: [`pipeline-flow.mmd`](./pipeline-flow.mmd).
+  Figura renderizada: [`pipeline-flow.svg`](./pipeline-flow.svg).
+- Para regenerar el SVG tras editar el `.mmd`:
+  `npx -y @mermaid-js/mermaid-cli -i docs/pipeline-flow.mmd -o docs/pipeline-flow.svg -b transparent`.
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": true, "curve": "linear"}} }%%
+flowchart TD
+    Start([Usuario invoca /propuesta]) --> F0
+
+    subgraph F0["Fase 0 — Run-id, insumos y clasificacion"]
+        RunID[Resolucion run-id] --> Guard{Corrida sin<br/>terminar?}
+        Guard -->|si, confirma| Archive[Archivado y reinicio]
+        Guard -->|no hay previa| Insumos[Task: insumos-observador]
+        Archive --> Insumos
+        Insumos --> Ambig{Archivo<br/>ambiguo?}
+        Ambig -->|si| AskUser1[Confirmar con usuario]
+        AskUser1 --> Route[Clasifica TDR / Draft]
+        Ambig -->|no| Route
+    end
+
+    F0 --> HasTDR{Hay TDR?}
+    HasTDR -->|si| Fase05
+    HasTDR -->|no| Fase1a
+
+    subgraph Fase05["Fase 0.5 — GATE G0.5 (opt-in, solo si hay TDR)"]
+        Corrob{TDR enumera<br/>secciones?} -->|no, sin doc-secciones| Blocked[BLOQUEADA:<br/>pide documento o continua sin ajuste]
+        Corrob -->|si| OptIn{Usuario:<br/>ajustar guia al TDR?}
+        OptIn -->|si| GuiaAjustada[Task: investigador<br/>genera guia_ajustada_TDR.md]
+        OptIn -->|no| Skip05[G0.5 = OMITIDA-POR-USUARIO]
+        GuiaAjustada --> GateG05{Usuario aprueba}
+        GateG05 -->|cambios| GuiaAjustada
+    end
+    GateG05 -->|aprobado| Fase1a
+    Skip05 --> Fase1a
+    Blocked -.-> Fase1a
+
+    subgraph Fase1a["Fase 1a — COMPUERTA G1a: Scoping temprano (siempre corre)"]
+        Scope[Task: bibliografo MODE=scope<br/>5 papers Q1/Q2, menos 2 anos] --> PapersGraph1[Dispatcher: graphify papers/<br/>build completo]
+        PapersGraph1 --> EarlyProb[Task: investigador<br/>3 subproblemas tempranos]
+        EarlyProb --> GateG1a{Usuario aprueba<br/>papers + grafo + subproblemas}
+        GateG1a -->|cambios| Scope
+    end
+
+    GateG1a -->|aprobado| CheckG1a{G1a aprobada?}
+    CheckG1a -->|si| SubFase1b
+    CheckG1a -->|no| Fase1
+
+    subgraph SubFase1b["Fase 1b — COMPUERTA G1b: Expansion SOTA"]
+        Corpus[Task: bibliografo MODE=sota<br/>corpus 30-40 papers] --> PapersGraphUpd[Dispatcher: graphify --update]
+        PapersGraphUpd --> Grouping[Task: bibliografo<br/>agrupacion 3-5 subsecciones]
+        Grouping --> GateG1b{Usuario aprueba}
+        GateG1b -->|cambios| Corpus
+        GateG1b -->|aprobado| WriteRefs[Task: bibliografo<br/>WRITE-REFS: refs.bib]
+        WriteRefs --> VaultBuild[Dispatcher: graphify vault/<br/>build completo, primera vez]
+    end
+    VaultBuild --> Fase1
+    SubFase1b -.-> Fase1
+
+    subgraph Fase1["Fase 1 — Descripcion del problema (sec 3)"]
+        Explore[Task: bibliografo MODE=explore<br/>mapa amplio, mas de 5 obras] --> Invest1[Task: investigador<br/>sec 3 subproblemas + pregunta de investigacion]
+        Invest1 --> FigLoop1["Bucle figura arbol de problemas:<br/>disenador-tikz to tikz-optimizer to revisor-figuras"]
+        FigLoop1 --> Gate1{GATE revisor<br/>+ evidencia de grafo}
+        Gate1 -->|FAIL| Invest1
+    end
+    Fase1 --> Fase2
+
+    subgraph Fase2["Fase 2 — Estado del arte + Hipotesis (sec 4, 5)"]
+        Sota2[Task: bibliografo sec 4<br/>estado del arte, 30+ refs Q1/Q2] --> Hip2["Task: investigador sec 5<br/>hipotesis (en paralelo)"]
+        Hip2 --> Gate2{GATE revisor}
+        Gate2 -->|FAIL| Sota2
+    end
+    Fase2 --> Fase3
+
+    subgraph Fase3["Fase 3 — Justificacion y pertinencia (sec 2)"]
+        Redactor3["Task: redactor sec 2<br/>6+ parrafos, 10+ refs Q1/Q2"] --> Gate3{GATE revisor}
+        Gate3 -->|FAIL| Redactor3
+    end
+    Fase3 --> Fase4
+
+    subgraph Fase4["Fase 4 — Objetivos (sec 6, 7)"]
+        Invest4[Task: investigador<br/>sec 6 objetivo general + sec 7 especificos] --> Gate4{GATE revisor:<br/>subproblema to objetivo 1:1, sin TRL textual}
+        Gate4 -->|FAIL| Invest4
+    end
+    Fase4 --> Fase5
+
+    subgraph Fase5["Fase 5 — Marco conceptual + Equipo + Metodologia (sec 8, 9, 10)"]
+        Invest5[Task: investigador sec 8<br/>marco conceptual] --> Redactor5a["Task: redactor sec 9<br/>equipo de trabajo (roles desde sec 7)"]
+        Redactor5a --> Redactor5b[Task: redactor sec 10 metodologia]
+        Redactor5b --> FigLoop5[Bucle figura diagrama metodologico]
+        FigLoop5 --> Gate5{GATE revisor<br/>+ evidencia de grafo}
+        Gate5 -->|FAIL| Invest5
+    end
+    Fase5 --> Fase6
+
+    subgraph Fase6["Fase 6 — Resultados + Consideraciones eticas (sec 11, 12)"]
+        Redactor6["Task: redactor sec 11 resultados esperados<br/>Task: redactor sec 12 consideraciones eticas"]
+    end
+    Fase6 --> Fase64
+
+    subgraph Fase64["Fase 6.4 — COMPUERTA INTERACTIVA G-Presupuesto (sec 13)"]
+        ModeRes{TDR trae marco<br/>presupuestal?} -->|si, con tope| PresupTDR[Task: presupuestador MODE=tdr]
+        ModeRes -->|no, sin datos| PresupBase[Task: presupuestador MODE=base]
+        PresupTDR --> LoopP{Usuario itera<br/>linea por linea, sin tope de rondas}
+        PresupBase --> LoopP
+        LoopP -->|feedback| Presup2[Task: presupuestador<br/>revisa tabla + self-audit]
+        Presup2 --> LoopP
+        LoopP -->|aprobacion explicita| GateP{GATE revisor:<br/>aritmetica + tope + rubros}
+        GateP -->|FAIL| Presup2
+    end
+    Fase64 --> Fase645
+
+    subgraph Fase645["Fase 6.45 — Cronograma + Productos esperados (sec 14, 15)"]
+        Redactor645["Task: redactor sec 14 cronograma (Gantt)<br/>Task: redactor sec 15 productos esperados"]
+    end
+    Fase645 --> Fase65
+
+    subgraph Fase65["Fase 6.5 — Front-matter (Resumen, Resumen ejecutivo, Palabras clave)"]
+        Redactor65[Task: redactor<br/>sintesis del documento completo, sec 1-16 aprobadas] --> Gate65{GATE revisor}
+        Gate65 -->|FAIL| Redactor65
+    end
+    Fase65 --> Fase7
+
+    subgraph Fase7["Fase 7 — Auditoria final + Ensamble"]
+        VaultFinal[Dispatcher: graphify vault/ completo<br/>todas las secciones] --> AuditFinal{GATE revisor:<br/>auditoria final, incl. Presupuesto to Cronograma}
+        AuditFinal -->|FAIL| VaultFinal
+        AuditFinal -->|PASS| Assemble[Asistente primario ensambla main.tex:<br/>front-matter, sec 1-16 en orden]
+        Assemble --> PDF[build.sh to main.pdf<br/>logos: header UNAL, footer GCPDS/LabIA]
+        PDF --> DOCX[build.sh --docx to main.docx<br/>tikz a PNG, tablas editables]
+    end
+    Fase7 --> End([Propuesta final: PDF + DOCX])
+
+    subgraph Grafos["Grafos transversales (3, corren en paralelo al flujo principal)"]
+        GPapers["Grafo de papers<br/>proposal/scoping/graphify-out/<br/>seed G1a, refresca en G1b y Fase 2"]
+        GVault["Grafo de vault (coherencia)<br/>vault/graphify-out/<br/>build completo en G1b, --update en cada gate Fase 1-7"]
+        GPipeline["Grafo de pipeline (estructura)<br/>proposal/pipeline/graphify-out/<br/>un evento .md por transicion de compuerta"]
+    end
+
+    classDef gate fill:#fff3cd,stroke:#b8860b,stroke-width:1px
+    classDef graph3 fill:#e6f0ff,stroke:#4a6fa5,stroke-width:1px
+    class Guard,Ambig,HasTDR,Corrob,OptIn,GateG05,GateG1a,CheckG1a,GateG1b,Gate1,Gate2,Gate3,Gate4,Gate5,ModeRes,LoopP,GateP,Gate65,AuditFinal gate
+    class GPapers,GVault,GPipeline graph3
+```
+
+## Notas de lectura
+
+- Todas las compuertas `GATE revisor` (Fases 1-5 y 6.5, más la Fase 6.4 de
+  Presupuesto) reciben el bloque `EVIDENCIA DE GRAFO` inyectado por el
+  dispatcher a partir del grafo de vault actualizado — es asesor, nunca
+  cambia el veredicto por sí solo.
+- La Fase 6.4 (Presupuesto) es la única compuerta genuinamente interactiva:
+  no tiene tope de rondas y el dispatcher nunca aprueba en silencio.
+- Fase 0.5, 1a y 1b son condicionales: 0.5 solo corre si hay TDR; 1b solo si
+  1a cerró aprobada.
+- El Cronograma de actividades (§14) se redacta en la Fase 6.45, **después**
+  del Presupuesto (§13, Fase 6.4), aunque §14 sea referenciado desde §13
+  (referencia hacia adelante); la coherencia Presupuesto↔Cronograma se
+  verifica en firme en la auditoría final de la Fase 7.
+- Fase 6 y 6.45 no tienen compuerta `GATE revisor` propia: se auditan en
+  bloque en la Fase 7, igual que en el diseño original.

@@ -15,31 +15,67 @@ All your deliverables are in **Spanish**.
 ## Your assigned sections
 
 - **§1 Título** (12–15 words, aligned with research question & general objective)
-- **§2 Justificación y pertinencia** (intro paragraphs + §2.2 pertinencia)
-- **§3 Alcance** (geographic/temporal/thematic + delimitation + summary table)
-- **§6 Metodología** (value-chain by specific objective, per-objetivo detail,
-  final schematic-diagram description)
-- **§7 Plan de trabajo** (Gantt-style table aligned to §6 phases, activities,
-  responsables, hitos & products)
-- **§8 Resultados y productos académicos** — produce **both** §8.1 Resultados
-  esperados and §8.2 Productos académicos esperados as separate
-  `\subsection{...}` blocks inside a single `08_resultados.tex`
-  (main.tex no longer pre-declares §8.1)
+- **§2 Justificación y pertinencia** — single `\section`, no subsections;
+  minimum 6 paragraphs covering motivación, ODS, PND/plan departamental,
+  organismos multilaterales (OCDE/Banco Mundial), alineación con el TDR, y
+  crecimiento/potencial de la IA en la temática, cerrando con la justificación
+  técnica del uso de IA y la justificación del producto tangible esperado
+  (the **only** place you may name TRL 6/7 textually — never in objectives,
+  which the Investigador owns). Requires **≥10 Q1/Q2 references** (see
+  constraint 3 below on bibliographic support). Note: §3 Alcance no longer
+  exists — do not detail subproblemas or delimitation here, that content was
+  dropped entirely, not moved.
+- **§9 Equipo de trabajo** — single `\section`, `tab:equipo` table (Integrante |
+  Rol | Sede/Institución/Dependencia | Responsabilidades). Identity data
+  (names, sede, dependencia) comes only from user-confirmed insumos, never
+  invented. Roles/responsabilidades derive from **§7 Objetivos específicos**,
+  NEVER from §10 Metodología (§10 references this section, not the reverse).
+  Mark any non-insumo-derived data `[inferido]`.
+- **§10 Metodología** (value-chain by specific objective, per-objetivo detail
+  referencing Marco conceptual §8 and Equipo de trabajo §9, final
+  schematic-diagram description including the TRL trajectory)
+- **§11 Resultados esperados** — own top-level section (own file); results per
+  specific objective, new-knowledge/transfer/training outcomes, and the TRL
+  reached at closing. No concrete product typology here (that's §15).
+- **§12 Consideraciones éticas** — single `\section`, four axes: consentimiento
+  informado, protección de datos personales, aval de comité de ética/bioética
+  (or explicit non-applicability), and uso responsable de la IA. If an axis
+  doesn't apply, state so explicitly rather than omitting it. Mark any
+  non-insumo-derived content `[inferido]`.
+- **§14 Cronograma de actividades** (Gantt-style table aligned to §10 phases,
+  activities, responsables — coherent with Equipo de trabajo §9 — hitos &
+  products; placed AFTER Presupuesto §13 in the document, though you should
+  have it drafted before Presupuesto closes, since §13 references it)
+- **§15 Productos esperados** — own top-level section (own file), renamed from
+  "Productos académicos esperados" (drops "académicos"); placed near the end,
+  AFTER Cronograma (§14). Each product needs a tipología, a responsable, and
+  the §14 delivery moment.
 
 ## Hard constraints
 
 1. Read `guiaProyectosIA_Agente.md` for the exact paragraph structure of each
-   section. Follow it rigorously; do not omit paragraphs.
-2. **Cross-coherence:** §6 methodology must be a value-chain over the specific
-   objectives (§4.2); §7 work plan must map to §6 phases; §8 results must match
-   products delivered at §7 milestones. Use the artifacts the Orchestrador
-   provides (research question, subproblems, objectives, hypothesis).
-3. §2.2 and §3 must reference ODS, development plans, and TRL 6/7 transfer.
+   section. Follow it rigorously; do not omit paragraphs. Note the LaTeX
+   convention: all your sections are self-contained `\section`s with no
+   numbered subsections (§10 Metodología may use unnumbered `\subsection*`
+   phase headers only).
+2. **Cross-coherence:** §10 methodology must be a value-chain over the specific
+   objectives (§7); §14 cronograma must map exactly to §10 phases/activities
+   and name a responsable role coherent with Equipo de trabajo (§9); §11
+   resultados esperados must match what §14 milestones deliver; §15 productos
+   esperados must match §14 delivery moments. Use the artifacts the
+   Orchestrador provides (research question, subproblems, objectives,
+   hypothesis).
+3. §2 Justificación must cite **≥10 Q1/Q2 references** (distinct requirement
+   from the Bibliografo-Propuesta's ≥30-ref floor for §4 Estado del arte —
+   they may overlap subject to the reuse cap in §16). Coordinate with the
+   Bibliografo-Propuesta to source/verify these references; do not fabricate
+   citations yourself.
 4. Avoid repetition across sections. Be concise and technically rigorous.
-5. For §7, produce a Gantt-style table (use `tabular` + `tikz` or a `ganttchart`
+5. For §14, produce a Gantt-style table (use `tabular` + `tikz` or a `ganttchart`
    spec) with responsables and hitos marked.
-6. For §6, end with a description of the schematic methodological diagram (the
-   Diseñador-TikZ agent will render it as TikZ).
+6. For §10, end with a description of the schematic methodological diagram (the
+   Diseñador-TikZ agent will render it as TikZ), including the TRL trajectory
+   (starting TRL → TRL 6/7).
 
 ## Vault mirror
 
@@ -71,12 +107,14 @@ must map to an objetivo) or is grounded in a specific paper. -->
 
 ## Relaciones
 [[<other-section-note>]] — <one-line reason per `coordinador-propuesta.md`'s
-dependency rules: pertinencia/alcance↔problemática; metodología↔objetivos
-específicos; plan de trabajo↔fases de metodología; resultados↔hitos del plan
-de trabajo>
+dependency rules: justificación↔descripción del problema (§2↔§3, argues
+relevance without repeating the problem detail); metodología↔objetivos
+específicos (§10↔§7); cronograma↔fases de metodología (§14↔§10); resultados
+esperados↔hitos del cronograma (§11↔§14); productos esperados↔momentos de
+entrega del cronograma (§15↔§14)>
 ```
 
-For the §6 metodología note specifically, also embed the compiled diagram as
+For the §10 metodología note specifically, also embed the compiled diagram as
 an Obsidian image, if the Disenador-TikZ/Tikz-Optimizer output already exists
 at that point: add the line `![[<diagram-filename>.png]]` below the diagram's
 description.
@@ -88,10 +126,12 @@ Leave `gate_status: pending` — the dispatcher (`propuesta.md`) flips it to
 
 Write each section as a LaTeX file under `proposal/sections/`:
 - `proposal/sections/01_titulo.tex`
-- `proposal/sections/02_2_pertinencia.tex`
-- `proposal/sections/03_alcance.tex`
-- `proposal/sections/06_metodologia.tex`
-- `proposal/sections/07_plan_trabajo.tex`
-- `proposal/sections/08_resultados.tex`
+- `proposal/sections/02_justificacion.tex`
+- `proposal/sections/09_equipo_trabajo.tex`
+- `proposal/sections/10_metodologia.tex`
+- `proposal/sections/11_resultados_esperados.tex`
+- `proposal/sections/12_consideraciones_eticas.tex`
+- `proposal/sections/14_cronograma_actividades.tex`
+- `proposal/sections/15_productos_esperados.tex`
 
 Return a short summary of what you produced to the Orchestrator.

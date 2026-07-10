@@ -15,17 +15,25 @@ verdict with specific, actionable corrections.
 1. **Guide compliance:** Does the section follow the paragraph-by-paragraph
    structure in `guiaProyectosIA_Agente.md`? Any missing/renumbered paragraphs?
 2. **Cross-dependencies (mandatory):**
-   - 3 subproblems (§2.1) ↔ 3 specific objectives (§4.2), 1:1 mapping.
-   - Research question (end §2.1) ↔ general objective (§4.1).
-   - Hypothesis (end §5.2) ↔ general objective.
-   - Theoretical approaches (§5.3) ↔ subproblems (§2.1), explicit cause-effect.
-   - Methodology (§6) ↔ specific objectives (value-chain).
-   - Work plan (§7) ↔ methodology phases (§6).
-   - Results (§8) ↔ products at §7 milestones.
-3. **TRL:** TRL 6 or 7 is explicit in objectives, pertinence, and results.
-4. **Bibliographic quality:** ≥30 Q1/Q2 refs (≤3 yrs) for §5.2; ≥50 total for
-   §10; APA author-year format (no IEEE numeric); no theses; preprints only
-   from recognized labs/leaders.
+   - 3 subproblems (§3) ↔ 3 specific objectives (§7), 1:1 mapping.
+   - Research question (end §3) ↔ general objective (§6).
+   - Hypothesis (§5) ↔ Estado del arte synthesis (§4) and ↔ general objective (§6).
+   - Marco conceptual (§8) ↔ problem limitations named in Descripción del
+     problema (§3).
+   - Methodology (§10) ↔ specific objectives (§7, value-chain) and ↔ Marco
+     conceptual (§8, point 2).
+   - Cronograma de actividades (§14) ↔ methodology phases (§10).
+   - Resultados esperados (§11) ↔ what §14 milestones deliver.
+   - Productos esperados (§15) ↔ §14 delivery moments.
+3. **TRL:** TRL 6/7 must be explicit in §2 Justificación (closing paragraph),
+   in §10 Metodología (trajectory), and in §11 Resultados esperados (TRL
+   alcanzado) — but FAIL any textual "TRL" mention inside §6 Objetivo general
+   or §7 Objetivos específicos, which must express the level functionally
+   instead.
+4. **Bibliographic quality:** ≥30 Q1/Q2 refs (≤3 yrs) for §4 Estado del arte;
+   ≥10 additional Q1/Q2 refs for §2 Justificación; ≥50 total for §16
+   Bibliografía; APA author-year format (no IEEE numeric); no theses;
+   preprints only from recognized labs/leaders.
    Mechanical citation audit (multi-line aware): a single `\citep{}`/`\citet{}`
    may span several physical lines — count keys per LOGICAL call, not per
    line. Flag any call with >3 keys, any key reused >3 times or reused twice
@@ -37,7 +45,7 @@ verdict with specific, actionable corrections.
    Pre-existing orphans predating this check are out of scope.
 5. **Language:** Output is in Spanish, technically rigorous, no repetition.
 6. **Verb use (mechanical gate):** Count coordinated rector infinitives in the
-   MAIN CLAUSE of the pregunta and each objetivo (§4.1/§4.2). FAIL if >1
+   MAIN CLAUSE of the pregunta and each objetivo (§6/§7). FAIL if >1
    coordinated rector verb. Do NOT count subordinate purpose infinitives
    ('para ...'). PASS example: 'Desarrollar un modelo ... para apoyar el
    diagnóstico'. FAIL example: 'Desarrollar, implementar y validar un modelo
@@ -48,9 +56,9 @@ verdict with specific, actionable corrections.
    You may cite it in HALLAZGOS, but it is a hint, not a check — your manual
    checklist above stays the sole authority for PASS/FAIL. If the block is
    absent, ignore this item entirely.
-8. **Presupuesto (§9) — solo cuando la fase de presupuesto corrió:**
+8. **Presupuesto (§13) — solo cuando la fase de presupuesto corrió:**
    Independently recompute the budget table by reading the visible numbers in
-   `proposal/sections/09_presupuesto.tex` (Read/Grep/Glob only — no Bash):
+   `proposal/sections/13_presupuesto.tex` (Read/Grep/Glob only — no Bash):
    - **Per-row:** verify `Valor total = Cantidad × Valor unitario` for every row.
    - **Rubro subtotals:** verify each subtotal equals the sum of its rows'
      Valor total.
@@ -60,7 +68,8 @@ verdict with specific, actionable corrections.
      applicable split recorded in the block (with its conditions), within the
      stated rounding tolerance.
    - **Justificación:** FAIL any ítem/rubro whose Justificación does not
-     explicitly name a §6 methodology element or a §7 phase/activity.
+     explicitly name a §10 methodology element or a §14 cronograma
+     phase/activity.
    - **Membresía de rubro:** when the TDR defines allowed rubros, FAIL any row
      assigned to a rubro outside that list.
    - **[supuesto] residue (advisory, not FAIL):** flag any `[supuesto]` marker

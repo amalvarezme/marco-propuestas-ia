@@ -41,7 +41,7 @@ one of four labels: **TDR**, **draft-base**, **background**, or
   scoring/evaluation-criteria table (points per criterion); explicit
   deadlines; eligibility rules.
 - **draft-base** (borrador previo reutilizable): mentions of "propuesta",
-  "anexo"; a prior full-proposal structure resembling §1-§10 of the guide;
+  "anexo"; a prior full-proposal structure resembling §1-§16 of the guide;
   objectives or subproblemas already stated as a finished artifact (not a
   requirement to satisfy).
 - **background**: everything else (reference papers, prior art, images,
@@ -68,18 +68,24 @@ unambiguous case.
 ## Extracción del TDR
 
 When a file is classified as **TDR** (auto-confident or user-confirmed),
-extract its required sections, mapped to the 10 guide sections:
+extract its required sections, mapped to the 16 guide sections:
 
 - §1 Título
-- §2 Justificación/pertinencia (2.1 problemática, 2.2 pertinencia)
-- §3 Alcance
-- §4 Objetivos
-- §5 Referente teórico
-- §6 Metodología
-- §7 Plan de trabajo
-- §8 Resultados/productos
-- §9 Presupuesto (marco presupuestal: tope, cofinanciación, duración, rubros)
-- §10 Referencias
+- §2 Justificación y pertinencia
+- §3 Descripción del problema
+- §4 Estado del arte
+- §5 Hipótesis
+- §6 Objetivo general
+- §7 Objetivos específicos
+- §8 Marco conceptual
+- §9 Equipo de trabajo
+- §10 Metodología
+- §11 Resultados esperados
+- §12 Consideraciones éticas
+- §13 Presupuesto (marco presupuestal: tope, cofinanciación, duración, rubros)
+- §14 Cronograma de actividades
+- §15 Productos esperados
+- §16 Bibliografía
 
 Also extract the weighted-criteria table as `Criterio | Pts | Sección(es)
 afectada(s)`, mapping each evaluation criterion to the guide section(s) it
