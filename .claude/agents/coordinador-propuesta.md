@@ -86,7 +86,7 @@ Fase 4  investigador → §6 objetivo general + §7 objetivos específicos ─�
         [NUEVO] `graphify --update vault/` + bloque `EVIDENCIA DE GRAFO`
         ──→ GATE revisor (subproblema↔objetivo específico; valida también
         hipótesis↔objetivo general) ──→ user
-Fase 5  investigador → §8 marco conceptual
+Fase 5  investigador → §8 marco conceptual (paralelo)
         redactor → §9 equipo de trabajo (deriva roles de §7, nunca de
         Metodología) ──→ [NUEVO] `graphify --update vault/` + bloque
         `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user

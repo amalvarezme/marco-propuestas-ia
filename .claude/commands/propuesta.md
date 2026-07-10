@@ -129,12 +129,11 @@ fecha: <YYYY-MM-DD>
 Cuándo actualiza: en CADA transición de compuerta (los mismos puntos donde
 el dispatcher voltea `gate_status`, ver "Reglas de gate (obligatorias)"
 abajo) — ver el bloque `[NUEVO] DISPATCHER: pipeline-graph` dentro de cada
-fase/compuerta. Mecánica: `cd proposal/pipeline/ && graphify [--update] . &&
-graphify export html` → salida en `proposal/pipeline/graphify-out/`
-(gitignored, scratch, nunca se commitea). Build completo la PRIMERA vez que
-el bloque produce un archivo de evento; `--update` después. NUNCA
-`--force`. Nunca lo ejecuta `revisor` (solo Read/Grep/Glob) — siempre lo
-dispara el dispatcher.
+fase/compuerta. Mecánica: el DISPATCHER únicamente escribe/actualiza el
+archivo de evento `.md` y `proposal/pipeline/_estado.md` — no se ejecuta
+`graphify` sobre `proposal/pipeline/` (build/update/export eliminados por
+no aportar valor consumido; overhead de token descartado). Nunca lo hace
+`revisor` (solo Read/Grep/Glob) — siempre lo hace el dispatcher.
 
 ## Pipeline (dispatch con `Task` fase por fase)
 
@@ -183,8 +182,10 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
              `proposal/pipeline/`; reescribe vacíos
              `proposal/estado_propuesta.md`, `proposal/refs.bib`,
              `proposal/insumos.md`; vacía `vault/secciones/` y
-             `vault/insumos/` (conserva `.gitkeep`); borra los tres árboles
-             scratch `graphify-out/` (scoping, pipeline, vault). CONSERVA
+             `vault/insumos/` (conserva `.gitkeep`); borra los dos árboles
+             scratch `graphify-out/` (scoping, vault) — `proposal/pipeline/`
+             ya no produce grafo, solo se vacía como parte del scaffolding
+             de arriba. CONSERVA
              `proposal/build.sh`, `proposal/scripts/`, `proposal/logos/`.
           6. Continúa con el nuevo run-id (paso "RESOLUCIÓN DE RUN-ID"
              arriba).
@@ -354,9 +355,7 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         subproblemas tempranos con su gap/`paper-N`, y Estado G1a).
         ──→ [NUEVO] DISPATCHER: pipeline-graph (primera inicialización):
         escribe `proposal/pipeline/00-fase0.md` + `10-fase1a.md` (evento de
-        esta compuerta) y `proposal/pipeline/_estado.md`; luego `cd
-        proposal/pipeline/ && graphify . && graphify export html` (build
-        completo — primer archivo de evento del corpus). NUNCA `--force`.
+        esta compuerta) y `proposal/pipeline/_estado.md`.
 Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         siempre que la Fase 1a cerró con G1a = APROBADA (ver
         `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano");
@@ -447,9 +446,7 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         `proposal/scoping/graphify-out/`.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/11-fase1b.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`; luego `cd
-        proposal/pipeline/ && graphify --update . && graphify export html`.
-        NUNCA `--force`.
+        actualiza `proposal/pipeline/_estado.md`.
         ──→ [NUEVO] Grafo de ideas del vault — build completo (primera vez):
         inmediatamente después de lo anterior, en esta misma transición de
         aprobación final de G1b (NO en cada iteración del bucle de G1b), el
@@ -499,60 +496,72 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
           → Task → revisor-figuras (audita, PASS/FAIL)
           → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
           → en PASS, continúa
-        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` (incremental,
-        NUNCA `--force`, NUNCA reconstruye desde cero aquí) → `graphify
-        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
-        inyecta inline el bloque `EVIDENCIA DE GRAFO` (formato en "Grafo de
-        coherencia del vault" arriba) en el prompt de la Task → revisor de
-        este gate; si hay hallazgo de coherencia, agrégalo a `## Hallazgos
-        de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        `vault/secciones/03_descripcion_problema.md` cambió en esta fase
+        (recién escrita/actualizada por `investigador`); si no cambió,
+        reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar `graphify`.
+        Si cambió: `cd vault/ && graphify --update .` (incremental, NUNCA
+        `--force`, NUNCA reconstruye desde cero aquí; sin export HTML — ver
+        "Vault graph HTML export limited to G1b and Fase 7") →
+        `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta inline
+        el bloque `EVIDENCIA DE GRAFO` (formato en "Grafo de coherencia del
+        vault" arriba) en el prompt de la Task → revisor de este gate; si
+        hay hallazgo de coherencia, agrégalo a `## Hallazgos de coherencia
+        (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/20-fase1.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`; luego `cd
-        proposal/pipeline/ && graphify --update . && graphify export html`.
-        NUNCA `--force`.
+        actualiza `proposal/pipeline/_estado.md`.
 Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo)
         Task → investigador → §5 hipótesis
-        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
-        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
-        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
-        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
-        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        `vault/secciones/04_estado_arte.md` o `vault/secciones/05_hipotesis.md`
+        cambiaron en esta fase; si no cambiaron, reutiliza el
+        `GRAPH_REPORT.md` existente sin re-ejecutar `graphify`. Si cambiaron:
+        `cd vault/ && graphify --update .` (sin export HTML — ver "Vault
+        graph HTML export limited to G1b and Fase 7") → `vault/graphify-out/`;
+        lee `GRAPH_REPORT.md`; arma e inyecta inline el bloque `EVIDENCIA DE
+        GRAFO` en el prompt de la Task → revisor de este gate; si hay
+        hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
+        `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/30-fase2.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`; luego `cd
-        proposal/pipeline/ && graphify --update . && graphify export html`.
-        NUNCA `--force`.
+        actualiza `proposal/pipeline/_estado.md`.
 Fase 3  Task → redactor → §2 justificación y pertinencia
-        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
-        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
-        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
-        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
-        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        `vault/secciones/02_justificacion.md` cambió en esta fase; si no
+        cambió, reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar
+        `graphify`. Si cambió: `cd vault/ && graphify --update .` (sin
+        export HTML — ver "Vault graph HTML export limited to G1b and Fase
+        7") → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
+        inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
+        revisor de este gate; si hay hallazgo, agrégalo a `## Hallazgos de
+        coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/40-fase3.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`; luego `cd
-        proposal/pipeline/ && graphify --update . && graphify export html`.
-        NUNCA `--force`.
+        actualiza `proposal/pipeline/_estado.md`.
 Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específicos
-        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
-        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
-        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
-        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
-        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        `vault/secciones/06_objetivo_general.md` o
+        `vault/secciones/07_objetivos_especificos.md` cambiaron en esta
+        fase; si no cambiaron, reutiliza el `GRAPH_REPORT.md` existente sin
+        re-ejecutar `graphify`. Si cambiaron: `cd vault/ && graphify
+        --update .` (sin export HTML — ver "Vault graph HTML export
+        limited to G1b and Fase 7") → `vault/graphify-out/`; lee
+        `GRAPH_REPORT.md`; arma e inyecta inline el bloque `EVIDENCIA DE
+        GRAFO` en el prompt de la Task → revisor de este gate; si hay
+        hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
+        `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (valida mapeo subproblema↔objetivo específico
         1:1; valida también hipótesis (§5, ya aprobada en la Fase 2)
         ↔objetivo general, con bloque EVIDENCIA DE GRAFO inline) ──→ usuario.
         NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/50-fase4.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`; luego `cd
-        proposal/pipeline/ && graphify --update . && graphify export html`.
-        NUNCA `--force`.
-Fase 5  Task → investigador → §8 marco conceptual
+        actualiza `proposal/pipeline/_estado.md`.
+Fase 5  Task → investigador → §8 marco conceptual (en paralelo)
         Task → redactor → §9 equipo de trabajo (deriva roles de §7 objetivos
         específicos; nunca de la metodología)
         Task → redactor → §10 metodología, luego bucle de figuras:
@@ -561,19 +570,23 @@ Fase 5  Task → investigador → §8 marco conceptual
           → Task → revisor-figuras (audita, PASS/FAIL)
           → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
           → en PASS, continúa
-        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` → `graphify
-        export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e
-        inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
-        Task → revisor de este gate (nota: este paso es distinto del bucle
-        de figuras arriba, que usa `revisor-figuras`, no `revisor`, y no
-        recibe evidencia de grafo); si hay hallazgo, agrégalo a `##
-        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        `vault/secciones/08_marco_conceptual.md`,
+        `vault/secciones/09_equipo_trabajo.md` o
+        `vault/secciones/10_metodologia.md` cambiaron en esta fase; si no
+        cambiaron, reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar
+        `graphify`. Si cambiaron: `cd vault/ && graphify --update .` (sin
+        export HTML — ver "Vault graph HTML export limited to G1b and Fase
+        7") → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
+        inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
+        revisor de este gate (nota: este paso es distinto del bucle de
+        figuras arriba, que usa `revisor-figuras`, no `revisor`, y no recibe
+        evidencia de grafo); si hay hallazgo, agrégalo a `## Hallazgos de
+        coherencia (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/60-fase5.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`; luego `cd
-        proposal/pipeline/ && graphify --update . && graphify export html`.
-        NUNCA `--force`.
+        actualiza `proposal/pipeline/_estado.md`.
 Fase 6  Task → redactor → §11 resultados esperados; Task → redactor →
         §12 consideraciones éticas (sin gate propio; se auditan en la Fase 7
         junto con el resto del documento, igual que antes).
@@ -609,11 +622,16 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
              filas/valores cambiaron y el nuevo total) y vuelve al paso 1.
              NUNCA auto-apruebes ni asumas conformidad por silencio.
           4. Si el usuario aprueba explícitamente → sale del bucle.
-        ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` →
-        `graphify export html` → `vault/graphify-out/`; lee `GRAPH_REPORT.md`;
-        arma e inyecta inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la
-        Task → revisor de este gate; si hay hallazgo, agrégalo a `##
-        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        `vault/secciones/13_presupuesto.md` cambió en esta fase (o en la
+        ronda interactiva más reciente); si no cambió, reutiliza el
+        `GRAPH_REPORT.md` existente sin re-ejecutar `graphify`. Si cambió:
+        `cd vault/ && graphify --update .` (sin export HTML — ver "Vault
+        graph HTML export limited to G1b and Fase 7") →
+        `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta inline
+        el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task → revisor de
+        este gate; si hay hallazgo, agrégalo a `## Hallazgos de coherencia
+        (grafo)` en `proposal/estado_propuesta.md`.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline; aplica
         el criterio de Presupuesto del checklist de `revisor.md`: recomputo
         aritmético independiente, tope/cofinanciación, justificación→§10
@@ -630,8 +648,7 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/65-fase6_4.md` (evento de esta compuerta, misma
         plantilla mínima descrita arriba en "Grafo de pipeline") y actualiza
-        `proposal/pipeline/_estado.md`; luego `cd proposal/pipeline/ &&
-        graphify --update . && graphify export html`. NUNCA `--force`.
+        `proposal/pipeline/_estado.md`.
 Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt); Task →
         redactor → §15 productos esperados; Task → bibliografo-propuesta →
         §16 bibliografía (BibTeX, consolidación final MODE=deliverable
@@ -648,9 +665,7 @@ Fase 6.5 Task → redactor → secciones preliminares (front-matter), como sínt
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.45 + Fase 6.5,
-        evento de esta compuerta) y actualiza `proposal/pipeline/_estado.md`;
-        luego `cd proposal/pipeline/ && graphify --update . && graphify
-        export html`. NUNCA `--force`.
+        evento de esta compuerta) y actualiza `proposal/pipeline/_estado.md`.
 Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre el vault
         completo (todas las secciones ya escritas) → `graphify export html`
         → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
@@ -664,9 +679,7 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
         aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/80-fase7.md` (evento de la auditoría final) y
-        actualiza `proposal/pipeline/_estado.md`; luego `cd
-        proposal/pipeline/ && graphify --update . && graphify export html`.
-        NUNCA `--force`.
+        actualiza `proposal/pipeline/_estado.md`.
         Tú (el asistente primario) ensamblas `proposal/main.tex` una vez aprobado.
         Los 3 archivos `00_*.tex` (Resumen → Resumen ejecutivo → Palabras
         clave, en ese orden) DEBEN incluirse antes del contenido de §2,

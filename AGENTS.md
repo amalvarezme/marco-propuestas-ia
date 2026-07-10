@@ -89,7 +89,7 @@ Fase 2  Bibliografo-Propuesta → §4 estado del arte (paralelo)
 Fase 3  Redactor → §2 justificación y pertinencia ──→ GATE Revisor ──→ user
 Fase 4  Investigador → §6 objetivo general + §7 objetivos específicos ──→ GATE Revisor
         (subproblema↔objetivo específico; también valida hipótesis↔objetivo general) ──→ user
-Fase 5  Investigador → §8 marco conceptual
+Fase 5  Investigador → §8 marco conceptual (paralelo)
         Redactor → §9 equipo de trabajo (deriva roles de §7, nunca de Metodología) ──→ GATE Revisor ──→ user
 Fase 6  Redactor → §10 metodología, luego bucle de figuras:
           Diseñador-TikZ (autor .tex)
