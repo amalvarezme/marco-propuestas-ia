@@ -12,6 +12,8 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 | **npm / npx** | 10+ | MCP server fetching | bundled with Node |
 | **TeX Live** | 2024+ | LaTeX compilation (pdflatex + bibtex) | `brew install --cask mactex` |
 | **git** | 2.40+ | Version control | `brew install git` |
+| **engram** | 1.18+ | Persistent memory MCP server (required: `.mcp.json`'s `engram` server invokes this binary directly) | `brew install gentleman-programming/tap/engram` |
+| **gentle-ai** (recommended) | 1.43+ | SDD workflow orchestration, skill registry, model-assignment dispatch for `/sdd-*` commands | `brew install gentleman-programming/tap/gentle-ai` |
 
 ## 2. Python packages (`requirements.txt`)
 

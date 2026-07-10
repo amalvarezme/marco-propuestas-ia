@@ -48,11 +48,13 @@ lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
 ## Dependencias
 
 - **Claude Code** — runtime del pipeline (`.claude/agents/`, `.claude/commands/propuesta.md`).
+- **engram** (`brew install gentleman-programming/tap/engram`) — memoria persistente; requerido porque el servidor MCP `engram` de `.mcp.json` invoca este binario directamente.
+- **gentle-ai** (recomendado, `brew install gentleman-programming/tap/gentle-ai`) — orquestación del workflow SDD (`/sdd-*`), registro de skills y asignación de modelos por fase.
 - LaTeX (pdflatex + bibtex, estilo `natbib`/`apalike`) para compilar `proposal/main.tex`.
 - MCP servers usados por los agentes de propuesta: OpenAlex, Crossref, Semantic
-  Scholar, PubMed, arXiv, Context7, Consensus. Ver `REQUIREMENTS.md` §3 para el
-  detalle de paquetes; `.mcp.json` registra los servidores activos de este
-  proyecto.
+  Scholar, PubMed, arXiv, Context7, Consensus. Ver `REQUIREMENTS.md` §1 para el
+  detalle de instalación y §3 para el detalle de paquetes; `.mcp.json` registra
+  los servidores activos de este proyecto.
 
 ## Compilar la propuesta
 
