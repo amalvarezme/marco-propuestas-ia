@@ -126,6 +126,30 @@ sentinel → MODE=base; tope no vacío → MODE=tdr.
 
 Skip this extraction entirely when no file is classified as TDR.
 
+### Fallback pixelshot para tablas malformadas (criterios ponderados / marco presupuestal)
+
+La extracción normal de la tabla de criterios ponderados (arriba) y del
+marco presupuestal (`## Marco presupuestal (TDR)`) usa siempre extracción
+de texto estándar (pypdf/markdownify para PDF, python-docx vía
+`textutil`/`unzip` para `.docx` — ver "Lectura de insumos .docx" abajo).
+Ese es el camino primario y no se reemplaza por defecto.
+
+Si, y SOLO si, esa extracción produce un resultado claramente malformado o
+ilegible específicamente para la tabla de criterios ponderados o el bloque
+de marco presupuestal (columnas mezcladas, celdas vacías donde debería
+haber valores, texto irreconocible), puedes usar `pixelshot` como fallback
+condicional: renderiza la(s) página(s) relevantes del TDR (`pixelshot
+<archivo-TDR>.pdf -o <dir-temporal>`) y lee la tabla visualmente para
+extraer o verificar los valores correctos. Este fallback es:
+
+- Condicional, no un reemplazo general del camino de extracción existente
+  ni algo que se ejecute por defecto en cada corrida.
+- Limitado a estas dos tablas (criterios ponderados, marco presupuestal); no
+  se usa para el resto del documento.
+- Debe dejarse documentado en `proposal/insumos.md` cuando se use (nota
+  breve, p. ej. "extraído vía pixelshot por tabla malformada en la
+  extracción de texto").
+
 ### Corroboración de secciones obligatorias (Fase 0)
 
 On every TDR run, use LLM judgment (never regex/literal matching) to detect

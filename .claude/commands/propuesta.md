@@ -705,6 +705,24 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
         sombreado de §13 no se conserva; el Gantt de §14 Cronograma de
         actividades queda como imagen). Es un paso mecánico
         post-compilación que corres tú (asistente primario), no un agente.
+        [NUEVO] Como último paso de la Fase 7, ya con `main.pdf` ensamblado,
+        corres una pasada de QA visual asesora: `pixelshot proposal/main.pdf
+        -o proposal/pixelshot-out/` y revisas los tiles renderizados en busca
+        de posición del logo (encabezado UNAL, pie GCPDS/LabIA), desbordes de
+        tablas/Gantt, figuras TikZ rotas o ilegibles, y coherencia general de
+        maquetación. Es un paso mecánico que corres tú (asistente primario),
+        no un agente ni un Task nuevo — sin ronda interactiva adicional. Si
+        detectas un hallazgo, agrega una fila a `## Hallazgos de QA visual
+        (pixelshot)` en `proposal/estado_propuesta.md` (crea la sección la
+        primera vez que se usa), con página, tipo
+        (logo/desborde/TikZ-roto/otro) y detalle. Este hallazgo es puramente
+        asesor: NUNCA altera el VEREDICTO PASS/FAIL de la auditoría de
+        `revisor` (ya emitido antes de este paso) ni bloquea el
+        ensamblado/build/cierre de la Fase 7. Si `pixelshot` no está
+        disponible o falla (dependencia faltante, error de Playwright/CDP,
+        timeout), registra una fila "QA visual no disponible en esta corrida:
+        `<razón>`" en la misma sección y continúa — la Fase 7 se da por
+        completa igual.
 ```
 
 ## Reglas de dependencia (haz que `revisor` las valide en cada gate)
