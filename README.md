@@ -1,4 +1,4 @@
-# Marco de Redacción de Propuestas de Investigación en IA
+# Marco de Redacción de Propuestas de Investigación en IA - Laboratorio de IA - UNAL Manizales
 
 Framework multi-agente que produce propuestas de investigación en IA en
 **español**, como LaTeX, en `proposal/`. **Runtime canónico: Claude Code.**
