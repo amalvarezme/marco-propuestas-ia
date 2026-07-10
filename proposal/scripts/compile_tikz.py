@@ -59,12 +59,36 @@ def build(name, kind):
             + body + "\n"
             + "\\end{document}\n", encoding='utf-8')
     elif kind == "gantt":
-        # extract the ganttchart block AND the legend tikzpicture block
+        # extract the ganttchart block. redactor.md permits two forms for §14:
+        #   (a) a bare \begin{ganttchart}...\end{ganttchart}, or
+        #   (b) a ganttchart wrapped in \begin{tikzpicture}...\end{tikzpicture}
+        #       (e.g. alongside a legend drawn with tikz).
+        # \end{ganttchart} is the authoritative close marker for the chart
+        # body itself; we only extend the extraction out to a wrapping
+        # \end{tikzpicture} when a matching \begin{tikzpicture} is actually
+        # present around the ganttchart, so bare ganttchart blocks don't
+        # crash looking for a tikzpicture wrapper that was never promised.
         idx = text.find(r'\begin{ganttchart}')
-        idx2 = text.find(r'\end{tikzpicture}', idx)
-        if idx < 0 or idx2 < 0:
-            raise SystemExit(f"could not find ganttchart/tikzpicture in {src}")
-        body = text[idx:idx2 + len(r'\end{tikzpicture}')]
+        if idx < 0:
+            raise SystemExit(f"could not find ganttchart in {src}")
+        idx_gc_end = text.find(r'\end{ganttchart}', idx)
+        if idx_gc_end < 0:
+            raise SystemExit(f"could not find matching \\end{{ganttchart}} in {src}")
+        end = idx_gc_end + len(r'\end{ganttchart}')
+
+        # Optional wrapping tikzpicture: a \begin{tikzpicture} before the
+        # ganttchart that is not already closed before it starts, and whose
+        # matching \end{tikzpicture} appears after the ganttchart closes.
+        tikz_begin = text.rfind(r'\begin{tikzpicture}', 0, idx)
+        if tikz_begin >= 0:
+            tikz_begin_close = text.find(r'\end{tikzpicture}', tikz_begin, idx)
+            if tikz_begin_close < 0:
+                tikz_end = text.find(r'\end{tikzpicture}', end)
+                if tikz_end >= 0:
+                    idx = tikz_begin
+                    end = tikz_end + len(r'\end{tikzpicture}')
+
+        body = text[idx:end]
         # Use article class with explicit paper size to avoid standalone bbox detection issues
         wrapper = WORK / f"wrap_{name}.tex"
         wrapper.write_text(

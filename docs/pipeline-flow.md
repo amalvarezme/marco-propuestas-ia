@@ -143,7 +143,7 @@ flowchart TD
     subgraph Grafos["Grafos transversales (3, corren en paralelo al flujo principal)"]
         GPapers["Grafo de papers<br/>proposal/scoping/graphify-out/<br/>seed G1a, refresca en G1b y Fase 2"]
         GVault["Grafo de vault (coherencia)<br/>vault/graphify-out/<br/>build completo en G1b, --update en cada gate Fase 1-7"]
-        GPipeline["Grafo de pipeline (estructura)<br/>proposal/pipeline/graphify-out/<br/>un evento .md por transicion de compuerta"]
+        GPipeline["Grafo de pipeline (estructura)<br/>proposal/pipeline/NN-fase.md (eventos) + _estado.md<br/>un evento .md por transicion de compuerta, sin graphify (build/update/export eliminados)"]
     end
 
     classDef gate fill:#fff3cd,stroke:#b8860b,stroke-width:1px
