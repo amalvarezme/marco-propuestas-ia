@@ -1,5 +1,9 @@
 # Marco de Redacción de Propuestas de Investigación en IA - Laboratorio de IA - UNAL Manizales
 
+<p align="center">
+  <img src="logos/logo_unal.png" alt="Logo UNAL" width="280">
+</p>
+
 Framework multi-agente que produce propuestas de investigación en IA en
 **español**, como LaTeX, en `proposal/`. **Runtime canónico: Claude Code.**
 El asistente primario despacha 9 subagentes de dominio — `investigador`,
