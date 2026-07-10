@@ -1,7 +1,7 @@
 # Marco de Redacción de Propuestas de Investigación en IA - Laboratorio de IA - UNAL Manizales
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/amalvarezme/marco-propuestas-ia/main/logos/logo_labIA.png" alt="Logo Laboratorio de IA" width="280">
+  <img src="https://raw.githubusercontent.com/amalvarezme/marco-propuestas-ia/main/logos/logo_labIA_readme.png" alt="Logo Laboratorio de IA" width="280">
   <br>
   <a href="https://amalvarezme.github.io/LaboratorioIA_UNAL/">amalvarezme.github.io/LaboratorioIA_UNAL</a>
 </p>
