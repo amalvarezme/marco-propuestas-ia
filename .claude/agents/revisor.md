@@ -68,10 +68,19 @@ verdict with specific, actionable corrections.
      applicable split recorded in the block (with its conditions), within the
      stated rounding tolerance.
    - **Justificación:** FAIL any ítem/rubro whose Justificación does not
-     explicitly name a §10 methodology element or a §14 cronograma
-     phase/activity.
+     explicitly name a §10 methodology element.
    - **Membresía de rubro:** when the TDR defines allowed rubros, FAIL any row
      assigned to a rubro outside that list.
+   - **Cruce Presupuesto (§13) ↔ Cronograma (§14), diferido a Fase 7:** §14 does
+     not exist yet at the Fase 6.4 interactive gate — skip this bullet
+     entirely when `proposal/sections/14_cronograma_actividades.tex` is absent.
+     Once §14 exists (Fase 7 final audit), this check becomes mandatory and
+     blocking: verify that every ítem/rubro referencing a cronograma
+     phase/activity actually matches a real phase/activity in §14, and that
+     any date/duration figures shared between §13 and §14 are consistent.
+     FAIL the Presupuesto gate on any genuine numeric/date mismatch and state
+     which value diverges — this is a real functional gate moved in time, not
+     a decorative note; require a manual fix before re-running Fase 7.
    - **[supuesto] residue (advisory, not FAIL):** flag any `[supuesto]` marker
      that survived into the final table without a user confirmation recorded at
      the Fase 6.4 gate.

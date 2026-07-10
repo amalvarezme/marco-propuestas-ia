@@ -215,8 +215,8 @@ build_docx() {
   #    `\input{sections/diag_*}` resolves to the substituted image stubs
   #    there, not to the real (unprocessed, raw-TikZ) proposal/sections/.
   log "Convirtiendo a Word con pandoc..."
-  warn "El sombreado de filas (xcolor[table]) de §9 NO se preserva en .docx;"
-  warn "la tabla conserva estructura, datos y totales. El Gantt de §7 va como imagen."
+  warn "El sombreado de filas (xcolor[table]) de §13 NO se preserva en .docx;"
+  warn "la tabla conserva estructura, datos y totales. El Gantt de §14 va como imagen."
   if (cd "${stage}" && pandoc "main.tex" \
       --from=latex \
       --reference-doc="${ref_abs}" \

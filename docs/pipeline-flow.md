@@ -154,10 +154,12 @@ flowchart TD
 
 ## Notas de lectura
 
-- Todas las compuertas `GATE revisor` (Fases 1-5 y 6.5, más la Fase 6.4 de
-  Presupuesto) reciben el bloque `EVIDENCIA DE GRAFO` inyectado por el
+- Las compuertas `GATE revisor` de las Fases 1-5, más la Fase 6.4 de
+  Presupuesto, reciben el bloque `EVIDENCIA DE GRAFO` inyectado por el
   dispatcher a partir del grafo de vault actualizado — es asesor, nunca
-  cambia el veredicto por sí solo.
+  cambia el veredicto por sí solo. La Fase 6.5 (front-matter) NO recibe este
+  bloque: su `GATE revisor` solo valida las 3 secciones preliminares contra
+  la guía.
 - La Fase 6.4 (Presupuesto) es la única compuerta genuinamente interactiva:
   no tiene tope de rondas y el dispatcher nunca aprueba en silencio.
 - Fase 0.5, 1a y 1b son condicionales: 0.5 solo corre si hay TDR; 1b solo si
