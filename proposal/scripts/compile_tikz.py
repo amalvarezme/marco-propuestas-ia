@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-"""Build standalone wrapper for a diag_*.tex, compile, and render PNG.
+"""Build standalone wrapper for a diagram source, compile, and render PNG.
 
 Usage:
     python3 compile_tikz.py arbol_problemas:tikz metodologico:tikz gantt:gantt
 
-Looks for diag_<name>.tex under proposal/sections/ relative to the repo root
-(this script lives at proposal/scripts/compile_tikz.py, so the repo root is
-two parents up).  All intermediate files (.tex wrappers, .pdf, .png, .log) go
-under /tmp/propuesta/figopt/.
+For kind "tikz", looks for diag_<name>.tex under proposal/sections/. For kind
+"gantt", the source is instead the Redactor's real §14 output,
+`proposal/sections/14_cronograma_actividades.tex` — there is no standalone
+diag_gantt.tex (single-owner fix: Disenador-TikZ does not produce a separate
+Gantt file; Redactor owns §14 inline, as either a `tabular`+`tikz` table or a
+`ganttchart` spec). Both relative to the repo root (this script lives at
+proposal/scripts/compile_tikz.py, so the repo root is two parents up).  All
+intermediate files (.tex wrappers, .pdf, .png, .log) go under
+/tmp/propuesta/figopt/.
 
 Requires: pdflatex, pdftoppm in PATH.
 """
@@ -20,11 +25,16 @@ WORK = pathlib.Path("/tmp/propuesta/figopt")
 WORK.mkdir(parents=True, exist_ok=True)
 
 def build(name, kind):
-    src = ROOT / "proposal/sections" / f"diag_{name}.tex"
+    if kind == "gantt":
+        # §14 Cronograma is authored inline by Redactor, not as a standalone
+        # diag_gantt.tex — source from the real section file.
+        src = ROOT / "proposal/sections" / "14_cronograma_actividades.tex"
+    else:
+        src = ROOT / "proposal/sections" / f"diag_{name}.tex"
     if not src.exists():
         raise SystemExit(
-            f"no existe {src}. Los diagramas se generan por cada corrida de "
-            "/propuesta (disenador-tikz); ejecuta /propuesta hasta esa fase antes de compilar figuras."
+            f"no existe {src}. Los diagramas/secciones se generan por cada corrida de "
+            "/propuesta (disenador-tikz o redactor); ejecuta /propuesta hasta esa fase antes de compilar figuras."
         )
     text = src.read_text(encoding='utf-8')
 

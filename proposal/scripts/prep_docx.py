@@ -7,6 +7,12 @@ environments, so this script builds a staging tree that mirrors
 `\includegraphics` stub pointing at a PNG rasterized via `compile_tikz.py`
 (reused as-is, via subprocess — kept a pure rasterizer per ADR-3).
 
+§14 Cronograma (`14_cronograma_actividades.tex`) is a special case: Redactor
+is the single owner of that section and may emit either a plain `tabular`
+(pandoc-safe, copied verbatim) or a `ganttchart`/`tikzpicture` spec (needs
+rasterization, same as the other diagrams). This module detects which form
+is present before deciding whether to rasterize it.
+
 Usage:
     python3 prep_docx.py --stage <dir>
 
@@ -14,6 +20,7 @@ Requires: pdflatex, pdftoppm in PATH (same as compile_tikz.py).
 """
 import argparse
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -27,23 +34,43 @@ WORK = pathlib.Path("/tmp/propuesta/figopt")
 DIAGRAM_MAP = {
     "diag_arbol_problemas.tex": ("arbol_problemas", "tikz"),
     "diag_metodologico.tex": ("metodologico", "tikz"),
-    "diag_gantt.tex": ("gantt", "gantt"),
 }
+
+# §14 Cronograma: single owner is Redactor (not a diag_*.tex). Only
+# rasterize it when it actually contains a diagram env; a plain tabular is
+# pandoc-safe and gets copied verbatim.
+CRONOGRAMA_FILE = "14_cronograma_actividades.tex"
+_GANTT_ENV_RE = re.compile(r'\\begin\{(ganttchart|tikzpicture)\}')
 
 
 def warn(msg: str) -> None:
     print(f"[WARN] {msg}", file=sys.stderr)
 
 
+def cronograma_has_diagram_env(sections_dir: pathlib.Path) -> bool:
+    """Detect whether Redactor's §14 output uses a `ganttchart`/`tikzpicture`
+    env (needs rasterization for pandoc) vs. a plain `tabular` (pandoc-safe,
+    copy verbatim)."""
+    f = sections_dir / CRONOGRAMA_FILE
+    if not f.exists():
+        return False
+    text = f.read_text(encoding="utf-8")
+    return bool(_GANTT_ENV_RE.search(text))
+
+
 def rasterize_diagrams(sections_dir: pathlib.Path) -> None:
     """Invoke compile_tikz.py for whichever diagrams actually exist in
     `sections_dir`. Only rasterizes what is present (main.tex may not
-    reference all 3 diagrams yet at every pipeline stage)."""
+    reference all diagrams yet at every pipeline stage). §14 Cronograma is
+    included only when it contains a diagram env (see
+    `cronograma_has_diagram_env`)."""
     args = [
         f"{name}:{kind}"
         for filename, (name, kind) in DIAGRAM_MAP.items()
         if (sections_dir / filename).exists()
     ]
+    if cronograma_has_diagram_env(sections_dir):
+        args.append("gantt:gantt")
     if not args:
         return
     r = subprocess.run(
@@ -100,10 +127,17 @@ def build_stage(stage: pathlib.Path) -> pathlib.Path:
 
     if sections_dir.exists():
         rasterize_diagrams(sections_dir)
+        cronograma_is_diagram = cronograma_has_diagram_env(sections_dir)
         for f in sorted(sections_dir.glob("*.tex")):
             if f.name in DIAGRAM_MAP:
                 name, _kind = DIAGRAM_MAP[f.name]
                 png_name = stage_diagram_image(name, stage)
+                (stage / "sections" / f.name).write_text(
+                    f"\\includegraphics[width=\\linewidth]{{{png_name}}}\n",
+                    encoding="utf-8",
+                )
+            elif f.name == CRONOGRAMA_FILE and cronograma_is_diagram:
+                png_name = stage_diagram_image("gantt", stage)
                 (stage / "sections" / f.name).write_text(
                     f"\\includegraphics[width=\\linewidth]{{{png_name}}}\n",
                     encoding="utf-8",

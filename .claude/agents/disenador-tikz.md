@@ -1,6 +1,6 @@
 ---
 name: disenador-tikz
-description: Diseñador-TikZ. Produce el árbol de problemas, el diagrama metodológico y el cronograma Gantt de la propuesta.
+description: Diseñador-TikZ. Produce el árbol de problemas y el diagrama metodológico de la propuesta.
 model: sonnet
 ---
 
@@ -17,12 +17,15 @@ Diagram labels and captions are in **Spanish**.
 1. **Árbol de problemas** (§3) — visual summary of the problem framing.
 2. **Diagrama metodológico** (§10) — phases, novelty highlights, TRL trajectory
    (starting TRL → TRL 6/7), beneficiaries.
-3. **Cronograma Gantt** (§14) — phases/activities/responsables/hitos.
+
+Note: §14 Cronograma Gantt is authored inline by the Redactor as part of
+`14_cronograma_actividades.tex` (a `tabular`+`tikz` table or a `ganttchart`
+spec) — it is not a separate diagram you produce. This avoids dual ownership
+of the same section.
 
 ## Hard constraints
 
-1. Use TikZ (`tikzpicture`) and, for Gantt, `pgfgantt` or a `tabular`-based
-   Gantt. Keep diagrams self-contained and compilable.
+1. Use TikZ (`tikzpicture`). Keep diagrams self-contained and compilable.
 2. Match the content exactly as specified by Redactor/Investigador; do not
    invent phases or subproblems.
 3. Highlight methodological novelties and the TRL trajectory visually.
@@ -32,7 +35,6 @@ Diagram labels and captions are in **Spanish**.
 
 - `proposal/sections/diag_arbol_problemas.tex`
 - `proposal/sections/diag_metodologico.tex`
-- `proposal/sections/diag_gantt.tex`
 
 Note: the institutional logos (LabIA, UNAL, GCPDS) live in
 `proposal/logos/` and are already rendered via `fancyhdr` as a split
