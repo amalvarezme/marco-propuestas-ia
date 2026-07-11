@@ -717,7 +717,11 @@ Fase 3  Task → redactor → §2 justificación y pertinencia. Antes de despach
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/40-fase3.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específicos
+Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específicos.
+        Antes de despachar esta Task, el dispatcher arma el bloque `##
+        FRAGMENTO DE GUÍA` con Directrices Generales + §6 (Objetivo
+        general) + §7 (Objetivos específicos) + Convenciones técnicas de
+        LaTeX y lo inyecta inline al inicio del prompt.
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/06_objetivo_general.md` o
         `vault/secciones/07_objetivos_especificos.md` cambiaron en esta
@@ -728,7 +732,10 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         `GRAPH_REPORT.md`; arma e inyecta inline el bloque `EVIDENCIA DE
         GRAFO` en el prompt de la Task → revisor de este gate; si hay
         hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
-        `proposal/estado_propuesta.md`.
+        `proposal/estado_propuesta.md`. Antes de despachar la Task de este
+        gate, el dispatcher arma además el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §5 (Hipótesis) + §6 (Objetivo general) + §7
+        (Objetivos específicos) y lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (valida mapeo subproblema↔objetivo específico
         1:1; valida también hipótesis (§5, ya aprobada en la Fase 2)
         ↔objetivo general, con bloque EVIDENCIA DE GRAFO inline) ──→ usuario.
