@@ -171,8 +171,13 @@ su sección asignada. Resumen de asignación:
 | Coordinación del pipeline de propuesta | Coordinador-Propuesta |
 
 > **Runtime canónico:** Claude Code (`.claude/agents/` +
-> `.claude/commands/propuesta.md`) es el **único runtime/fuente de verdad**
-> de este marco. El asistente primario de Claude Code despacha
-> el pipeline completo vía `/propuesta` y puede además despachar directamente
-> cualquier subagente de propuesta para tareas puntuales (ver sección
-> "Dispatch directo" arriba).
+> `.claude/commands/propuesta.md`) es la **fuente de verdad** de este marco.
+> El asistente primario de Claude Code despacha el pipeline completo vía
+> `/propuesta` y puede además despachar directamente cualquier subagente de
+> propuesta para tareas puntuales (ver sección "Dispatch directo" arriba).
+> **OpenCode** es un runtime secundario soportado: `.opencode/agents/` +
+> `.opencode/commands/propuesta.md` se generan de forma determinista y
+> zero-LLM a partir de las fuentes de Claude Code (`scripts/gen-opencode.py`,
+> ver ese script y `scripts/gen-opencode.rules.json` para la mecánica).
+> El comportamiento de Claude Code no cambia por esto; los archivos
+> `.claude/` siguen siendo la única fuente editada a mano.

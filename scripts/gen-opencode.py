@@ -19,6 +19,19 @@ __file__):
                                                   is found
 
 Exit codes: 0 ok; 1 usage; 2 source missing; 3 drift found.
+
+Manual one-time OpenCode setup (not automated by this script):
+This generator only writes .opencode/agents/*.md and
+.opencode/commands/propuesta.md. It does not create or edit any
+opencode.json. To let OpenCode's primary agent dispatch the 9 ported
+subagents via the `task` tool, allow-list them under `permission.task` in
+your OpenCode config -- today that is a user-environment file
+(~/.config/opencode/opencode.json), not something this repo commits. No
+project-level opencode.json exists at the repo root as of this writing; if
+one is ever added, it would live at <repo_root>/opencode.json and take the
+same `permission.task` shape. Approval gates in the ported propuesta.md
+dispatcher require an interactive/resumable OpenCode session -- headless
+`opencode run` is not supported for those gates.
 """
 
 from __future__ import annotations
