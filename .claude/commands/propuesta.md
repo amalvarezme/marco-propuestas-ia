@@ -427,13 +427,17 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         el gate de Fase 4 necesita §3 además de §5-§7 para el mapeo
         subproblema↔objetivo), no solo las producidas en la fase actual. El
         bloque de Convenciones técnicas de LaTeX se agrega SOLO para Tasks
-        que REDACTAN un `.tex` (`investigador`/`redactor` autores) — los
-        gates de `revisor` auditan contenido/coherencia, no sintaxis LaTeX
+        que REDACTAN un `.tex` real: `investigador`/`redactor` (siempre) y
+        `bibliografo-propuesta` SOLO para su Task de §4 (autora
+        `04_estado_arte.tex`, ver Fase 2 abajo) — nunca para su Task de §16
+        (autora únicamente `refs.bib`; el wrapper `16_bibliografia.tex` lo
+        arma el dispatcher en Fase 7, no bibliografo-propuesta) ni para
+        MODE=explore/MODE=scope (no autoran archivo). Los gates de
+        `revisor` auditan contenido/coherencia, no sintaxis LaTeX
         (`revisor.md` no referencia esas convenciones en su checklist), así
         que nunca lo reciben, ni siquiera cuando el gate lee un `.tex`
         existente (p. ej. Fase 6.4 lee `13_presupuesto.tex` para el
         recomputo aritmético, pero no necesita las convenciones de forma).
-        `bibliografo-propuesta` tampoco lo recibe (autora `.bib`, no `.tex`).
         Orden cuando coexisten con `EVIDENCIA DE GRAFO` en el mismo prompt
         de gate: `EVIDENCIA DE GRAFO` primero, `## FRAGMENTO DE GUÍA`
         después (mismo orden en que ambos bloques se describen en cada

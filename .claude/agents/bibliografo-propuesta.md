@@ -49,10 +49,14 @@ scoping-stage modes that add `consensus` to the tool scope.
   `proposal/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
   `guiaProyectosIA_Agente.md`). Abstract-only — no full-text retrieval, no
   BibTeX, no §4 prose. Note: the dispatcher does not inject a `## FRAGMENTO
-  DE GUÍA` block for this mode (Fase 1a) — "the applicable guide" above is
-  a topical pointer for matching relevance, not a fragment to consume;
-  resolve it with the same TDR/base rule stated here if you ever need to
-  check it directly.
+  DE GUÍA` block for this mode (Fase 1a) — unlike MODE=explore above (whose
+  fragment scopes relevance to the one section Bibliografo will eventually
+  own, §4), MODE=scope matches against the whole user prompt and the whole
+  guide's scope, not one section, so a single-section fragment would
+  misrepresent the task; this is a deliberate omission, not a missed
+  injection. "The applicable guide" above is a topical pointer for matching
+  relevance, not a fragment to consume; resolve it with the same TDR/base
+  rule stated here if you ever need to check it directly.
 - Hard constraints: **Q1 or Q2 only**, published **within the last 2 years**,
   **exactly 5** — no more, no fewer. If exactly 5 cannot be reached under
   these constraints, you must **NOT** relax them yourself and must **NOT**
@@ -224,14 +228,18 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
 7. For §4 and §16 authoring, use the injected `## FRAGMENTO DE GUÍA` block in
    your Task prompt (see `propuesta.md`, "FORMATO EXACTO DE INYECCIÓN") as
    the structure/format reference for that section — do not re-read any
-   guide file on your own. You never receive the `### Convenciones técnicas
-   de LaTeX` block (you author `.bib`/prose, not `.tex`). Fallback (only if
-   your prompt does NOT carry that block): read the corresponding `### N.`
-   section of THIS run's applicable guide — `proposal/guia_ajustada_TDR.md`
-   if it exists and was approved at gate G0.5, otherwise
-   `guiaProyectosIA_Agente.md` — never assume it is always the base guide.
-   This does not alter constraint 3's APA/natbib format pointer, which stays
-   as written above.
+   guide file on your own. §4 output is `proposal/sections/04_estado_arte.tex`
+   (real `.tex` prose, see "Output" below), so its fragment DOES include the
+   `### Convenciones técnicas de LaTeX` block — follow it. §16 output is
+   `proposal/refs.bib` only (no `.tex` file is authored here — the thin
+   `16_bibliografia.tex` wrapper is assembled by the dispatcher at Fase 7,
+   not by you), so its fragment never includes that block, and you don't
+   need it. Fallback (only if your prompt does NOT carry the expected
+   block): read the corresponding `### N.` section of THIS run's applicable
+   guide — `proposal/guia_ajustada_TDR.md` if it exists and was approved at
+   gate G0.5, otherwise `guiaProyectosIA_Agente.md` — never assume it is
+   always the base guide. This does not alter constraint 3's APA/natbib
+   format pointer, which stays as written above.
 
 ## Literature search stack (free, no paid API) — MODE=deliverable
 

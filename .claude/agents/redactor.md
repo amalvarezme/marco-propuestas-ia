@@ -57,9 +57,8 @@ All your deliverables are in **Spanish**.
    block (see `propuesta.md`, "FORMATO EXACTO DE INYECCIÓN"). USE THAT
    FRAGMENT as the exact paragraph structure to follow — do not re-read any
    guide file on your own. Fallback (only if your prompt does NOT carry that
-   block — e.g. while this mechanic is still rolling out, or in the phases
-   explicitly excluded from fragment injection): read the corresponding
-   `### N.` section of THIS run's applicable guide —
+   block — e.g. while this mechanic is still rolling out): read the
+   corresponding `### N.` section of THIS run's applicable guide —
    `proposal/guia_ajustada_TDR.md` if it exists and was approved at gate
    G0.5, otherwise `guiaProyectosIA_Agente.md` — never assume it is always
    the base guide. Follow it rigorously; do not omit paragraphs. Note the

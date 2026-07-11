@@ -31,12 +31,19 @@ You no longer own a section by that name.
 
 ## Hard constraints
 
-1. Your Task prompt carries an injected `## FRAGMENTO DE GUÍA (§N — <título>...)`
-   block (see `propuesta.md`, "FORMATO EXACTO DE INYECCIÓN"). USE THAT
-   FRAGMENT as the paragraph-by-paragraph structure to follow — do not
-   re-read any guide file on your own. Fallback (only if your prompt does
-   NOT carry that block — e.g. while this mechanic is still rolling out, or
-   in the phases explicitly excluded from fragment injection): read the
+1. Scope of this constraint: it governs ONLY your Tasks that draft your own
+   sections (§3, §5, §6, §7, §8, and the Fase 1a early-entry subproblemas).
+   It does NOT apply to your separate "Generación de la guía ajustada
+   (Fase 0.5, G0.5)" task below, which is a different job (producing
+   `proposal/guia_ajustada_TDR.md` from the base guide as a read-only
+   template) and keeps reading `guiaProyectosIA_Agente.md` COMPLETE, as
+   documented in that section — do not let this constraint block that read.
+   For your section-drafting Tasks: your Task prompt carries an injected
+   `## FRAGMENTO DE GUÍA (§N — <título>...)` block (see `propuesta.md`,
+   "FORMATO EXACTO DE INYECCIÓN"). USE THAT FRAGMENT as the
+   paragraph-by-paragraph structure to follow, rigorously — do not re-read
+   any guide file on your own. Fallback (only if your prompt does NOT carry
+   that block — e.g. while this mechanic is still rolling out): read the
    corresponding `### N.` section of THIS run's applicable guide —
    `proposal/guia_ajustada_TDR.md` if it exists and was approved at gate
    G0.5, otherwise `guiaProyectosIA_Agente.md` — never assume it is always
