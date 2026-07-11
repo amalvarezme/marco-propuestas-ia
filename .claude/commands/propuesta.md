@@ -135,6 +135,35 @@ archivo de evento `.md` y `proposal/pipeline/_estado.md` — no se ejecuta
 no aportar valor consumido; overhead de token descartado). Nunca lo hace
 `revisor` (solo Read/Grep/Glob) — siempre lo hace el dispatcher.
 
+## Formato exacto — inyección de guide_fingerprint hacia insumos-observador
+
+Antes de despachar `Task → insumos-observador` (Fase 0, ver "FINGERPRINT DE
+GUÍA BASE" en el bloque "Fase 0" abajo), el DISPATCHER calcula el
+fingerprint de la guía BASE y lo inyecta inline en el prompt de esa Task,
+como bloque separado que el subagente lee en su propio paso 0 ("Fingerprint
+de la guía vigente" en `insumos-observador.md`) ANTES de calcular nada por
+su cuenta. Formato exacto — mismo valor que consume el campo
+`guide_fingerprint` del payload cacheado (Decisión A / dominio
+`insumo-extraction-cache`): 12 hex de sha256, SIEMPRE sobre
+`guiaProyectosIA_Agente.md` (nunca sobre una guía ajustada al TDR — en la
+Fase 0 esa guía todavía no existe, se genera recién en la Fase 0.5):
+
+```
+guide_fingerprint: <12 hex de shasum -a 256 guiaProyectosIA_Agente.md | cut -c1-12>
+```
+
+Este es el mismo formato/fórmula que el fallback ya existente de
+`insumos-observador.md`, así que no hay divergencia posible entre el valor
+inyectado y el autocalculado. Si el dispatcher no logra calcular o inyectar
+este bloque por cualquier motivo, simplemente lo omite — el fallback de
+`insumos-observador.md` cubre ese caso y la corrida nunca se bloquea.
+
+Nota de reuso: este valor se calcula temprano (Fase 0) porque es solo un
+hash de archivo — no depende de haber leído ni troceado la guía. La
+PRE-CARGA DE FRAGMENTOS DE GUÍA (inicio de la Fase 1a, más abajo) reutiliza
+este mismo valor cuando corresponde, en vez de recalcularlo; ver ese bloque
+para las condiciones exactas de reuso vs. recálculo.
+
 ## Pipeline (dispatch con `Task` fase por fase)
 
 ```
@@ -192,10 +221,21 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
         ──→ SIN CORRIDA PREVIA: si no existe una corrida anterior, omite
         GUARDIA DE COLISIÓN y ARCHIVADO-Y-REINICIO por completo; continúa
         directo con el resto de la Fase 0.
+        ──→ FINGERPRINT DE GUÍA BASE (liviano, antes de despachar
+        insumos-observador): calcula
+        `guide_fingerprint = shasum -a 256 guiaProyectosIA_Agente.md | cut -c1-12`
+        (12 hex, SIEMPRE sobre la guía BASE — no la ajustada al TDR, que
+        todavía no existe en este punto de la corrida) y consérvalo en la
+        sesión activa del dispatcher para el resto de la corrida. Es solo un
+        hash de archivo, no requiere trocear nada, por eso se calcula acá,
+        antes de que exista la guía aplicable ajustada de la Fase 0.5 (ver
+        "Formato exacto — inyección de guide_fingerprint hacia
+        insumos-observador" arriba para el formato exacto que se inyecta).
         Task → insumos-observador → ingerir insumos (PDFs, papers, links, prompt)
         y clasificarlos (TDR / draft-base / background, ver
         `insumos-observador.md`); si hay TDR, extraer sus secciones + tabla
-        de criterios ponderados.
+        de criterios ponderados. El dispatcher inyecta inline en este prompt
+        el bloque `guide_fingerprint: <valor>` calculado arriba.
         ──→ GATE DE AMBIGÜEDAD: si insumos-observador marca uno o más
         archivos como AMBIGUA (para TDR y/o draft-base), DETENTE y pregunta
         al usuario para confirmar/corregir. Si TDR y draft-base están
@@ -302,6 +342,63 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         haya o no TDR — la "guía aplicable" resuelta en la Fase 0/Fase 0.5
         (base o ajustada) solo determina el parámetro (b) de la búsqueda del
         bibliógrafo en el paso (a) siguiente, no si esta fase corre.
+        ──→ PRE-CARGA DE FRAGMENTOS DE GUÍA (una sola lectura completa por
+        corrida, antes del paso (a) siguiente): el DISPATCHER (no un
+        subagente) lee la guía aplicable UNA vez con un único `Read`
+        completo (`guide = proposal/guia_ajustada_TDR.md` si G0.5 =
+        APROBADA, si no `guiaProyectosIA_Agente.md`) y retiene el contenido
+        verbatim en su propia memoria de sesión — SIN `grep`/`rg`, SIN
+        llamadas `Read` adicionales con `offset`/`limit`, SIN aritmética de
+        líneas. El cableado Task por Task de este contenido (qué fragmento
+        se inyecta en cada despacho) es un cambio posterior (PR3 de esta
+        cadena); acá solo se define QUÉ queda disponible en memoria y CÓMO
+        identificarlo cuando haga falta — el bloque FALLBACK que sigue ya
+        forma parte del contrato que ese cableado posterior debe respetar,
+        aunque en este PR todavía no haya ninguna Task que lo dispare.
+
+        A partir de esa única lectura, identificá por tu propio criterio de
+        lectura (no por regex ciego, así evitás falsos positivos de `### `
+        dentro de un bloque de código delimitado por tres backticks, p. ej.
+        un ejemplo dentro de "Convenciones técnicas de LaTeX") los bloques
+        siguientes, cada uno delimitado desde su encabezado/marcador hasta
+        el inicio del siguiente:
+          - **Directrices Generales**: el bloque bajo
+            `**Directrices Generales:**` hasta el `---` que lo cierra.
+          - **Secciones numeradas** (`### N. <título>`): una por cada
+            sección de la guía. En `guia_ajustada_TDR.md` el título y/o la
+            numeración pueden diferir de la guía base (`investigador.md`,
+            "Generación de la guía ajustada", puede renombrar/fusionar/
+            reordenar secciones) — identificá cada bloque por su contenido y
+            posición real en ESTA guía, nunca asumas que coincide con la
+            guía base.
+          - **Preliminares** (`### Resumen`, `### Resumen ejecutivo`,
+            `### Palabras clave`) y **Convenciones técnicas de LaTeX**.
+          - Fingerprint de esta guía: si `$guide` es la guía BASE (siempre
+            el caso en corridas NO-TDR, y también en corridas TDR con G0.5 =
+            OMITIDA-POR-USUARIO), REUTILIZA el `guide_fingerprint` YA
+            calculado en la Fase 0 antes de despachar `insumos-observador`
+            (ver "Formato exacto — inyección de guide_fingerprint..."
+            arriba) en vez de recalcularlo. Si `$guide` es la guía AJUSTADA,
+            es un archivo distinto: calculá `shasum -a 256 "$guide" | cut
+            -c1-12` sobre este archivo, solo para uso interno de esta
+            precarga (p. ej. etiquetar advertencias de fallback) — nunca
+            reemplaza ni se reinyecta como el `guide_fingerprint` de
+            `insumos-observador`, que siempre referencia la guía BASE, sin
+            excepción.
+        ──→ FALLBACK DE IDENTIFICACIÓN INSEGURA: si para una sección
+        puntual que una Task necesita no podés identificar con confianza el
+        bloque correspondiente (marcador/encabezado ausente, renombrado de
+        forma irreconocible, formato de numeración distinto al esperado, o
+        cualquier otra ambigüedad — p. ej. una guía ajustada al TDR sin el
+        constraint de forma `### N. <título>`), NO adivines ni inventes
+        contenido: para ESA Task puntual, inyectá la guía completa (`$guide`)
+        en vez del fragmento, con un comentario
+        `<!-- ADVERTENCIA: sección §N no identificada con confianza en
+        <guide>; se inyecta la guía completa como fallback seguro -->`
+        dentro del bloque inyectado, y agregá una advertencia visible (no
+        bloqueante) en la sesión con el dispatcher señalando qué sección
+        faltó y en qué Task se aplicó el fallback. Esto nunca detiene la
+        corrida.
         (a) Task → bibliografo-propuesta MODE=scope → exactamente 5 papers
         Q1/Q2 publicados en los últimos 2 años, abstract-only, que calcen
         con (i) el prompt original del usuario a `/propuesta` y (ii) la guía
