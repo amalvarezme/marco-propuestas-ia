@@ -743,10 +743,20 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/50-fase4.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 5  Task → investigador → §8 marco conceptual (en paralelo)
+Fase 5  Task → investigador → §8 marco conceptual (en paralelo). Antes de
+        despachar esta Task, el dispatcher arma el bloque `## FRAGMENTO DE
+        GUÍA` con Directrices Generales + §8 (Marco conceptual) +
+        Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
+        prompt.
         Task → redactor → §9 equipo de trabajo (deriva roles de §7 objetivos
-        específicos; nunca de la metodología)
-        Task → redactor → §10 metodología, luego bucle de figuras:
+        específicos; nunca de la metodología). Antes de despachar esta Task,
+        el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
+        Generales + §9 (Equipo de trabajo) + Convenciones técnicas de LaTeX
+        y lo inyecta inline al inicio del prompt.
+        Task → redactor → §10 metodología. Antes de despachar esta Task, el
+        dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
+        Generales + §10 (Metodología) + Convenciones técnicas de LaTeX y lo
+        inyecta inline al inicio del prompt. Luego bucle de figuras:
           Task → disenador-tikz (autor diag_metodologico.tex)
           → Task → tikz-optimizer (compila a PNG, primer ajuste)
           → Task → revisor-figuras (audita, PASS/FAIL)
@@ -764,7 +774,11 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo)
         revisor de este gate (nota: este paso es distinto del bucle de
         figuras arriba, que usa `revisor-figuras`, no `revisor`, y no recibe
         evidencia de grafo); si hay hallazgo, agrégalo a `## Hallazgos de
-        coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
+        despachar la Task de este gate, el dispatcher arma además el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §8 (Marco
+        conceptual) + §9 (Equipo de trabajo) + §10 (Metodología) y lo
+        inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/60-fase5.md` (evento de esta compuerta) y
