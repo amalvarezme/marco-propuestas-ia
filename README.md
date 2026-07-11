@@ -25,6 +25,17 @@ referencia canónica del pipeline en `.claude/agents/coordinador-propuesta.md`
 (el 10º archivo de `.claude/agents/`, no se despacha como subagente sino que
 documenta el pipeline), avanzando por fases con puertas de revisión (gates).
 
+**Eficiencia de tokens.** El dispatcher lee `guiaProyectosIA_Agente.md` (o la
+guía ajustada al TDR generada en G0.5) **una sola vez por corrida** y le
+inyecta a cada subagente solo el fragmento de sección que necesita (bloque
+`## FRAGMENTO DE GUÍA`, ver "FORMATO EXACTO DE INYECCIÓN" en
+`.claude/commands/propuesta.md`), en vez de que cada Task relea el archivo
+completo — la única excepción es la auditoría final (Fase 7), que sí necesita
+la guía íntegra. `insumos-observador` además cachea en Engram, por hash de
+contenido, la extracción de cada archivo de `info_data/`: corridas repetidas
+contra el mismo insumo (p. ej. la misma convocatoria) no vuelven a procesarlo
+desde cero.
+
 ## Estructura
 
 ```

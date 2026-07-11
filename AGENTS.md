@@ -147,8 +147,11 @@ cruzadas) ya que el agente no tiene el estado del pipeline que el
 
 La guía autoritativa sección por sección (con instrucciones de párrafo a
 párrafo, verbos rectores, parámetros de calidad y volumen bibliográfico) vive
-en `guiaProyectosIA_Agente.md`. Todos los agentes deben consultarla al redactar
-su sección asignada. Resumen de asignación:
+en `guiaProyectosIA_Agente.md`. Todos los agentes consultan su sección
+asignada — el dispatcher la lee una sola vez por corrida y le inyecta a cada
+Task solo el fragmento correspondiente (`## FRAGMENTO DE GUÍA`, ver
+`.claude/commands/propuesta.md`); ningún subagente relee el archivo completo
+por su cuenta, salvo la auditoría final de Fase 7. Resumen de asignación:
 
 | Sección | Agente responsable |
 |---------|--------------------|
