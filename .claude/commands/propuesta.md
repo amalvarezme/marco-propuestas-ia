@@ -783,9 +783,16 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo). Antes de
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/60-fase5.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 6  Task → redactor → §11 resultados esperados; Task → redactor →
-        §12 consideraciones éticas (sin gate propio; se auditan en la Fase 7
-        junto con el resto del documento, igual que antes).
+Fase 6  Task → redactor → §11 resultados esperados. Antes de despachar esta
+        Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §11 (Resultados esperados) + Convenciones
+        técnicas de LaTeX y lo inyecta inline al inicio del prompt.
+        Task → redactor → §12 consideraciones éticas (sin gate propio; se
+        auditan en la Fase 7 junto con el resto del documento, igual que
+        antes). Antes de despachar esta Task, el dispatcher arma el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §12
+        (Consideraciones éticas) + Convenciones técnicas de LaTeX y lo
+        inyecta inline al inicio del prompt.
 Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         Precondición: §10, §11 y §12 ya aprobadas/producidas (el presupuesto
         justifica cada ítem contra la metodología, §10). El Cronograma (§14)
