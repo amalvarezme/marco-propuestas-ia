@@ -855,12 +855,22 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         `proposal/pipeline/65-fase6_4.md` (evento de esta compuerta, misma
         plantilla mínima descrita arriba en "Grafo de pipeline") y actualiza
         `proposal/pipeline/_estado.md`.
-Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt); Task →
-        redactor → §15 productos esperados; Task → bibliografo-propuesta →
-        §16 bibliografía (BibTeX, consolidación final MODE=deliverable
-        §4+§16, cubre todas las referencias citadas a lo largo del
-        documento). Sin gate propio (mismo patrón que la Fase 6: se audita
-        en conjunto en la Fase 7).
+Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt). Antes de
+        despachar esta Task, el dispatcher arma el bloque `## FRAGMENTO DE
+        GUÍA` con Directrices Generales + §14 (Cronograma de actividades) +
+        Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
+        prompt.
+        Task → redactor → §15 productos esperados. Antes de despachar esta
+        Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §15 (Productos esperados) + Convenciones
+        técnicas de LaTeX y lo inyecta inline al inicio del prompt.
+        Task → bibliografo-propuesta → §16 bibliografía (BibTeX,
+        consolidación final MODE=deliverable §4+§16, cubre todas las
+        referencias citadas a lo largo del documento). Antes de despachar
+        esta Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §16 (Bibliografía) y lo inyecta inline al
+        inicio del prompt. Sin gate propio (mismo patrón que la Fase 6: se
+        audita en conjunto en la Fase 7).
         ──→ [NUEVO] DISPATCHER: papers-graph refresh: guardia — ejecuta este
         bloque solo si `proposal/refs.bib` cambió en esta fase (la
         consolidación MODE=deliverable lo acaba de extender). Mecánica: `cd
