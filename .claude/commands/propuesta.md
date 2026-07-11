@@ -696,7 +696,11 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo)
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/30-fase2.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 3  Task → redactor → §2 justificación y pertinencia
+Fase 3  Task → redactor → §2 justificación y pertinencia. Antes de despachar
+        esta Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §2 (Justificación y pertinencia) +
+        Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
+        prompt.
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/02_justificacion.md` cambió en esta fase; si no
         cambió, reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar
@@ -705,7 +709,10 @@ Fase 3  Task → redactor → §2 justificación y pertinencia
         7") → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de este gate; si hay hallazgo, agrégalo a `## Hallazgos de
-        coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
+        despachar la Task de este gate, el dispatcher arma además el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §2 (Justificación
+        y pertinencia) y lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/40-fase3.md` (evento de esta compuerta) y
