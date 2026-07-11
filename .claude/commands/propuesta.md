@@ -415,16 +415,29 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         [<contenido verbatim de §M> si la Task necesita más de una sección —
          p. ej. un gate de revisor que audita dos secciones a la vez]
 
-        [<Convenciones técnicas de LaTeX, verbatim — SOLO si la Task produce
-         o audita un archivo .tex>]
+        [<Convenciones técnicas de LaTeX, verbatim — SOLO si la Task
+         REDACTA un archivo .tex>]
         ```
 
         Reglas: Directrices Generales va SIEMPRE, sin excepción. Las
         secciones listadas en el título del bloque son las que esa Task
         posee/audita (ver el mapeo fase→sección de cada bloque de Fase
-        abajo). El bloque de Convenciones técnicas de LaTeX se agrega solo
-        para Tasks que redactan o auditan un `.tex` (no aplica, p. ej., a
-        `bibliografo-propuesta` MODE=explore, que no produce archivo). Si
+        abajo) — incluye, cuando corresponda, secciones de fases anteriores
+        que el gate necesita para validar una dependencia cruzada (p. ej.
+        el gate de Fase 4 necesita §3 además de §5-§7 para el mapeo
+        subproblema↔objetivo), no solo las producidas en la fase actual. El
+        bloque de Convenciones técnicas de LaTeX se agrega SOLO para Tasks
+        que REDACTAN un `.tex` (`investigador`/`redactor` autores) — los
+        gates de `revisor` auditan contenido/coherencia, no sintaxis LaTeX
+        (`revisor.md` no referencia esas convenciones en su checklist), así
+        que nunca lo reciben, ni siquiera cuando el gate lee un `.tex`
+        existente (p. ej. Fase 6.4 lee `13_presupuesto.tex` para el
+        recomputo aritmético, pero no necesita las convenciones de forma).
+        `bibliografo-propuesta` tampoco lo recibe (autora `.bib`, no `.tex`).
+        Orden cuando coexisten con `EVIDENCIA DE GRAFO` en el mismo prompt
+        de gate: `EVIDENCIA DE GRAFO` primero, `## FRAGMENTO DE GUÍA`
+        después (mismo orden en que ambos bloques se describen en cada
+        bloque de Fase de este documento). Si
         el FALLBACK DE IDENTIFICACIÓN INSEGURA se activó para alguna de las
         secciones pedidas, el bloque completo se reemplaza por la guía
         íntegra (`$guide`) con el comentario de advertencia ya descrito, en
@@ -734,8 +747,12 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
         `proposal/estado_propuesta.md`. Antes de despachar la Task de este
         gate, el dispatcher arma además el bloque `## FRAGMENTO DE GUÍA` con
-        Directrices Generales + §5 (Hipótesis) + §6 (Objetivo general) + §7
-        (Objetivos específicos) y lo inyecta inline al inicio del prompt.
+        Directrices Generales + §3 (Descripción del problema) + §5
+        (Hipótesis) + §6 (Objetivo general) + §7 (Objetivos específicos) —
+        §3 es necesaria acá porque el gate audita el mapeo subproblema↔
+        objetivo específico 1:1 contra el texto normativo de §3, no solo
+        contra la memoria de la fase anterior — y lo inyecta inline al
+        inicio del prompt.
         ──→ GATE Task → revisor (valida mapeo subproblema↔objetivo específico
         1:1; valida también hipótesis (§5, ya aprobada en la Fase 2)
         ↔objetivo general, con bloque EVIDENCIA DE GRAFO inline) ──→ usuario.
@@ -776,20 +793,25 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo). Antes de
         evidencia de grafo); si hay hallazgo, agrégalo a `## Hallazgos de
         coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
         despachar la Task de este gate, el dispatcher arma además el bloque
-        `## FRAGMENTO DE GUÍA` con Directrices Generales + §8 (Marco
-        conceptual) + §9 (Equipo de trabajo) + §10 (Metodología) y lo
-        inyecta inline al inicio del prompt.
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §3 (Descripción
+        del problema) + §7 (Objetivos específicos) + §8 (Marco conceptual) +
+        §9 (Equipo de trabajo) + §10 (Metodología) — §3 y §7 son necesarias
+        acá porque el gate audita §8↔§3 (marco conceptual↔limitaciones del
+        problema) y §9/§10↔§7 (equipo de trabajo y metodología derivan de
+        los objetivos específicos), no solo las tres secciones producidas
+        en esta misma fase — y lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/60-fase5.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 6  Task → redactor → §11 resultados esperados. Antes de despachar esta
+Fase 6  Task → redactor → §11 resultados esperados (sin gate propio; §11 y
+        §12 se auditan juntas en la Fase 7 junto con el resto del
+        documento, igual que antes). Antes de despachar esta
         Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
         Directrices Generales + §11 (Resultados esperados) + Convenciones
         técnicas de LaTeX y lo inyecta inline al inicio del prompt.
-        Task → redactor → §12 consideraciones éticas (sin gate propio; se
-        auditan en la Fase 7 junto con el resto del documento, igual que
-        antes). Antes de despachar esta Task, el dispatcher arma el bloque
+        Task → redactor → §12 consideraciones éticas (ídem, sin gate
+        propio). Antes de despachar esta Task, el dispatcher arma el bloque
         `## FRAGMENTO DE GUÍA` con Directrices Generales + §12
         (Consideraciones éticas) + Convenciones técnicas de LaTeX y lo
         inyecta inline al inicio del prompt.
@@ -836,8 +858,11 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         este gate; si hay hallazgo, agrégalo a `## Hallazgos de coherencia
         (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
         Task de este gate, el dispatcher arma además el bloque `##
-        FRAGMENTO DE GUÍA` con Directrices Generales + §13 (Presupuesto) y
-        lo inyecta inline al inicio del prompt.
+        FRAGMENTO DE GUÍA` con Directrices Generales + §10 (Metodología) +
+        §13 (Presupuesto) — §10 es necesaria acá porque el checklist de
+        `revisor.md` exige que cada justificación de línea de presupuesto
+        nombre un elemento real de §10 — y lo inyecta inline al inicio del
+        prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline; aplica
         el criterio de Presupuesto del checklist de `revisor.md`: recomputo
         aritmético independiente, tope/cofinanciación, justificación→§10
@@ -855,29 +880,39 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         `proposal/pipeline/65-fase6_4.md` (evento de esta compuerta, misma
         plantilla mínima descrita arriba en "Grafo de pipeline") y actualiza
         `proposal/pipeline/_estado.md`.
-Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt). Antes de
-        despachar esta Task, el dispatcher arma el bloque `## FRAGMENTO DE
-        GUÍA` con Directrices Generales + §14 (Cronograma de actividades) +
-        Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
-        prompt.
-        Task → redactor → §15 productos esperados. Antes de despachar esta
-        Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
-        Directrices Generales + §15 (Productos esperados) + Convenciones
-        técnicas de LaTeX y lo inyecta inline al inicio del prompt.
+Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt) (sin gate
+        propio; §14, §15 y §16 se auditan juntas en la Fase 7, mismo patrón
+        que la Fase 6). Antes de despachar esta Task, el dispatcher arma el
+        bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §14
+        (Cronograma de actividades) + Convenciones técnicas de LaTeX y lo
+        inyecta inline al inicio del prompt.
+        Task → redactor → §15 productos esperados (ídem, sin gate propio).
+        Antes de despachar esta Task, el dispatcher arma el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §15 (Productos
+        esperados) + Convenciones técnicas de LaTeX y lo inyecta inline al
+        inicio del prompt.
         Task → bibliografo-propuesta → §16 bibliografía (BibTeX,
         consolidación final MODE=deliverable §4+§16, cubre todas las
-        referencias citadas a lo largo del documento). Antes de despachar
-        esta Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
-        Directrices Generales + §16 (Bibliografía) y lo inyecta inline al
-        inicio del prompt. Sin gate propio (mismo patrón que la Fase 6: se
-        audita en conjunto en la Fase 7).
+        referencias citadas a lo largo del documento; ídem, sin gate
+        propio). Antes de despachar esta Task, el dispatcher arma el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §16
+        (Bibliografía) y lo inyecta inline al inicio del prompt.
         ──→ [NUEVO] DISPATCHER: papers-graph refresh: guardia — ejecuta este
         bloque solo si `proposal/refs.bib` cambió en esta fase (la
         consolidación MODE=deliverable lo acaba de extender). Mecánica: `cd
         proposal/scoping/ && graphify --update papers/ && graphify export
         html`. NUNCA `--force`. La salida sigue en
         `proposal/scoping/graphify-out/`.
-Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§16 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor. Antes de despachar esta Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §Resumen + §Resumen ejecutivo + §Palabras clave + Convenciones técnicas de LaTeX y lo inyecta inline al inicio del prompt.
+Fase 6.5 Task → redactor → secciones preliminares (front-matter), como
+        síntesis del documento completo (§1–§16 ya aprobadas): Resumen
+        (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen
+        ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5
+        párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex,
+        5 palabras). Mismo mirror de vault que el resto de secciones del
+        redactor. Antes de despachar esta Task, el dispatcher arma el
+        bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §Resumen +
+        §Resumen ejecutivo + §Palabras clave + Convenciones técnicas de
+        LaTeX y lo inyecta inline al inicio del prompt.
         Antes de despachar la Task de este gate, el dispatcher arma el
         bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §Resumen +
         §Resumen ejecutivo + §Palabras clave y lo inyecta inline al inicio
