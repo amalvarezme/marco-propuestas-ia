@@ -22,7 +22,8 @@ flowchart TD
         Corrob -->|si| OptIn{Usuario:<br/>ajustar guia al TDR?}
         OptIn -->|si| GuiaAjustada[Task: investigador<br/>genera guia_ajustada_TDR.md]
         OptIn -->|no| Skip05[G0.5 = OMITIDA-POR-USUARIO]
-        GuiaAjustada --> GateG05{Usuario aprueba}
+        GuiaAjustada --> TablaSecciones[Dispatcher: renderiza tabla de<br/>secciones definitivas en consola]
+        TablaSecciones --> GateG05{Usuario aprueba<br/>tabla de secciones}
         GateG05 -->|cambios| GuiaAjustada
     end
     GateG05 -->|aprobado| Fase1a

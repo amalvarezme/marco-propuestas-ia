@@ -38,7 +38,8 @@ flowchart TD
         Corrob -->|si| OptIn{Usuario:<br/>ajustar guia al TDR?}
         OptIn -->|si| GuiaAjustada[Task: investigador<br/>genera guia_ajustada_TDR.md]
         OptIn -->|no| Skip05[G0.5 = OMITIDA-POR-USUARIO]
-        GuiaAjustada --> GateG05{Usuario aprueba}
+        GuiaAjustada --> TablaSecciones[Dispatcher: renderiza tabla de<br/>secciones definitivas en consola]
+        TablaSecciones --> GateG05{Usuario aprueba<br/>tabla de secciones}
         GateG05 -->|cambios| GuiaAjustada
     end
     GateG05 -->|aprobado| Fase1a
@@ -164,6 +165,11 @@ flowchart TD
   no tiene tope de rondas y el dispatcher nunca aprueba en silencio.
 - Fase 0.5, 1a y 1b son condicionales: 0.5 solo corre si hay TDR; 1b solo si
   1a cerró aprobada.
+- El gate G0.5 no presenta un resumen en prosa de `guia_ajustada_TDR.md`: el
+  dispatcher copia la "Tabla de secciones definitivas" (§, Sección,
+  Alcance/ajuste frente al TDR, Prioridad, Owner) completa y la renderiza
+  como tabla Markdown directamente en el chat; la aprobación/ajuste del
+  usuario se resuelve sobre esa tabla, no sobre el documento en general.
 - El Cronograma de actividades (§14) se redacta en la Fase 6.45, **después**
   del Presupuesto (§13, Fase 6.4), aunque §14 sea referenciado desde §13
   (referencia hacia adelante); la coherencia Presupuesto↔Cronograma se
