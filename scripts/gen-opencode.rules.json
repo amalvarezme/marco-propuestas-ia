@@ -47,6 +47,14 @@
   },
   "substitutions": [
     {
+      "id": "propuesta-interactive-session-note",
+      "applies_to": ["propuesta.md"],
+      "find": "El usuario quiere redactar una propuesta de investigación en IA siguiendo el",
+      "replace": "**Nota de ejecución (solo OpenCode):** los gates de aprobación de este pipeline (\"NO avances sin aprobación\") requieren que la sesión de OpenCode se mantenga activa e interactiva entre fases -- este comando es resumible (el usuario responde en cada gate y el pipeline continúa dentro de la misma sesión), NO soporta una ejecución headless de una sola pasada (por ejemplo, `opencode run` de punta a punta sin sesión persistente), porque ese modo no puede detenerse a esperar la aprobación humana en cada gate.\n\nEl usuario quiere redactar una propuesta de investigación en IA siguiendo el",
+      "literal": true,
+      "_note": "Implements spec Requirement 'Interactive-Session-Only Constraint' (verify-report CRITICAL-1, obs #208): the source .claude/commands/propuesta.md's gate-wait prose is Claude-generic and never names OpenCode's headless-vs-interactive/resumable session distinction, so it must be injected explicitly into the generated artifact, not inferred. Uses the existing literal find/replace substitution mechanism as an insertion technique -- find matches the body's first line (verified single occurrence via rg) and replace prepends the note plus a blank line before that same first line, so the note lands at the very top of the body, right after frontmatter, before any pipeline content. Runs first in this array; the find target is disjoint from every other rule's find target so ordering relative to the other rules does not matter."
+    },
+    {
       "id": "task-prompt-wording",
       "applies_to": ["investigador.md", "revisor.md", "presupuestador.md"],
       "find": "Task prompt",

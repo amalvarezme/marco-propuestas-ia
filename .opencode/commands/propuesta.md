@@ -2,6 +2,8 @@
 description: Inicia el pipeline multi-agente de redacción de una propuesta de investigación en IA a partir de la idea del usuario y sus insumos.
 ---
 
+**Nota de ejecución (solo OpenCode):** los gates de aprobación de este pipeline ("NO avances sin aprobación") requieren que la sesión de OpenCode se mantenga activa e interactiva entre fases -- este comando es resumible (el usuario responde en cada gate y el pipeline continúa dentro de la misma sesión), NO soporta una ejecución headless de una sola pasada (por ejemplo, `opencode run` de punta a punta sin sesión persistente), porque ese modo no puede detenerse a esperar la aprobación humana en cada gate.
+
 El usuario quiere redactar una propuesta de investigación en IA siguiendo el
 marco multi-agente descrito en `AGENTS.md` y en la referencia canónica del
 pipeline, `coordinador-propuesta.md` (documento de referencia del pipeline, no incluido en este puerto). **Tú, el asistente
