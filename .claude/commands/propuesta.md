@@ -619,10 +619,18 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         NUNCA uses `--force`.
 Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
-        archivo de salida), despachado ANTES del investigador.
+        archivo de salida), despachado ANTES del investigador. Antes de
+        despachar esta Task, el dispatcher arma el bloque `## FRAGMENTO DE
+        GUÍA` (formato exacto en "FORMATO EXACTO DE INYECCIÓN" arriba) con
+        Directrices Generales + §4 (Estado del arte) y lo inyecta inline al
+        inicio del prompt de esta Task.
         Task → investigador → §3 descripción del problema (subproblemas +
         pregunta de investigación). Inyecta inline en el prompt de esta Task el mapa de MODE=explore y,
-        si existe, el bloque "PRIORIDAD TDR" de la Fase 0.
+        si existe, el bloque "PRIORIDAD TDR" de la Fase 0. El dispatcher
+        arma además, antes de despachar esta Task, el bloque `## FRAGMENTO
+        DE GUÍA` con Directrices Generales + §3 (Descripción del problema) +
+        Convenciones técnicas de LaTeX, y lo inyecta inline al inicio del
+        mismo prompt.
         Si la Fase 1a corrió y su gate cerró con G1a = APROBADA (ver
         `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano"),
         inyecta ADEMÁS, inline, el bloque "SUBPROBLEMAS TEMPRANOS APROBADOS
@@ -654,7 +662,10 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         el bloque `EVIDENCIA DE GRAFO` (formato en "Grafo de coherencia del
         vault" arriba) en el prompt de la Task → revisor de este gate; si
         hay hallazgo de coherencia, agrégalo a `## Hallazgos de coherencia
-        (grafo)` en `proposal/estado_propuesta.md`.
+        (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
+        Task de este gate, el dispatcher arma además el bloque `##
+        FRAGMENTO DE GUÍA` con Directrices Generales + §3 (Descripción del
+        problema) y lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/20-fase1.md` (evento de esta compuerta) y
