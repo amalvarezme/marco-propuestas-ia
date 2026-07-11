@@ -457,6 +457,11 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         `investigador.md`, "Entrada temprana (Fase 1a)") → 3 subproblemas
         tempranos, cada uno con (1) el gap, (2) de qué abstract(s)
         (`paper-N`) proviene, (3) un cruce de una línea contra el TDR/guía.
+        Antes de despachar esta Task, el dispatcher arma el bloque `##
+        FRAGMENTO DE GUÍA` (formato exacto en "FORMATO EXACTO DE INYECCIÓN"
+        arriba) con Directrices Generales + §3 (Descripción del problema) +
+        §4 (Estado del arte) y lo inyecta inline al inicio del prompt de
+        esta Task.
         ──→ COMPUERTA COMBINADA G1a: presenta juntos, en una sola solicitud
         de aprobación:
           1. Los 5 papers + parámetros de búsqueda (query, filtro de
