@@ -158,15 +158,11 @@ inyectado y el autocalculado. Si el dispatcher no logra calcular o inyectar
 este bloque por cualquier motivo, simplemente lo omite — el fallback de
 `insumos-observador.md` cubre ese caso y la corrida nunca se bloquea.
 
-Nota de reuso (ver también "PRE-CARGA DE FRAGMENTOS DE GUÍA" al inicio de la
-Fase 1a): este `guide_fingerprint` de la guía BASE se calcula temprano, en
-la Fase 0, porque es solo un hash de archivo (liviano) y no depende de
-trocear nada — se puede calcular antes de que exista la guía aplicable
-ajustada. La precarga de fragmentos (más pesada: grep + Read por sección)
-corre más tarde, al cierre de la Fase 0.5 / inicio de la Fase 1a, y
-REUTILIZA este mismo valor cuando la guía aplicable resulta ser la guía
-base (corridas NO-TDR, o TDR con G0.5 = OMITIDA-POR-USUARIO) en vez de
-volver a calcularlo.
+Nota de reuso: este valor se calcula temprano (Fase 0) porque es solo un
+hash de archivo — no depende de haber leído ni troceado la guía. La
+PRE-CARGA DE FRAGMENTOS DE GUÍA (inicio de la Fase 1a, más abajo) reutiliza
+este mismo valor cuando corresponde, en vez de recalcularlo; ver ese bloque
+para las condiciones exactas de reuso vs. recálculo.
 
 ## Pipeline (dispatch con `Task` fase por fase)
 
@@ -346,56 +342,63 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         haya o no TDR — la "guía aplicable" resuelta en la Fase 0/Fase 0.5
         (base o ajustada) solo determina el parámetro (b) de la búsqueda del
         bibliógrafo en el paso (a) siguiente, no si esta fase corre.
-        ──→ PRE-CARGA DE FRAGMENTOS DE GUÍA (una sola lectura por corrida,
-        antes del paso (a) siguiente): el DISPATCHER (no un subagente) lee
-        la guía aplicable UNA sola vez y arma un mapa de fragmentos en
-        memoria de sesión, para más adelante inyectar solo la porción que
-        cada Task necesita en vez de instruir "lee el archivo completo" (el
-        cableado Task por Task de este mapa es un cambio posterior; acá solo
-        se arma el mapa y se define su mecánica). Mecánica exacta:
-          1. `guide = proposal/guia_ajustada_TDR.md` si G0.5 = APROBADA, si
-             no `guiaProyectosIA_Agente.md`.
-          2. `grep -n '^### ' "$guide"` → lista ordenada de líneas de
-             encabezado: las 16 secciones numeradas `### N. <título>`, más
-             los preliminares no numerados `### Resumen`, `### Resumen
-             ejecutivo`, `### Palabras clave`, más
-             `### Convenciones técnicas de LaTeX`.
-          3. Por cada encabezado de la lista: `Read` con `offset` = línea
-             del encabezado, `limit` = (línea del siguiente `### ` −
-             línea del encabezado); guarda el slice verbatim en el mapa de
-             sesión `§N → texto` (los preliminares/LaTeX se indexan por su
-             título, no por número).
-          4. Extrae **Directrices Generales** una sola vez y por separado:
-             `Read` desde `**Directrices Generales:**` hasta el `---` que la
-             cierra (líneas 5-11 en la guía base; localiza el rango con
-             `grep` en guías ajustadas, cuya numeración de línea puede
-             diferir de la base).
-          5. Fingerprint de esta guía: si `$guide` es la guía BASE
-             (siempre el caso en corridas NO-TDR, y también en corridas TDR
-             con G0.5 = OMITIDA-POR-USUARIO), REUTILIZA el
-             `guide_fingerprint` YA calculado en la Fase 0 antes de
-             despachar `insumos-observador` (ver "FINGERPRINT DE GUÍA BASE"
-             arriba) en vez de recalcularlo — es el mismo archivo, el mismo
-             hash. Si `$guide` es la guía AJUSTADA
-             (`proposal/guia_ajustada_TDR.md`, G0.5 = APROBADA), es un
-             archivo distinto: calcula `shasum -a 256 "$guide" | cut -c1-12`
-             sobre este archivo para uso interno de esta precarga (p. ej.
-             etiquetar advertencias de fallback); este segundo valor NO
-             reemplaza ni se reinyecta como el `guide_fingerprint` de
-             `insumos-observador`, que según Decisión A / dominio
-             `insumo-extraction-cache` siempre referencia la guía BASE, sin
-             excepción.
-        ──→ FALLBACK DE ENCABEZADO FALTANTE: si el paso 2/3 anterior no
-        encuentra, para una sección que una Task necesita, el encabezado
-        `### ` esperado (p. ej. una guía ajustada al TDR con numeración
-        distinta a la mapeada), NO omitas esa sección ni inventes contenido:
-        para ESA Task puntual, inyecta la guía completa (`$guide`) en vez
-        del fragmento, con un comentario
-        `<!-- ADVERTENCIA: encabezado §N no encontrado en <guide>; se
-        inyecta la guía completa como fallback seguro -->` dentro del bloque
-        inyectado, y agrega una advertencia visible (no bloqueante) en la
-        sesión con el dispatcher señalando qué encabezado faltó y en qué
-        Task se aplicó el fallback. Esto nunca detiene la corrida.
+        ──→ PRE-CARGA DE FRAGMENTOS DE GUÍA (una sola lectura completa por
+        corrida, antes del paso (a) siguiente): el DISPATCHER (no un
+        subagente) lee la guía aplicable UNA vez con un único `Read`
+        completo (`guide = proposal/guia_ajustada_TDR.md` si G0.5 =
+        APROBADA, si no `guiaProyectosIA_Agente.md`) y retiene el contenido
+        verbatim en su propia memoria de sesión — SIN `grep`/`rg`, SIN
+        llamadas `Read` adicionales con `offset`/`limit`, SIN aritmética de
+        líneas. El cableado Task por Task de este contenido (qué fragmento
+        se inyecta en cada despacho) es un cambio posterior (PR3 de esta
+        cadena); acá solo se define QUÉ queda disponible en memoria y CÓMO
+        identificarlo cuando haga falta — el bloque FALLBACK que sigue ya
+        forma parte del contrato que ese cableado posterior debe respetar,
+        aunque en este PR todavía no haya ninguna Task que lo dispare.
+
+        A partir de esa única lectura, identificá por tu propio criterio de
+        lectura (no por regex ciego, así evitás falsos positivos de `### `
+        dentro de un bloque de código delimitado por tres backticks, p. ej.
+        un ejemplo dentro de "Convenciones técnicas de LaTeX") los bloques
+        siguientes, cada uno delimitado desde su encabezado/marcador hasta
+        el inicio del siguiente:
+          - **Directrices Generales**: el bloque bajo
+            `**Directrices Generales:**` hasta el `---` que lo cierra.
+          - **Secciones numeradas** (`### N. <título>`): una por cada
+            sección de la guía. En `guia_ajustada_TDR.md` el título y/o la
+            numeración pueden diferir de la guía base (`investigador.md`,
+            "Generación de la guía ajustada", puede renombrar/fusionar/
+            reordenar secciones) — identificá cada bloque por su contenido y
+            posición real en ESTA guía, nunca asumas que coincide con la
+            guía base.
+          - **Preliminares** (`### Resumen`, `### Resumen ejecutivo`,
+            `### Palabras clave`) y **Convenciones técnicas de LaTeX**.
+          - Fingerprint de esta guía: si `$guide` es la guía BASE (siempre
+            el caso en corridas NO-TDR, y también en corridas TDR con G0.5 =
+            OMITIDA-POR-USUARIO), REUTILIZA el `guide_fingerprint` YA
+            calculado en la Fase 0 antes de despachar `insumos-observador`
+            (ver "Formato exacto — inyección de guide_fingerprint..."
+            arriba) en vez de recalcularlo. Si `$guide` es la guía AJUSTADA,
+            es un archivo distinto: calculá `shasum -a 256 "$guide" | cut
+            -c1-12` sobre este archivo, solo para uso interno de esta
+            precarga (p. ej. etiquetar advertencias de fallback) — nunca
+            reemplaza ni se reinyecta como el `guide_fingerprint` de
+            `insumos-observador`, que siempre referencia la guía BASE, sin
+            excepción.
+        ──→ FALLBACK DE IDENTIFICACIÓN INSEGURA: si para una sección
+        puntual que una Task necesita no podés identificar con confianza el
+        bloque correspondiente (marcador/encabezado ausente, renombrado de
+        forma irreconocible, formato de numeración distinto al esperado, o
+        cualquier otra ambigüedad — p. ej. una guía ajustada al TDR sin el
+        constraint de forma `### N. <título>`), NO adivines ni inventes
+        contenido: para ESA Task puntual, inyectá la guía completa (`$guide`)
+        en vez del fragmento, con un comentario
+        `<!-- ADVERTENCIA: sección §N no identificada con confianza en
+        <guide>; se inyecta la guía completa como fallback seguro -->`
+        dentro del bloque inyectado, y agregá una advertencia visible (no
+        bloqueante) en la sesión con el dispatcher señalando qué sección
+        faltó y en qué Task se aplicó el fallback. Esto nunca detiene la
+        corrida.
         (a) Task → bibliografo-propuesta MODE=scope → exactamente 5 papers
         Q1/Q2 publicados en los últimos 2 años, abstract-only, que calcen
         con (i) el prompt original del usuario a `/propuesta` y (ii) la guía

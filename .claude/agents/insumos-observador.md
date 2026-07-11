@@ -42,10 +42,13 @@ corrida. Aplica a los cuatro tipos de archivo (`TDR`, `draft-base`,
    por archivo): si tu prompt de Task trae inyectado un bloque
    `guide_fingerprint: <valor>` (el dispatcher lo inyecta antes de despachar
    esta Task — ver "Formato exacto — inyección de guide_fingerprint hacia
-   insumos-observador" en `propuesta.md`), usa ESE valor tal cual, sin
-   recalcularlo. Si el prompt NO trae ese bloque, calculalo vos:
-   `shasum -a 256 guiaProyectosIA_Agente.md | cut -c1-12`. Cualquiera sea el
-   origen, reutiliza el mismo valor para todos los archivos de esta corrida.
+   insumos-observador" en `propuesta.md`) Y ese `<valor>` tiene forma válida
+   (exactamente 12 caracteres hexadecimales en minúscula, sin espacios ni
+   placeholders sin resolver), usa ESE valor tal cual, sin recalcularlo. Si
+   el prompt NO trae ese bloque, o el valor inyectado NO tiene forma válida,
+   calculalo vos: `shasum -a 256 guiaProyectosIA_Agente.md | cut -c1-12`.
+   Cualquiera sea el origen, reutiliza el mismo valor para todos los
+   archivos de esta corrida.
 1. **Calcular el hash de contenido** (por archivo): `shasum -a 256 "<archivo>"
    | awk '{print $1}'`. Para archivos `.docx`, calcula el hash sobre el
    binario ORIGINAL, ANTES de la conversión a texto plano vía `textutil` (ver
