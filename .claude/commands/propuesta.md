@@ -877,7 +877,11 @@ Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt). Antes de
         proposal/scoping/ && graphify --update papers/ && graphify export
         html`. NUNCA `--force`. La salida sigue en
         `proposal/scoping/graphify-out/`.
-Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§16 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
+Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§16 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor. Antes de despachar esta Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §Resumen + §Resumen ejecutivo + §Palabras clave + Convenciones técnicas de LaTeX y lo inyecta inline al inicio del prompt.
+        Antes de despachar la Task de este gate, el dispatcher arma el
+        bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §Resumen +
+        §Resumen ejecutivo + §Palabras clave y lo inyecta inline al inicio
+        del prompt.
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.45 + Fase 6.5,
