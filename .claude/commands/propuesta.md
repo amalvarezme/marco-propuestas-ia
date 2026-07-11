@@ -399,6 +399,36 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         bloqueante) en la sesión con el dispatcher señalando qué sección
         faltó y en qué Task se aplicó el fallback. Esto nunca detiene la
         corrida.
+        ──→ FORMATO EXACTO DE INYECCIÓN (`## FRAGMENTO DE GUÍA`): a partir de
+        acá, cuando una fase indica "inyecta el fragmento de §N" en el
+        prompt de una `Task`, el bloque tiene esta forma exacta (mismo
+        estilo que `ASESOR-GRAFO`/`guide_fingerprint` arriba):
+
+        ```
+        ## FRAGMENTO DE GUÍA (§N — <título de la sección>[, §M — <título>...])
+
+        <Directrices Generales, verbatim, siempre presente>
+
+        ---
+
+        <contenido verbatim de §N>
+        [<contenido verbatim de §M> si la Task necesita más de una sección —
+         p. ej. un gate de revisor que audita dos secciones a la vez]
+
+        [<Convenciones técnicas de LaTeX, verbatim — SOLO si la Task produce
+         o audita un archivo .tex>]
+        ```
+
+        Reglas: Directrices Generales va SIEMPRE, sin excepción. Las
+        secciones listadas en el título del bloque son las que esa Task
+        posee/audita (ver el mapeo fase→sección de cada bloque de Fase
+        abajo). El bloque de Convenciones técnicas de LaTeX se agrega solo
+        para Tasks que redactan o auditan un `.tex` (no aplica, p. ej., a
+        `bibliografo-propuesta` MODE=explore, que no produce archivo). Si
+        el FALLBACK DE IDENTIFICACIÓN INSEGURA se activó para alguna de las
+        secciones pedidas, el bloque completo se reemplaza por la guía
+        íntegra (`$guide`) con el comentario de advertencia ya descrito, en
+        vez de intentar mezclar fragmento parcial con guía completa.
         (a) Task → bibliografo-propuesta MODE=scope → exactamente 5 papers
         Q1/Q2 publicados en los últimos 2 años, abstract-only, que calcen
         con (i) el prompt original del usuario a `/propuesta` y (ii) la guía
