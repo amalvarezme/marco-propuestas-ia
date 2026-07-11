@@ -671,7 +671,14 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         `proposal/pipeline/20-fase1.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
 Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo)
-        Task → investigador → §5 hipótesis
+        Antes de despachar esta Task, el dispatcher arma el bloque `##
+        FRAGMENTO DE GUÍA` con Directrices Generales + §4 (Estado del arte)
+        + Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
+        prompt.
+        Task → investigador → §5 hipótesis. Antes de despachar esta Task, el
+        dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
+        Generales + §5 (Hipótesis) + Convenciones técnicas de LaTeX y lo
+        inyecta inline al inicio del prompt.
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/04_estado_arte.md` o `vault/secciones/05_hipotesis.md`
         cambiaron en esta fase; si no cambiaron, reutiliza el
@@ -681,7 +688,10 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo)
         lee `GRAPH_REPORT.md`; arma e inyecta inline el bloque `EVIDENCIA DE
         GRAFO` en el prompt de la Task → revisor de este gate; si hay
         hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
-        `proposal/estado_propuesta.md`.
+        `proposal/estado_propuesta.md`. Antes de despachar la Task de este
+        gate, el dispatcher arma además el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §4 (Estado del arte) + §5 (Hipótesis) y lo
+        inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/30-fase2.md` (evento de esta compuerta) y
