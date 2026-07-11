@@ -7,7 +7,16 @@
 </p>
 
 Framework multi-agente que produce propuestas de investigación en IA en
-**español**, como LaTeX, en `proposal/`. **Runtime canónico: Claude Code.**
+**español**, como LaTeX, en `proposal/` (versión de referencia). En paralelo,
+los agentes mantienen un mirror Markdown/Obsidian navegable en `vault/`
+(`vault/secciones/`, `vault/insumos/`) — capa visual para explorar la
+propuesta como grafo de ideas; **nunca** es fuente de verdad, ese rol lo
+conserva `proposal/`. **Runtime canónico: Claude Code** (`.claude/agents/` +
+`.claude/commands/propuesta.md`, la única fuente editada a mano). **OpenCode**
+es un runtime secundario soportado: `.opencode/agents/` +
+`.opencode/commands/propuesta.md` se generan de forma determinista y
+zero-LLM desde las fuentes de Claude Code (`python3 scripts/gen-opencode.py`
+— ver `AGENTS.md` para el detalle y el setup manual pendiente en OpenCode).
 El asistente primario despacha 9 subagentes de dominio — `investigador`,
 `redactor`, `revisor`, `bibliografo-propuesta`, `presupuestador`,
 `insumos-observador`, `disenador-tikz`, `tikz-optimizer`, `revisor-figuras` —
@@ -24,24 +33,44 @@ documenta el pipeline), avanzando por fases con puertas de revisión (gates).
 ├── guiaProyectosIA_Agente.md        # Guía autoritativa sección por sección
 ├── .mcp.json                        # Config de MCP servers
 ├── info_data/                       # Insumos del usuario (vacío entre corridas)
-├── .claude/
+├── logos/                           # Logos institucionales (branding del repo/README)
+├── scripts/                         # Tooling del REPO (no de la propuesta): gen-opencode.py
+│                                     #   + gen-opencode.rules.json — generador Claude Code → OpenCode
+├── .claude/                         # Runtime canónico — única fuente editada a mano
 │   ├── agents/                      # 10 archivos: 9 subagentes + coordinador-propuesta
 │   └── commands/
 │       └── propuesta.md             # Comando /propuesta
-└── proposal/                        # Framework de salida LaTeX
+├── .opencode/                       # Runtime secundario — GENERADO desde .claude/, no se edita a mano
+│   ├── agents/                      # 9 subagentes portados (1:1 con .claude/agents/, sin coordinador)
+│   └── commands/propuesta.md        # Comando /propuesta portado
+├── vault/                           # Mirror Obsidian navegable (Markdown) — capa visual, no versión de verdad
+│   ├── secciones/                   # Espejo de proposal/sections/*.tex por sección
+│   └── insumos/                     # Espejo de proposal/insumos.md
+├── proposals/                       # Registro + corridas archivadas de /propuesta
+│   └── registry.md                  # Tabla append-only (run-id, estado, archivo, commit)
+└── proposal/                        # Framework de salida LaTeX (versión de referencia)
     ├── build.sh                     # Compilación PDF/DOCX
-    ├── scripts/                     # compile_tikz.py, prep_docx.py
-    ├── logos/                       # Logos institucionales
+    ├── scripts/                     # compile_tikz.py, prep_docx.py — específico del build LaTeX/DOCX
+    ├── logos/                       # Logos institucionales embebidos en el PDF (header/footer)
     ├── templates/reference.docx     # Plantilla pandoc (export DOCX)
     │   # Generados por cada corrida de /propuesta (no committeados):
     └── ...                         #   main.tex, refs.bib, sections/, estado_propuesta.md
 ```
 
+`scripts/` (raíz) y `proposal/scripts/` son intencionalmente distintos: el
+primero es tooling del repo (portabilidad de agentes Claude Code → OpenCode,
+no depende de una corrida de `/propuesta`); el segundo es específico del
+build LaTeX/DOCX de una corrida (compilación de diagramas TikZ, export a
+Word) y solo tiene sentido una vez `proposal/sections/` existe.
+
 ## Uso
 
 Ejecuta el comando `/propuesta <idea>` en Claude Code. El asistente primario
 despacha la Fase 0 (`insumos-observador` ingiere insumos) y avanza fase por
-fase, deteniéndose en cada gate para aprobación del usuario.
+fase, deteniéndose en cada gate para aprobación del usuario. El mismo
+comando también está disponible en OpenCode (`.opencode/commands/propuesta.md`,
+generado desde las fuentes de Claude Code) — requiere sesión interactiva:
+las compuertas de aprobación no funcionan en `opencode run` headless.
 
 ## Flujo del pipeline
 
@@ -53,7 +82,13 @@ lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
 
 ## Dependencias
 
-- **Claude Code** — runtime del pipeline (`.claude/agents/`, `.claude/commands/propuesta.md`).
+- **Claude Code** — runtime canónico del pipeline (`.claude/agents/`, `.claude/commands/propuesta.md`).
+- **OpenCode** (opcional) — runtime secundario soportado. `.opencode/agents/` +
+  `.opencode/commands/propuesta.md` se regeneran con
+  `python3 scripts/gen-opencode.py` (stdlib puro, sin dependencias nuevas);
+  requiere además allow-listar los 9 subagentes portados bajo
+  `permission.task` en tu `opencode.json` de usuario (setup manual, ver
+  docstring de `scripts/gen-opencode.py`).
 - **engram** (`brew install gentleman-programming/tap/engram`) — memoria persistente; requerido porque el servidor MCP `engram` de `.mcp.json` invoca este binario directamente.
 - **gentle-ai** (recomendado, `brew install gentleman-programming/tap/gentle-ai`) — orquestación del workflow SDD (`/sdd-*`), registro de skills y asignación de modelos por fase.
 - LaTeX (pdflatex + bibtex, estilo `natbib`/`apalike`) para compilar `proposal/main.tex`.

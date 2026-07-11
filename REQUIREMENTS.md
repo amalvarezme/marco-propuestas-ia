@@ -14,6 +14,7 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 | **git** | 2.40+ | Version control | `brew install git` |
 | **engram** | 1.18+ | Persistent memory MCP server (required: `.mcp.json`'s `engram` server invokes this binary directly) | `brew install gentleman-programming/tap/engram` |
 | **gentle-ai** (recommended) | 1.43+ | SDD workflow orchestration, skill registry, model-assignment dispatch for `/sdd-*` commands | `brew install gentleman-programming/tap/gentle-ai` |
+| **OpenCode** (optional) | — | Secondary runtime for `.opencode/agents/` + `.opencode/commands/propuesta.md` (generated from `.claude/` via `scripts/gen-opencode.py`, stdlib-only, no new Python deps); interactive session required — gates don't work under `opencode run` headless | see [opencode.ai](https://opencode.ai) |
 
 ## 2. Python packages (`requirements.txt`)
 
@@ -38,18 +39,26 @@ Optional extras (used in this project):
 - `faster-whisper` + `yt-dlp` — video/audio transcription
 - `watchdog` — `--watch` auto-rebuild mode
 
+**Scope note:** every package above is consumed by the `graphify`/`graphifyy`
+CLI tool itself (when it indexes PDFs/DOCX/media dropped into `info_data/` or
+`vault/`) — none of the proposal-writing pipeline's own Python scripts import
+them. `proposal/scripts/compile_tikz.py`, `proposal/scripts/prep_docx.py`, and
+`scripts/gen-opencode.py` are stdlib-only (no third-party imports, nothing
+from this file); `requirements.txt` exists entirely for the graphify/CodeGraph
+tooling layer, not for the pipeline's own agents/scripts.
+
 ## 3. Node.js / MCP servers
 
-All MCP servers run via `npx -y` (fetched on demand, no global install needed). Registered as Claude Code MCP servers — see `.mcp.json` for this project's currently active servers (`engram`, `consensus`); the servers below are used by the proposal agents as Claude Code tools:
+All MCP servers run via `npx -y` (fetched on demand, no global install needed). All eight are registered as Claude Code MCP servers in `.mcp.json` (`engram`, `consensus`, and the six below); the six below are used directly by the proposal agents as Claude Code tools for literature/citation search:
 
 | Server | npm package | Purpose |
 |--------|-------------|---------|
 | **arxiv** | `@cyanheads/arxiv-mcp-server` | arXiv paper search & full-text |
-| **crossref** | `@cyanheads/crossref-mcp-server` | DOI metadata, references, funders |
+| **crossref** | `@botanicastudios/crossref-mcp` | DOI metadata, references, funders |
 | **openalex** | `@cyanheads/openalex-mcp-server` | Scholarly catalog, citation graphs |
 | **pubmed** | `@cyanheads/pubmed-mcp-server` | PubMed/PMC search, full-text, MeSH |
 | **semantic scholar** | `@xbghc/semanticscholar-mcp` | Paper search, citations, recommendations |
-| **context7** | (remote, no install) | Library documentation lookup |
+| **context7** | `@upstash/context7-mcp` | Library documentation lookup |
 
 ## 4. LaTeX packages (TeX Live)
 
@@ -106,22 +115,36 @@ Graphify is a Claude Code skill file + the `graphifyy` Python package (in `requi
 
 ```
 .
-├── requirements.txt          # Python deps (this file's companion)
+├── requirements.txt          # Python deps (this file's companion) — graphify/CodeGraph tooling only
 ├── REQUIREMENTS.md           # This file
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
-├── .claude/                  # CANONICAL runtime — single source of truth
-│   ├── agents/               # 10 subagentes de propuesta (coordinador-propuesta,
-│   │                         #   investigador, redactor, insumos-observador,
-│   │                         #   bibliografo-propuesta, presupuestador, revisor,
-│   │                         #   disenador-tikz, revisor-figuras, tikz-optimizer)
+├── logos/                    # Repo/README branding logos (LabIA, UNAL, GCPDS)
+├── scripts/                  # Repo tooling (NOT proposal-run-specific): gen-opencode.py +
+│                              #   gen-opencode.rules.json — Claude Code → OpenCode agent-portability generator
+├── .claude/                  # CANONICAL runtime — single source of truth, hand-edited
+│   ├── agents/                # 10 files: 9 dispatchable subagents (investigador, redactor,
+│   │                           #   insumos-observador, bibliografo-propuesta, presupuestador,
+│   │                           #   revisor, disenador-tikz, revisor-figuras, tikz-optimizer)
+│   │                           #   + coordinador-propuesta (canonical pipeline reference,
+│   │                           #   never dispatched — Claude Code subagents can't invoke subagents)
 │   └── commands/
 │       └── propuesta.md      # Comando /propuesta — dispatcher real del pipeline
+├── .opencode/                 # Secondary runtime — GENERATED from .claude/, never hand-edited
+│   ├── agents/                 # 9 ported subagents (1:1 with .claude/agents/, no coordinador)
+│   └── commands/propuesta.md   # Ported /propuesta command
 ├── info_data/                # User inputs (PDFs, DOCX) — vacío hasta la próxima corrida
+├── vault/                     # Navigable Obsidian/Markdown mirror — visual layer only, NEVER
+│   │                           #   the source of truth (that's proposal/*.tex, LaTeX)
+│   ├── secciones/              # Mirrors proposal/sections/*.tex, one note per section
+│   └── insumos/                # Mirrors proposal/insumos.md
+├── proposals/                 # Registry + archived /propuesta runs
+│   └── registry.md             # Append-only table: run-id, estado, archivo, commit
 ├── proposal/                 # Framework skeleton committed to git:
 │   ├── build.sh              # Compilación PDF/DOCX (logos header/footer)
-│   ├── scripts/               # compile_tikz.py, prep_docx.py
-│   ├── logos/                 # LabIA, UNAL, GCPDS logos
+│   ├── scripts/               # compile_tikz.py, prep_docx.py — LaTeX/DOCX build-specific,
+│   │                           #   distinct from the root-level scripts/ (repo tooling)
+│   ├── logos/                 # LabIA, UNAL, GCPDS logos embedded in the built PDF
 │   └── templates/reference.docx  # Plantilla pandoc para export DOCX
 │   # Generados por cada corrida de /propuesta (no committeados, ver .gitignore):
 │   #   main.tex, refs.bib, sections/*.tex, insumos.md, estado_propuesta.md,
