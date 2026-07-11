@@ -136,6 +136,35 @@ archivo de evento `.md` y `proposal/pipeline/_estado.md` — no se ejecuta
 no aportar valor consumido; overhead de token descartado). Nunca lo hace
 `revisor` (solo Read/Grep/Glob) — siempre lo hace el dispatcher.
 
+## Formato exacto — inyección de guide_fingerprint hacia insumos-observador
+
+Antes de despachar `Task → insumos-observador` (Fase 0, ver "FINGERPRINT DE
+GUÍA BASE" en el bloque "Fase 0" abajo), el DISPATCHER calcula el
+fingerprint de la guía BASE y lo inyecta inline en el prompt de esa Task,
+como bloque separado que el subagente lee en su propio paso 0 ("Fingerprint
+de la guía vigente" en `insumos-observador.md`) ANTES de calcular nada por
+su cuenta. Formato exacto — mismo valor que consume el campo
+`guide_fingerprint` del payload cacheado (Decisión A / dominio
+`insumo-extraction-cache`): 12 hex de sha256, SIEMPRE sobre
+`guiaProyectosIA_Agente.md` (nunca sobre una guía ajustada al TDR — en la
+Fase 0 esa guía todavía no existe, se genera recién en la Fase 0.5):
+
+```
+guide_fingerprint: <12 hex de shasum -a 256 guiaProyectosIA_Agente.md | cut -c1-12>
+```
+
+Este es el mismo formato/fórmula que el fallback ya existente de
+`insumos-observador.md`, así que no hay divergencia posible entre el valor
+inyectado y el autocalculado. Si el dispatcher no logra calcular o inyectar
+este bloque por cualquier motivo, simplemente lo omite — el fallback de
+`insumos-observador.md` cubre ese caso y la corrida nunca se bloquea.
+
+Nota de reuso: este valor se calcula temprano (Fase 0) porque es solo un
+hash de archivo — no depende de haber leído ni troceado la guía. La
+PRE-CARGA DE FRAGMENTOS DE GUÍA (inicio de la Fase 1a, más abajo) reutiliza
+este mismo valor cuando corresponde, en vez de recalcularlo; ver ese bloque
+para las condiciones exactas de reuso vs. recálculo.
+
 ## Pipeline (dispatch con `task` fase por fase)
 
 ```
@@ -193,10 +222,21 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
         ──→ SIN CORRIDA PREVIA: si no existe una corrida anterior, omite
         GUARDIA DE COLISIÓN y ARCHIVADO-Y-REINICIO por completo; continúa
         directo con el resto de la Fase 0.
+        ──→ FINGERPRINT DE GUÍA BASE (liviano, antes de despachar
+        insumos-observador): calcula
+        `guide_fingerprint = shasum -a 256 guiaProyectosIA_Agente.md | cut -c1-12`
+        (12 hex, SIEMPRE sobre la guía BASE — no la ajustada al TDR, que
+        todavía no existe en este punto de la corrida) y consérvalo en la
+        sesión activa del dispatcher para el resto de la corrida. Es solo un
+        hash de archivo, no requiere trocear nada, por eso se calcula acá,
+        antes de que exista la guía aplicable ajustada de la Fase 0.5 (ver
+        "Formato exacto — inyección de guide_fingerprint hacia
+        insumos-observador" arriba para el formato exacto que se inyecta).
         Task → insumos-observador → ingerir insumos (PDFs, papers, links, prompt)
         y clasificarlos (TDR / draft-base / background, ver
         `insumos-observador.md`); si hay TDR, extraer sus secciones + tabla
-        de criterios ponderados.
+        de criterios ponderados. El dispatcher inyecta inline en este prompt
+        el bloque `guide_fingerprint: <valor>` calculado arriba.
         ──→ GATE DE AMBIGÜEDAD: si insumos-observador marca uno o más
         archivos como AMBIGUA (para TDR y/o draft-base), DETENTE y pregunta
         al usuario para confirmar/corregir. Si TDR y draft-base están
@@ -303,6 +343,110 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         haya o no TDR — la "guía aplicable" resuelta en la Fase 0/Fase 0.5
         (base o ajustada) solo determina el parámetro (b) de la búsqueda del
         bibliógrafo en el paso (a) siguiente, no si esta fase corre.
+        ──→ PRE-CARGA DE FRAGMENTOS DE GUÍA (una sola lectura completa por
+        corrida, antes del paso (a) siguiente): el DISPATCHER (no un
+        subagente) lee la guía aplicable UNA vez con un único `Read`
+        completo (`guide = proposal/guia_ajustada_TDR.md` si G0.5 =
+        APROBADA, si no `guiaProyectosIA_Agente.md`) y retiene el contenido
+        verbatim en su propia memoria de sesión — SIN `grep`/`rg`, SIN
+        llamadas `Read` adicionales con `offset`/`limit`, SIN aritmética de
+        líneas. El cableado Task por Task de este contenido (qué fragmento
+        se inyecta en cada despacho) es un cambio posterior (PR3 de esta
+        cadena); acá solo se define QUÉ queda disponible en memoria y CÓMO
+        identificarlo cuando haga falta — el bloque FALLBACK que sigue ya
+        forma parte del contrato que ese cableado posterior debe respetar,
+        aunque en este PR todavía no haya ninguna Task que lo dispare.
+
+        A partir de esa única lectura, identificá por tu propio criterio de
+        lectura (no por regex ciego, así evitás falsos positivos de `### `
+        dentro de un bloque de código delimitado por tres backticks, p. ej.
+        un ejemplo dentro de "Convenciones técnicas de LaTeX") los bloques
+        siguientes, cada uno delimitado desde su encabezado/marcador hasta
+        el inicio del siguiente:
+          - **Directrices Generales**: el bloque bajo
+            `**Directrices Generales:**` hasta el `---` que lo cierra.
+          - **Secciones numeradas** (`### N. <título>`): una por cada
+            sección de la guía. En `guia_ajustada_TDR.md` el título y/o la
+            numeración pueden diferir de la guía base (`investigador.md`,
+            "Generación de la guía ajustada", puede renombrar/fusionar/
+            reordenar secciones) — identificá cada bloque por su contenido y
+            posición real en ESTA guía, nunca asumas que coincide con la
+            guía base.
+          - **Preliminares** (`### Resumen`, `### Resumen ejecutivo`,
+            `### Palabras clave`) y **Convenciones técnicas de LaTeX**.
+          - Fingerprint de esta guía: si `$guide` es la guía BASE (siempre
+            el caso en corridas NO-TDR, y también en corridas TDR con G0.5 =
+            OMITIDA-POR-USUARIO), REUTILIZA el `guide_fingerprint` YA
+            calculado en la Fase 0 antes de despachar `insumos-observador`
+            (ver "Formato exacto — inyección de guide_fingerprint..."
+            arriba) en vez de recalcularlo. Si `$guide` es la guía AJUSTADA,
+            es un archivo distinto: calculá `shasum -a 256 "$guide" | cut
+            -c1-12` sobre este archivo, solo para uso interno de esta
+            precarga (p. ej. etiquetar advertencias de fallback) — nunca
+            reemplaza ni se reinyecta como el `guide_fingerprint` de
+            `insumos-observador`, que siempre referencia la guía BASE, sin
+            excepción.
+        ──→ FALLBACK DE IDENTIFICACIÓN INSEGURA: si para una sección
+        puntual que una Task necesita no podés identificar con confianza el
+        bloque correspondiente (marcador/encabezado ausente, renombrado de
+        forma irreconocible, formato de numeración distinto al esperado, o
+        cualquier otra ambigüedad — p. ej. una guía ajustada al TDR sin el
+        constraint de forma `### N. <título>`), NO adivines ni inventes
+        contenido: para ESA Task puntual, inyectá la guía completa (`$guide`)
+        en vez del fragmento, con un comentario
+        `<!-- ADVERTENCIA: sección §N no identificada con confianza en
+        <guide>; se inyecta la guía completa como fallback seguro -->`
+        dentro del bloque inyectado, y agregá una advertencia visible (no
+        bloqueante) en la sesión con el dispatcher señalando qué sección
+        faltó y en qué Task se aplicó el fallback. Esto nunca detiene la
+        corrida.
+        ──→ FORMATO EXACTO DE INYECCIÓN (`## FRAGMENTO DE GUÍA`): a partir de
+        acá, cuando una fase indica "inyecta el fragmento de §N" en el
+        prompt de una `task`, el bloque tiene esta forma exacta (mismo
+        estilo que `ASESOR-GRAFO`/`guide_fingerprint` arriba):
+
+        ```
+        ## FRAGMENTO DE GUÍA (§N — <título de la sección>[, §M — <título>...])
+
+        <Directrices Generales, verbatim, siempre presente>
+
+        ---
+
+        <contenido verbatim de §N>
+        [<contenido verbatim de §M> si la Task necesita más de una sección —
+         p. ej. un gate de revisor que audita dos secciones a la vez]
+
+        [<Convenciones técnicas de LaTeX, verbatim — SOLO si la Task
+         REDACTA un archivo .tex>]
+        ```
+
+        Reglas: Directrices Generales va SIEMPRE, sin excepción. Las
+        secciones listadas en el título del bloque son las que esa Task
+        posee/audita (ver el mapeo fase→sección de cada bloque de Fase
+        abajo) — incluye, cuando corresponda, secciones de fases anteriores
+        que el gate necesita para validar una dependencia cruzada (p. ej.
+        el gate de Fase 4 necesita §3 además de §5-§7 para el mapeo
+        subproblema↔objetivo), no solo las producidas en la fase actual. El
+        bloque de Convenciones técnicas de LaTeX se agrega SOLO para Tasks
+        que REDACTAN un `.tex` real: `investigador`/`redactor` (siempre) y
+        `bibliografo-propuesta` SOLO para su Task de §4 (autora
+        `04_estado_arte.tex`, ver Fase 2 abajo) — nunca para su Task de §16
+        (autora únicamente `refs.bib`; el wrapper `16_bibliografia.tex` lo
+        arma el dispatcher en Fase 7, no bibliografo-propuesta) ni para
+        MODE=explore/MODE=scope (no autoran archivo). Los gates de
+        `revisor` auditan contenido/coherencia, no sintaxis LaTeX
+        (`revisor.md` no referencia esas convenciones en su checklist), así
+        que nunca lo reciben, ni siquiera cuando el gate lee un `.tex`
+        existente (p. ej. Fase 6.4 lee `13_presupuesto.tex` para el
+        recomputo aritmético, pero no necesita las convenciones de forma).
+        Orden cuando coexisten con `EVIDENCIA DE GRAFO` en el mismo prompt
+        de gate: `EVIDENCIA DE GRAFO` primero, `## FRAGMENTO DE GUÍA`
+        después (mismo orden en que ambos bloques se describen en cada
+        bloque de Fase de este documento). Si
+        el FALLBACK DE IDENTIFICACIÓN INSEGURA se activó para alguna de las
+        secciones pedidas, el bloque completo se reemplaza por la guía
+        íntegra (`$guide`) con el comentario de advertencia ya descrito, en
+        vez de intentar mezclar fragmento parcial con guía completa.
         (a) Task → bibliografo-propuesta MODE=scope → exactamente 5 papers
         Q1/Q2 publicados en los últimos 2 años, abstract-only, que calcen
         con (i) el prompt original del usuario a `/propuesta` y (ii) la guía
@@ -331,6 +475,11 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         `investigador.md`, "Entrada temprana (Fase 1a)") → 3 subproblemas
         tempranos, cada uno con (1) el gap, (2) de qué abstract(s)
         (`paper-N`) proviene, (3) un cruce de una línea contra el TDR/guía.
+        Antes de despachar esta Task, el dispatcher arma el bloque `##
+        FRAGMENTO DE GUÍA` (formato exacto en "FORMATO EXACTO DE INYECCIÓN"
+        arriba) con Directrices Generales + §3 (Descripción del problema) +
+        §4 (Estado del arte) y lo inyecta inline al inicio del prompt de
+        esta Task.
         ──→ COMPUERTA COMBINADA G1a: presenta juntos, en una sola solicitud
         de aprobación:
           1. Los 5 papers + parámetros de búsqueda (query, filtro de
@@ -488,10 +637,18 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         NUNCA uses `--force`.
 Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
-        archivo de salida), despachado ANTES del investigador.
+        archivo de salida), despachado ANTES del investigador. Antes de
+        despachar esta Task, el dispatcher arma el bloque `## FRAGMENTO DE
+        GUÍA` (formato exacto en "FORMATO EXACTO DE INYECCIÓN" arriba) con
+        Directrices Generales + §4 (Estado del arte) y lo inyecta inline al
+        inicio del prompt de esta Task.
         Task → investigador → §3 descripción del problema (subproblemas +
         pregunta de investigación). Inyecta inline en el prompt de esta Task el mapa de MODE=explore y,
-        si existe, el bloque "PRIORIDAD TDR" de la Fase 0.
+        si existe, el bloque "PRIORIDAD TDR" de la Fase 0. El dispatcher
+        arma además, antes de despachar esta Task, el bloque `## FRAGMENTO
+        DE GUÍA` con Directrices Generales + §3 (Descripción del problema) +
+        Convenciones técnicas de LaTeX, y lo inyecta inline al inicio del
+        mismo prompt.
         Si la Fase 1a corrió y su gate cerró con G1a = APROBADA (ver
         `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano"),
         inyecta ADEMÁS, inline, el bloque "SUBPROBLEMAS TEMPRANOS APROBADOS
@@ -523,13 +680,23 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         el bloque `EVIDENCIA DE GRAFO` (formato en "Grafo de coherencia del
         vault" arriba) en el prompt de la Task → revisor de este gate; si
         hay hallazgo de coherencia, agrégalo a `## Hallazgos de coherencia
-        (grafo)` en `proposal/estado_propuesta.md`.
+        (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
+        Task de este gate, el dispatcher arma además el bloque `##
+        FRAGMENTO DE GUÍA` con Directrices Generales + §3 (Descripción del
+        problema) y lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/20-fase1.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
 Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo)
-        Task → investigador → §5 hipótesis
+        Antes de despachar esta Task, el dispatcher arma el bloque `##
+        FRAGMENTO DE GUÍA` con Directrices Generales + §4 (Estado del arte)
+        + Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
+        prompt.
+        Task → investigador → §5 hipótesis. Antes de despachar esta Task, el
+        dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
+        Generales + §5 (Hipótesis) + Convenciones técnicas de LaTeX y lo
+        inyecta inline al inicio del prompt.
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/04_estado_arte.md` o `vault/secciones/05_hipotesis.md`
         cambiaron en esta fase; si no cambiaron, reutiliza el
@@ -539,12 +706,19 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo)
         lee `GRAPH_REPORT.md`; arma e inyecta inline el bloque `EVIDENCIA DE
         GRAFO` en el prompt de la Task → revisor de este gate; si hay
         hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
-        `proposal/estado_propuesta.md`.
+        `proposal/estado_propuesta.md`. Antes de despachar la Task de este
+        gate, el dispatcher arma además el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §4 (Estado del arte) + §5 (Hipótesis) y lo
+        inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/30-fase2.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 3  Task → redactor → §2 justificación y pertinencia
+Fase 3  Task → redactor → §2 justificación y pertinencia. Antes de despachar
+        esta Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §2 (Justificación y pertinencia) +
+        Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
+        prompt.
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/02_justificacion.md` cambió en esta fase; si no
         cambió, reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar
@@ -553,12 +727,19 @@ Fase 3  Task → redactor → §2 justificación y pertinencia
         7") → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de este gate; si hay hallazgo, agrégalo a `## Hallazgos de
-        coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
+        despachar la Task de este gate, el dispatcher arma además el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §2 (Justificación
+        y pertinencia) y lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/40-fase3.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específicos
+Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específicos.
+        Antes de despachar esta Task, el dispatcher arma el bloque `##
+        FRAGMENTO DE GUÍA` con Directrices Generales + §6 (Objetivo
+        general) + §7 (Objetivos específicos) + Convenciones técnicas de
+        LaTeX y lo inyecta inline al inicio del prompt.
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/06_objetivo_general.md` o
         `vault/secciones/07_objetivos_especificos.md` cambiaron en esta
@@ -569,7 +750,14 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         `GRAPH_REPORT.md`; arma e inyecta inline el bloque `EVIDENCIA DE
         GRAFO` en el prompt de la Task → revisor de este gate; si hay
         hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
-        `proposal/estado_propuesta.md`.
+        `proposal/estado_propuesta.md`. Antes de despachar la Task de este
+        gate, el dispatcher arma además el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §3 (Descripción del problema) + §5
+        (Hipótesis) + §6 (Objetivo general) + §7 (Objetivos específicos) —
+        §3 es necesaria acá porque el gate audita el mapeo subproblema↔
+        objetivo específico 1:1 contra el texto normativo de §3, no solo
+        contra la memoria de la fase anterior — y lo inyecta inline al
+        inicio del prompt.
         ──→ GATE Task → revisor (valida mapeo subproblema↔objetivo específico
         1:1; valida también hipótesis (§5, ya aprobada en la Fase 2)
         ↔objetivo general, con bloque EVIDENCIA DE GRAFO inline) ──→ usuario.
@@ -577,10 +765,20 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/50-fase4.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 5  Task → investigador → §8 marco conceptual (en paralelo)
+Fase 5  Task → investigador → §8 marco conceptual (en paralelo). Antes de
+        despachar esta Task, el dispatcher arma el bloque `## FRAGMENTO DE
+        GUÍA` con Directrices Generales + §8 (Marco conceptual) +
+        Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
+        prompt.
         Task → redactor → §9 equipo de trabajo (deriva roles de §7 objetivos
-        específicos; nunca de la metodología)
-        Task → redactor → §10 metodología, luego bucle de figuras:
+        específicos; nunca de la metodología). Antes de despachar esta Task,
+        el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
+        Generales + §9 (Equipo de trabajo) + Convenciones técnicas de LaTeX
+        y lo inyecta inline al inicio del prompt.
+        Task → redactor → §10 metodología. Antes de despachar esta Task, el
+        dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
+        Generales + §10 (Metodología) + Convenciones técnicas de LaTeX y lo
+        inyecta inline al inicio del prompt. Luego bucle de figuras:
           Task → disenador-tikz (autor diag_metodologico.tex)
           → Task → tikz-optimizer (compila a PNG, primer ajuste)
           → Task → revisor-figuras (audita, PASS/FAIL)
@@ -598,14 +796,30 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo)
         revisor de este gate (nota: este paso es distinto del bucle de
         figuras arriba, que usa `revisor-figuras`, no `revisor`, y no recibe
         evidencia de grafo); si hay hallazgo, agrégalo a `## Hallazgos de
-        coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
+        despachar la Task de este gate, el dispatcher arma además el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §3 (Descripción
+        del problema) + §7 (Objetivos específicos) + §8 (Marco conceptual) +
+        §9 (Equipo de trabajo) + §10 (Metodología) — §3 y §7 son necesarias
+        acá porque el gate audita §8↔§3 (marco conceptual↔limitaciones del
+        problema) y §9/§10↔§7 (equipo de trabajo y metodología derivan de
+        los objetivos específicos), no solo las tres secciones producidas
+        en esta misma fase — y lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/60-fase5.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 6  Task → redactor → §11 resultados esperados; Task → redactor →
-        §12 consideraciones éticas (sin gate propio; se auditan en la Fase 7
-        junto con el resto del documento, igual que antes).
+Fase 6  Task → redactor → §11 resultados esperados (sin gate propio; §11 y
+        §12 se auditan juntas en la Fase 7 junto con el resto del
+        documento, igual que antes). Antes de despachar esta
+        Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §11 (Resultados esperados) + Convenciones
+        técnicas de LaTeX y lo inyecta inline al inicio del prompt.
+        Task → redactor → §12 consideraciones éticas (ídem, sin gate
+        propio). Antes de despachar esta Task, el dispatcher arma el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §12
+        (Consideraciones éticas) + Convenciones técnicas de LaTeX y lo
+        inyecta inline al inicio del prompt.
 Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         Precondición: §10, §11 y §12 ya aprobadas/producidas (el presupuesto
         justifica cada ítem contra la metodología, §10). El Cronograma (§14)
@@ -647,7 +861,13 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta inline
         el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task → revisor de
         este gate; si hay hallazgo, agrégalo a `## Hallazgos de coherencia
-        (grafo)` en `proposal/estado_propuesta.md`.
+        (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
+        Task de este gate, el dispatcher arma además el bloque `##
+        FRAGMENTO DE GUÍA` con Directrices Generales + §10 (Metodología) +
+        §13 (Presupuesto) — §10 es necesaria acá porque el checklist de
+        `revisor.md` exige que cada justificación de línea de presupuesto
+        nombre un elemento real de §10 — y lo inyecta inline al inicio del
+        prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline; aplica
         el criterio de Presupuesto del checklist de `revisor.md`: recomputo
         aritmético independiente, tope/cofinanciación, justificación→§10
@@ -665,19 +885,43 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         `proposal/pipeline/65-fase6_4.md` (evento de esta compuerta, misma
         plantilla mínima descrita arriba en "Grafo de pipeline") y actualiza
         `proposal/pipeline/_estado.md`.
-Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt); Task →
-        redactor → §15 productos esperados; Task → bibliografo-propuesta →
-        §16 bibliografía (BibTeX, consolidación final MODE=deliverable
-        §4+§16, cubre todas las referencias citadas a lo largo del
-        documento). Sin gate propio (mismo patrón que la Fase 6: se audita
-        en conjunto en la Fase 7).
+Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt) (sin gate
+        propio; §14, §15 y §16 se auditan juntas en la Fase 7, mismo patrón
+        que la Fase 6). Antes de despachar esta Task, el dispatcher arma el
+        bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §14
+        (Cronograma de actividades) + Convenciones técnicas de LaTeX y lo
+        inyecta inline al inicio del prompt.
+        Task → redactor → §15 productos esperados (ídem, sin gate propio).
+        Antes de despachar esta Task, el dispatcher arma el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §15 (Productos
+        esperados) + Convenciones técnicas de LaTeX y lo inyecta inline al
+        inicio del prompt.
+        Task → bibliografo-propuesta → §16 bibliografía (BibTeX,
+        consolidación final MODE=deliverable §4+§16, cubre todas las
+        referencias citadas a lo largo del documento; ídem, sin gate
+        propio). Antes de despachar esta Task, el dispatcher arma el bloque
+        `## FRAGMENTO DE GUÍA` con Directrices Generales + §16
+        (Bibliografía) y lo inyecta inline al inicio del prompt.
         ──→ [NUEVO] DISPATCHER: papers-graph refresh: guardia — ejecuta este
         bloque solo si `proposal/refs.bib` cambió en esta fase (la
         consolidación MODE=deliverable lo acaba de extender). Mecánica: `cd
         proposal/scoping/ && graphify --update papers/ && graphify export
         html`. NUNCA `--force`. La salida sigue en
         `proposal/scoping/graphify-out/`.
-Fase 6.5 Task → redactor → secciones preliminares (front-matter), como síntesis del documento completo (§1–§16 ya aprobadas), siguiendo las instrucciones de guiaProyectosIA_Agente.md (secciones preliminares): Resumen (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5 párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex, 5 palabras). Mismo mirror de vault que el resto de secciones del redactor.
+Fase 6.5 Task → redactor → secciones preliminares (front-matter), como
+        síntesis del documento completo (§1–§16 ya aprobadas): Resumen
+        (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen
+        ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5
+        párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex,
+        5 palabras). Mismo mirror de vault que el resto de secciones del
+        redactor. Antes de despachar esta Task, el dispatcher arma el
+        bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §Resumen +
+        §Resumen ejecutivo + §Palabras clave + Convenciones técnicas de
+        LaTeX y lo inyecta inline al inicio del prompt.
+        Antes de despachar la Task de este gate, el dispatcher arma el
+        bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §Resumen +
+        §Resumen ejecutivo + §Palabras clave y lo inyecta inline al inicio
+        del prompt.
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.45 + Fase 6.5,

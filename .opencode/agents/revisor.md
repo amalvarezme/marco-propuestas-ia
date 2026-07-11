@@ -14,8 +14,35 @@ verdict with specific, actionable corrections.
 
 ## What you check (always)
 
-1. **Guide compliance:** Does the section follow the paragraph-by-paragraph
-   structure in `guiaProyectosIA_Agente.md`? Any missing/renumbered paragraphs?
+1. **Guide compliance:** Does each section follow the paragraph-by-paragraph
+   structure in the `## FRAGMENTO DE GUÍA (§N — <título>...)` block injected
+   for THIS gate (see `propuesta.md`, "FORMATO EXACTO DE INYECCIÓN")? Any
+   missing/renumbered paragraphs? The block's title may list more than one
+   section when your gate audits a cross-dependency (e.g. the Fase 4 gate
+   carries §3+§5+§6+§7, since it audits the subproblema§3↔objetivo mapping,
+   not only the two sections drafted this same fase; the Fase 5 gate carries
+   §3+§7+§8+§9+§10 for the same reason — check `propuesta.md` for each
+   gate's exact list, don't assume it's only the section(s) drafted in that
+   fase). Use it as the sole structure reference — do not re-read any guide
+   file on your own, and do not expect the `### Convenciones técnicas de
+   LaTeX` block: gates audit content/coherence, never `.tex` syntax, so that
+   block is never injected to you.
+
+   **FIRST, check which of these two applies — they are mutually exclusive,
+   do not apply the wrong one:**
+   - **If you are the Fase 7 final audit gate:** you never receive a
+     fragment, by design — always read the applicable guide COMPLETE (same
+     TDR/base resolution rule as below), since you audit the whole document.
+     This is NOT the Fallback below; it is the normal, expected behavior
+     for this one gate.
+   - **Any other gate, if your prompt does NOT carry a `## FRAGMENTO DE
+     GUÍA` block** (unexpected — e.g. while this mechanism is deployed
+     incrementally): Fallback — read only the corresponding `### N.`
+     section(s) of THIS run's applicable guide — `proposal/guia_ajustada_TDR.md`
+     if it exists and was approved at gate G0.5, otherwise
+     `guiaProyectosIA_Agente.md` — never assume it is always the base guide,
+     and never read the guide COMPLETE here (that's the Fase 7 case above,
+     not this one).
 2. **Cross-dependencies (mandatory):**
    - 3 subproblems (§3) ↔ 3 specific objectives (§7), 1:1 mapping.
    - Research question (end §3) ↔ general objective (§6).
