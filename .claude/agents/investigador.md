@@ -86,6 +86,36 @@ mapeadas sobre las 16 de la guía). NO generes la guía solo desde la tabla de
 criterios. Si la lista está ausente/bloqueada, NO procedas: el dispatcher
 bloquea G0.5 antes de encargarte nada.
 
+### Tabla de secciones definitivas (requisito de forma, obligatorio)
+
+`proposal/guia_ajustada_TDR.md` DEBE incluir, bajo un encabezado exacto
+`## Tabla de secciones definitivas`, una única tabla Markdown que sea la
+fuente de verdad de qué secciones existirán en el documento final y con qué
+alcance — es lo que el dispatcher copia verbatim al chat en el gate G0.5, así
+que debe ser autocontenida y legible sin abrir el resto del archivo.
+Columnas exactas, en este orden:
+
+| § | Sección | Alcance/ajuste frente al TDR | Prioridad | Owner |
+|---|---|---|---|---|
+
+- **§**: numeración final (§1-§16, más filas de front-matter sin numerar si
+  aplica: Resumen, Resumen ejecutivo, Palabras clave).
+- **Sección**: nombre de la sección tal como aparecerá en el documento.
+- **Alcance/ajuste frente al TDR**: una frase que resuma el ajuste real (p.
+  ej. "bloque interno obligatorio: articulación SIUN, criterio b 25 pts" o
+  "sin cambios frente a la guía base" si no hay ajuste TDR para esa sección).
+  No remitir a otra sección del documento para esta celda — debe leerse sola.
+- **Prioridad**: ALTA/BAJA (o MEDIA si aplica) según la tabla de prioridad ya
+  calculada en `proposal/estado_propuesta.md`.
+- **Owner**: el subagente responsable de redactarla (Investigador, Redactor,
+  Bibliografo-Propuesta, Presupuestador) según el roster del pipeline.
+
+Una fila por sección — no agrupes varias secciones en una sola fila aunque
+compartan ajuste. Si no hubo ajuste TDR para ninguna sección (caso límite,
+poco probable si G0.5 llegó a ejecutarse), la tabla igual debe existir con
+las 16 secciones y "sin cambios frente a la guía base" en la columna de
+alcance.
+
 ## Entrada temprana (Fase 1a — borrador temprano de subproblemas)
 
 The dispatcher invokes you in this early-draft capacity as a **distinct Task,

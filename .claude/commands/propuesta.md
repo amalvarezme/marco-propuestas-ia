@@ -271,15 +271,30 @@ Fase 0.5 [COMPUERTA G0.5] Solo aplica si el campo "Archivo TDR" de la tabla
             archivo base NUNCA se modifica), ajustando
             secciones/alcance/requisitos según la tabla de criterios
             ponderados ya extraída en `proposal/insumos.md` ("Extracción
-            del TDR").
+            del TDR"). El archivo generado DEBE incluir la "Tabla de
+            secciones definitivas" con el formato exacto que exige
+            `investigador.md` ("Generación de la guía ajustada") — es un
+            requisito de forma del entregable, no opcional.
         ──→ GATE G0.5: presenta `proposal/guia_ajustada_TDR.md` al usuario
-        para aprobación explícita.
+        para aprobación explícita. La presentación de este gate NO es un
+        resumen en prosa: el dispatcher copia la "Tabla de secciones
+        definitivas" completa (todas las filas, sin resumir ni truncar) tal
+        cual quedó en `proposal/guia_ajustada_TDR.md` y la renderiza como
+        tabla Markdown directamente en el mensaje de chat al usuario — la
+        misma tabla debe ya existir en el `.md` (no se genera una versión
+        distinta para consola). La aprobación/petición de cambios del
+        usuario se resuelve sobre esa tabla específica (fila por fila si
+        aplica), no sobre el documento en general.
           - Aprobada → guía aplicable = `proposal/guia_ajustada_TDR.md`;
             registra G0.5 = APROBADA (quién/fecha) en
             `proposal/estado_propuesta.md`.
           - Cambios solicitados → vuelve a despachar la misma Task al
-            `investigador` con las correcciones exactas del usuario, y
-            repite el gate. NO avances sin aprobación explícita.
+            `investigador` con las correcciones exactas del usuario (p. ej.
+            "renombrar §X", "fusionar §Y con §Z", "mover el bloque de
+            divulgación a §15"), regenera la tabla completa (no un parche
+            fila a fila hecho por el dispatcher) y repite el gate completo
+            (tabla renderizada de nuevo en consola). NO avances sin
+            aprobación explícita.
         En ambos desenlaces finales (OMITIDA-POR-USUARIO o APROBADA), el
         dispatcher continúa con la Fase 1a, que consume la "guía aplicable"
         resuelta aquí (ver bloque "Fase 1a" a continuación).

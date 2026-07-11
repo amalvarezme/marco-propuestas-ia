@@ -1,0 +1,27 @@
+# graphify-only override of .gitignore.
+#
+# .gitignore intentionally excludes per-run /propuesta output
+# (proposal/scoping/, vault/secciones/*, vault/insumos/*) from git tracking
+# so a real run never gets committed by accident. graphify's detect() merges
+# .gitignore into its own ignore rules by default, which meant every
+# `graphify papers/` (Fase 1a/1b) and `graphify .` (vault graph) call in the
+# /propuesta pipeline silently scanned 0 files — the corpus was always
+# "ignored" before graphify ever looked at it.
+#
+# These negations are read after .gitignore in the same directory and win
+# under last-match-wins semantics, so they un-ignore these paths for
+# graphify's own view WITHOUT touching git tracking at all — .gitignore is
+# unchanged, these directories remain untracked/uncommitted.
+!proposal/scoping/
+!proposal/scoping/**
+!vault/secciones/
+!vault/secciones/**
+!vault/insumos/
+!vault/insumos/**
+
+# The blanket negations above also resurrect vault/secciones/.obsidian/
+# (Obsidian's local app-state dir, separately excluded by .gitignore's
+# top-level `.obsidian/` rule) — re-exclude it explicitly, it is noise,
+# not content.
+vault/secciones/.obsidian/
+vault/secciones/.obsidian/**
