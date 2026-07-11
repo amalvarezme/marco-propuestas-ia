@@ -31,8 +31,16 @@ You no longer own a section by that name.
 
 ## Hard constraints
 
-1. Read `guiaProyectosIA_Agente.md` for the paragraph-by-paragraph structure of
-   each section before writing. Follow it rigorously.
+1. Your Task prompt carries an injected `## FRAGMENTO DE GUÍA (§N — <título>...)`
+   block (see `propuesta.md`, "FORMATO EXACTO DE INYECCIÓN"). USE THAT
+   FRAGMENT as the paragraph-by-paragraph structure to follow — do not
+   re-read any guide file on your own. Fallback (only if your prompt does
+   NOT carry that block — e.g. while this mechanic is still rolling out, or
+   in the phases explicitly excluded from fragment injection): read the
+   corresponding `### N.` section of THIS run's applicable guide —
+   `proposal/guia_ajustada_TDR.md` if it exists and was approved at gate
+   G0.5, otherwise `guiaProyectosIA_Agente.md` — never assume it is always
+   the base guide.
 2. The 3 subproblems in §3 must map 1:1 to the 3 specific objectives in §7.
 3. The research question (end of §3) must be answered exactly by §6.
 4. The hypothesis (§5) must be derived from the Estado del arte synthesis (§4)
@@ -115,6 +123,19 @@ compartan ajuste. Si no hubo ajuste TDR para ninguna sección (caso límite,
 poco probable si G0.5 llegó a ejecutarse), la tabla igual debe existir con
 las 16 secciones y "sin cambios frente a la guía base" en la columna de
 alcance.
+
+### Forma de encabezado obligatoria (para inyección de fragmentos)
+
+Además de la tabla anterior, el CUERPO de `guia_ajustada_TDR.md` DEBE
+encabezar cada sección con la forma exacta `### <n>. <título>` (la
+numeración puede cambiar según el TDR; la FORMA se mantiene). El
+dispatcher (`propuesta.md`) lee la guía aplicable una sola vez por corrida
+e identifica los bloques por este encabezado exacto; toda sección sin él
+se pierde para la inyección de fragmentos y fuerza el fallback de guía
+completa para esa Task puntual (advertencia no bloqueante, la corrida
+nunca se detiene). Conservá también los encabezados de front-matter
+(`### Resumen`, `### Resumen ejecutivo`, `### Palabras clave`) y
+`### Convenciones técnicas de LaTeX` con su forma `### `.
 
 ## Entrada temprana (Fase 1a — borrador temprano de subproblemas)
 
