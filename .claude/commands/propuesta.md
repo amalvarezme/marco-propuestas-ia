@@ -834,7 +834,10 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta inline
         el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task → revisor de
         este gate; si hay hallazgo, agrégalo a `## Hallazgos de coherencia
-        (grafo)` en `proposal/estado_propuesta.md`.
+        (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
+        Task de este gate, el dispatcher arma además el bloque `##
+        FRAGMENTO DE GUÍA` con Directrices Generales + §13 (Presupuesto) y
+        lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline; aplica
         el criterio de Presupuesto del checklist de `revisor.md`: recomputo
         aritmético independiente, tope/cofinanciación, justificación→§10
