@@ -36,38 +36,51 @@ Este caché es un acelerador puro: nunca debe bloquear ni degradar la
 corrida. Aplica a los cuatro tipos de archivo (`TDR`, `draft-base`,
 `background`, `doc-secciones`) — no solo a TDR.
 
-### Mecánica (por archivo, en orden)
+### Mecánica (una vez por corrida, luego por archivo)
 
-1. **Calcular el hash de contenido**: `shasum -a 256 "<archivo>" | awk
-   '{print $1}'`. Para archivos `.docx`, calcula el hash sobre el binario
-   ORIGINAL, ANTES de la conversión a texto plano vía `textutil` (ver
+0. **Fingerprint de la guía vigente** (una sola vez, al inicio de Fase 0, NO
+   por archivo): `shasum -a 256 guiaProyectosIA_Agente.md | cut -c1-12`.
+   Reutiliza este valor para todos los archivos de esta corrida. (Nota: la
+   inyección de este fingerprint desde el dispatcher es una optimización
+   futura fuera de alcance de este cambio — hoy siempre lo calculás vos.)
+1. **Calcular el hash de contenido** (por archivo): `shasum -a 256 "<archivo>"
+   | awk '{print $1}'`. Para archivos `.docx`, calcula el hash sobre el
+   binario ORIGINAL, ANTES de la conversión a texto plano vía `textutil` (ver
    "Lectura de insumos .docx" más abajo) — así la clave es estable
    independientemente del método de extracción.
 2. **Buscar en Engram**: `mem_search(query: "insumos/extraccion/<hash>",
    project: "marco-propuestas-ia")`. Si hay resultado, `mem_get_observation(id)`
    para obtener el payload completo.
-3. **Hit de caché + fingerprint válido** → reutiliza el payload cacheado
-   verbatim: reconstruye la contribución de este archivo a
-   `proposal/insumos.md` (fila de la tabla de clasificación y, si aplica, el
-   bloque de extracción TDR) y su(s) nota(s) en `vault/insumos/<slug>.md` a
-   partir del payload — SIN releer el archivo crudo. Si el archivo estaba
-   `Confirmado por: usuario` (AMBIGUA previamente resuelta), NO vuelvas a
-   preguntar.
+3. **Hit de caché** → evalúa en este orden:
    - **Fingerprint gate**: si el `label` cacheado es `TDR`, `draft-base` o
      `doc-secciones` (dependen del mapeo §-de-guía) Y
-     `payload.guide_fingerprint` ≠ el fingerprint de la guía vigente en esta
-     corrida → trátalo como MISS (el mapeo §-guía puede estar obsoleto). Si
-     `label = background`, reutiliza sin importar el fingerprint (no
-     depende del mapeo §-guía).
-   - **Fingerprint de la guía vigente**: si el dispatcher inyectó un
-     fingerprint de la guía base en tu prompt de Task, úsalo. Si no fue
-     inyectado (p. ej. mientras esta mecánica se despliega de forma
-     incremental), calcúlalo tú mismo: `shasum -a 256
-     guiaProyectosIA_Agente.md | cut -c1-12`.
-4. **Cache miss** → ejecuta la clasificación/extracción de hoy sin cambios
-   (ver "Clasificación de insumos (Fase 0)" y siguientes secciones). Al
-   terminar, `mem_save` el payload de reconstrucción (ver esquema abajo) en
-   `insumos/extraccion/<hash>`.
+     `payload.guide_fingerprint` ≠ el fingerprint calculado en el paso 0 →
+     trátalo como MISS (el mapeo §-guía puede estar obsoleto). Si
+     `label = background`, el fingerprint no aplica (no depende del mapeo
+     §-guía).
+   - **Ambiguity gate (obligatorio, nunca lo omitas)**: si `payload.ambigua =
+     true` Y `payload.confirmado_por = pendiente` → esto NO es un hit
+     utilizable todavía. Reporta este archivo al dispatcher como AMBIGUA
+     exactamente igual que si fuera la primera vez (regla de "Confirmación
+     obligatoria ante ambigüedad" de `propuesta.md`) — el cache-hit NUNCA
+     debe saltarse el gate de confirmación del usuario. Solo tras la
+     confirmación del usuario en ESTA corrida, actualizá el payload cacheado
+     con `confirmado_por: usuario` (ver paso 4).
+   - **Reuso válido**: si pasa el fingerprint gate y `payload.confirmado_por
+     ∈ {auto, usuario}` → reutiliza el payload cacheado verbatim: reconstruye
+     la contribución de este archivo a `proposal/insumos.md` (SOLO la fila de
+     clasificación, sin encabezado — ver esquema abajo) y su(s) nota(s) en
+     `vault/insumos/<slug>.md` a partir del payload, SIN releer el archivo
+     crudo. Si `vault/insumos/<slug>.md` ya existe en disco con contenido
+     adicional al cacheado (p. ej. una sección "## Usado en" con backlinks
+     agregados por Investigador/Redactor/Bibliografo-Propuesta en una fase
+     posterior de esta misma corrida), NO lo sobrescribas — fusiona
+     preservando ese contenido adicional.
+4. **Cache miss, o hit-ambiguo recién confirmado por el usuario** → ejecuta la
+   clasificación/extracción de hoy sin cambios (ver "Clasificación de insumos
+   (Fase 0)" y siguientes secciones). Al terminar, `mem_save` el payload de
+   reconstrucción (ver esquema abajo, incluyendo `ambigua` y
+   `confirmado_por`) en `insumos/extraccion/<hash>`.
 5. **Cualquier falla de Engram** (búsqueda, lectura o escritura fallan,
    timeout, o la herramienta no está disponible) → degrada silenciosamente a
    la extracción completa normal. NUNCA bloquees Fase 0 ni muestres un error
@@ -85,12 +98,17 @@ guide_fingerprint: <primeros 12 hex del sha256 de la guía base>
 label: TDR|draft-base|background|doc-secciones
 confianza: alta|media|baja
 senales: <señales de clasificación que motivaron el label>
-insumos_md_contribution: |
-  <markdown verbatim que este archivo aporta a proposal/insumos.md:
-   su fila en la tabla de clasificación; si es TDR: la extracción §1-§16, la
-   tabla de Criterio|Pts|Sección, el bloque "## Marco presupuestal (TDR)"
-   (incl. nota de procedencia por pixelshot si se usó), y la subsección
-   "### Secciones obligatorias declaradas por el TDR">
+ambigua: true|false
+confirmado_por: auto|usuario|pendiente   # "pendiente" SOLO si ambigua=true
+classification_row: |
+  <SOLO la fila de datos de la tabla "Archivo | Tipo | Confianza | Señales |
+   Confirmado por" — sin encabezado ni separador, para que el ensamblado
+   final nunca duplique el header de la tabla>
+tdr_extraction_blocks: |
+  <SOLO si label=TDR: markdown verbatim de la extracción §1-§16, la tabla de
+   Criterio|Pts|Sección, el bloque "## Marco presupuestal (TDR)" (incl. nota
+   de procedencia por pixelshot si se usó), y la subsección "### Secciones
+   obligatorias declaradas por el TDR". Vacío para los demás labels.>
 vault_notes:
   - slug: <slug>
     body: |
@@ -99,9 +117,11 @@ vault_notes:
 
 El payload debe contener todo lo necesario para reconstruir ambas salidas
 (`proposal/insumos.md` y las notas de `vault/insumos/`) sin releer el
-archivo crudo. Al ensamblar el `insumos.md` final, concatena las
-contribuciones por archivo (cacheadas + recién extraídas); la tabla de
-clasificación es la unión de las filas de cada archivo.
+archivo crudo. Al ensamblar el `insumos.md` final: la tabla de clasificación
+lleva UN solo encabezado, seguido de la unión de `classification_row` de cada
+archivo (cacheado o recién extraído); los `tdr_extraction_blocks` se agregan
+una sola vez por archivo TDR, en su sección correspondiente — nunca dupliques
+encabezados de tabla al concatenar.
 
 ## Clasificación de insumos (Fase 0)
 
