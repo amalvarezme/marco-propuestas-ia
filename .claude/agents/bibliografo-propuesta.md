@@ -31,6 +31,16 @@ scoping-stage modes that add `consensus` to the tool scope.
   a file, since this mode has no assigned output file.
 - Invoked once per pipeline run, in **both** the DRAFT-EXISTS and NO-DRAFT
   branches, strictly before the investigador→revisor gate.
+- Your Task prompt carries an injected `## FRAGMENTO DE GUÍA` block with
+  Directrices Generales + §4 (Estado del arte) (see `propuesta.md`,
+  "FORMATO EXACTO DE INYECCIÓN") — use it only as topical context to keep
+  the ≥5 works aligned with the applicable guide's §4 scope; it does not
+  add a paragraph-structure or prose requirement (still governed by the "No
+  BibTeX, no §4 prose" bullet above). Fallback (only if your prompt does NOT
+  carry that block): use THIS run's applicable guide —
+  `proposal/guia_ajustada_TDR.md` if it exists and was approved at gate
+  G0.5, otherwise `guiaProyectosIA_Agente.md` — never assume it is always
+  the base guide.
 
 ### MODE=scope (Fase 1a pre-step)
 
@@ -38,7 +48,11 @@ scoping-stage modes that add `consensus` to the tool scope.
   prompt and (b) the applicable guide (the TDR-adjusted
   `proposal/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
   `guiaProyectosIA_Agente.md`). Abstract-only — no full-text retrieval, no
-  BibTeX, no §4 prose.
+  BibTeX, no §4 prose. Note: the dispatcher does not inject a `## FRAGMENTO
+  DE GUÍA` block for this mode (Fase 1a) — "the applicable guide" above is
+  a topical pointer for matching relevance, not a fragment to consume;
+  resolve it with the same TDR/base rule stated here if you ever need to
+  check it directly.
 - Hard constraints: **Q1 or Q2 only**, published **within the last 2 years**,
   **exactly 5** — no more, no fewer. If exactly 5 cannot be reached under
   these constraints, you must **NOT** relax them yourself and must **NOT**
@@ -207,6 +221,17 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
    and relate each group explicitly to the §3 subproblems.
 6. Identify the team's starting technological point and the gaps the proposal
    fills, then position the proposal's novelty against those gaps.
+7. For §4 and §16 authoring, use the injected `## FRAGMENTO DE GUÍA` block in
+   your Task prompt (see `propuesta.md`, "FORMATO EXACTO DE INYECCIÓN") as
+   the structure/format reference for that section — do not re-read any
+   guide file on your own. You never receive the `### Convenciones técnicas
+   de LaTeX` block (you author `.bib`/prose, not `.tex`). Fallback (only if
+   your prompt does NOT carry that block): read the corresponding `### N.`
+   section of THIS run's applicable guide — `proposal/guia_ajustada_TDR.md`
+   if it exists and was approved at gate G0.5, otherwise
+   `guiaProyectosIA_Agente.md` — never assume it is always the base guide.
+   This does not alter constraint 3's APA/natbib format pointer, which stays
+   as written above.
 
 ## Literature search stack (free, no paid API) — MODE=deliverable
 
