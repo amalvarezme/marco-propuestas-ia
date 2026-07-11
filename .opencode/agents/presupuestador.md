@@ -1,7 +1,7 @@
 ---
 description: Presupuestador. Construye la sección de Presupuesto (§13): tabla de rubros con aritmética verificable, ajustada al tope/cofinanciación del TDR o a un presupuesto base, con justificación atada a la metodología (§10). El cronograma de actividades (§14) todavía no existe en la Fase 6.4; su cruce con el presupuesto se verifica en la auditoría final de la Fase 7.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.4
 permission:
   edit: allow
   bash: deny

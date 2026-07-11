@@ -88,7 +88,13 @@ lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
   `python3 scripts/gen-opencode.py` (stdlib puro, sin dependencias nuevas);
   requiere además allow-listar los 9 subagentes portados bajo
   `permission.task` en tu `opencode.json` de usuario (setup manual, ver
-  docstring de `scripts/gen-opencode.py`).
+  docstring de `scripts/gen-opencode.py`). Los 9 agentes generados quedan por
+  defecto con `model: openai/gpt-5.4` (`model_map` en
+  `scripts/gen-opencode.rules.json`) — es solo el default elegido para este
+  repo, no un requisito del generador. Si tu `opencode.json`/`auth login` usa
+  otro proveedor (Anthropic, otro modelo OpenAI, etc.), editá `model_map` en
+  `gen-opencode.rules.json` y volvé a correr `python3 scripts/gen-opencode.py`
+  para regenerar los 9 archivos con el modelo que corresponda.
 - **engram** (`brew install gentleman-programming/tap/engram`) — memoria persistente; requerido porque el servidor MCP `engram` de `.mcp.json` invoca este binario directamente.
 - **gentle-ai** (recomendado, `brew install gentleman-programming/tap/gentle-ai`) — orquestación del workflow SDD (`/sdd-*`), registro de skills y asignación de modelos por fase.
 - LaTeX (pdflatex + bibtex, estilo `natbib`/`apalike`) para compilar `proposal/main.tex`.

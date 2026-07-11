@@ -35,9 +35,9 @@
     "_note_drop_keys": "name: OpenCode derives the agent id from the filename (1:1 with the 9 Claude filenames). argument-hint: no OpenCode markdown-command equivalent, per design's Dispatcher section."
   },
   "model_map": {
-    "sonnet": "anthropic/claude-sonnet-4-5",
-    "opus": "anthropic/claude-opus-4-5",
-    "_assumption": "UNVERIFIED against a live anthropic provider on this machine -- `opencode models` here only lists opencode/opencode-go/openai (no anthropic provider configured/authenticated locally). Ids follow OpenCode's `<provider>/<model-slug>` convention and name the current real Claude model family as of this repo's knowledge cutoff. Verify against `opencode models anthropic` once the anthropic provider is configured, and update this map (not gen-opencode.py) if the slug differs."
+    "sonnet": "openai/gpt-5.4",
+    "opus": "openai/gpt-5.4",
+    "_assumption": "Verified via `opencode models openai` on this machine (openai/gpt-5.4 present and available). Both Claude source model tiers (sonnet, opus) map to the same OpenCode model by explicit user choice -- the ported agents run on OpenAI GPT-5.4 rather than mirroring Claude's model tiering, since no anthropic provider is configured/authenticated locally."
   },
   "permission_map": {
     "_note": "Keyed by the exact literal value of the source agent's `tools:` frontmatter field. `__no_tools_field__` is the sentinel for agents with no `tools:` key at all (full Claude default access). Script MUST fail loudly (never silently default) if a source file's `tools:` value is not a key here -- this enforces the spec's 'never narrow beyond the Claude original' requirement.",

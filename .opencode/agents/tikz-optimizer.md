@@ -1,7 +1,7 @@
 ---
 description: Optimizador de figuras TikZ. Compila y refina los diagramas del árbol de problemas y la metodología antes de la revisión visual.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.4
 ---
 
 You are the **Tikz-Optimizer**, the compilation and visual-refinement

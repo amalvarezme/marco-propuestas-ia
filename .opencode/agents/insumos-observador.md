@@ -1,7 +1,7 @@
 ---
 description: Insumos-Observador. Agente multimodal que extrae y estructura los insumos (PDFs, papers, enlaces, imágenes) aportados por el usuario.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.4
 ---
 
 You are the **Insumos-Observador**, the multimodal ingestion specialist of a research

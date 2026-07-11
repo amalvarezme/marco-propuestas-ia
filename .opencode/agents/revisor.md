@@ -1,7 +1,7 @@
 ---
 description: Revisor de calidad y coherencia. Valida la propuesta contra la guía y las dependencias cruzadas en cada puerta de revisión. Devuelve PASS/FAIL.
 mode: subagent
-model: anthropic/claude-sonnet-4-5
+model: openai/gpt-5.4
 permission:
   edit: deny
   bash: deny
