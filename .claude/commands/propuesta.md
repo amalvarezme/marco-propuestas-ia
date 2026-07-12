@@ -22,6 +22,49 @@ $ARGUMENTS
 `presupuestador`. (No existen `orquestador`, `observador` ni `bibliotecario`
 — usa siempre estos 9 nombres reales.)
 
+## Cómo ejecutar `graphify` (nunca requiere API key)
+
+En todo este documento, cuando una fase dice "el DISPATCHER ejecuta
+`graphify`" o muestra una invocación de CLI cruda (`graphify papers/`,
+`graphify --update .`, `graphify export html`, etc.), eso describe QUÉ
+construir/actualizar/exportar, no CÓMO invocarlo literalmente. El DISPATCHER
+**nunca** llama al binario `graphify` directamente por Bash para
+build/update/export — eso dispara el modo CLI headless de `graphify
+extract`, que sí exige una API key de pago (`GEMINI_API_KEY`, etc.) porque
+asume que no hay un agente orquestador disponible. Aquí sí lo hay: el
+DISPATCHER **es** ese agente.
+
+**Invoca siempre el Skill `graphify`** (`Skill` tool, `skill: "graphify"`,
+`args: "<ruta> [--update] [--export html]"`) y sigue su propio flujo interno
+(el `SKILL.md` de `graphify` instalado en esta sesión, Steps 1-9). Ese flujo
+no necesita ninguna key: la extracción estructural (código) es AST puro, y
+la extracción
+semántica (docs/papers/imágenes) la hace el propio agente orquestador
+despachando subagentes `general-purpose` cuando `GEMINI_API_KEY`/
+`GOOGLE_API_KEY` no están configuradas — nunca lee `ANTHROPIC_API_KEY`,
+`OPENAI_API_KEY` ni ninguna otra. Si en algún punto de esta corrida sientes
+la tentación de preguntarle al usuario por una API key para `graphify`, es
+una señal de que estás invocando el CLI crudo en vez del Skill: detente y
+usa el Skill.
+
+Traducción de las invocaciones crudas que aparecen más abajo a argumentos
+del Skill:
+- `graphify papers/` (build inicial, Fase 1a) → `Skill(skill: "graphify",
+  args: "papers/ --export html")` — el Step 6 del skill genera el HTML por
+  defecto en la misma corrida, así que un `graphify export html` aparte casi
+  nunca hace falta; básalo solo si el propio Skill lo pide explícitamente.
+- `graphify --update papers/` (incremental, Fase 1b y refresh post-refs) →
+  `Skill(skill: "graphify", args: "papers/ --update --export html")`.
+- `graphify .` / `graphify --update .` (grafo del vault, Fase 1b en
+  adelante) → `Skill(skill: "graphify", args: ". --export html")` /
+  `Skill(skill: "graphify", args: ". --update")` (sin `--export html` salvo
+  que la fase lo pida explícitamente, ver "Vault graph HTML export limited
+  to G1b and Fase 7").
+- El `cd proposal/scoping/` / `cd vault/` previo sigue siendo obligatorio:
+  el Skill opera sobre el directorio de trabajo actual (`graphify-out/`
+  relativo al cwd), así que cambia de directorio ANTES de invocar el Skill,
+  exactamente como indica cada fase abajo.
+
 ## Instrucciones de inicio
 
 1. Si no hay insumos (PDFs/papers/enlaces) en el mensaje ni en `info_data/`,
