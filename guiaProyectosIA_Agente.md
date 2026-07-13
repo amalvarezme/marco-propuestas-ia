@@ -87,6 +87,8 @@ Cualquier cifra socioeconómica, tecnológica o ambiental que soporte la relevan
 
 Esta sección **no incluye** revisión de literatura ni hipótesis: el sustento bibliográfico de los subproblemas se desarrolla en Estado del arte (§4), y la hipótesis se formula en su propia sección (§5).
 
+**Diagrama del árbol de problemas (regla permanente).** El contenido del diagrama (raíces/causas por subproblema, tronco, ramas/efectos y copa/solución) se especifica como bloque comentado al final de `proposal/sections/03_descripcion_problema.tex` — mismo patrón que usa Bibliografo-Propuesta para el diagrama de estado del arte en §4 —; Diseñador-TikZ lo traduce a `proposal/sections/diag_arbol_problemas.tex`. Aplican las reglas de conexión (la copa nunca se conecta con las raíces, sí con las ramas), anclaje de flechas e hyphenation definidas en Convenciones técnicas de LaTeX más abajo.
+
 **Estructura de redacción recomendada:** párrafos 1-2 (contexto general y desafíos técnicos, cerrando con la lista de subproblemas) → párrafos 3-5 (detalle de cada subproblema) → párrafo 6 (cierre, pregunta de investigación y figura de árbol de problemas).
 
 **Regla de autocontención científica (obligatoria, §3 y §4).** Estas dos secciones son estrictamente científico-técnicas: describen el problema (§3) o la literatura y el estado de la técnica (§4), **nunca la estructura ni el contenido de este documento de propuesta**. Prohibido: (a) referenciar textualmente otras secciones de la propuesta (p. ej. "(§7)", "ver Metodología", "se retoma en §10"); (b) mencionar los objetivos específicos, el equipo, el presupuesto, el cronograma o cualquier otro artefacto estructural de la propuesta; (c) usar fórmulas autorreferenciales como "esta propuesta", "el proyecto propone", "la propuesta integral" para hablar del documento mismo. Sí se permite, y se espera, como parte normal de un estado del arte, argumentar la novedad **técnica** del enfoque frente a las brechas identificadas (punto 4 de §4 abajo): la restricción es sobre la auto-referencia al documento y su estructura, no sobre describir el enfoque técnico en sí. La alineación §3↔§7 (subproblemas↔objetivos específicos) la verifica `revisor` comparando ambos archivos; nunca se menciona esa alineación dentro del texto de §3 ni de §4.
@@ -171,18 +173,36 @@ relación); Diseñador-TikZ la renderiza como segunda línea del nodo, en
 cursiva) y de la frase de limitante del cluster (que es roja, no azul, y
 está a nivel de cluster completo, no por paper).
 
-**Tamaño de letra de los nodos del diagrama (regla permanente).** El texto
-dentro de los bloques del mapa de estado del arte (autor-año, frase-concepto
-en azul, frase de limitante en rojo) usa un tamaño de fuente EXPLÍCITO vía
-`\fontsize{Npt}{Mpt}\selectfont` (nunca un tamaño relativo como `\tiny` sin
-más — su valor en puntos varía según si el archivo se compila standalone o
-inline en `main.tex`, ver "Sin hyphenation..." abajo para el mismo problema
-de doble contexto de compilación) — el tamaño debe ser el DOBLE en puntos
-del que tendría el equivalente `\tiny` en ese contexto (p. ej. si el primer
-borrador usó `\tiny` ≈ 5-6pt, el tamaño final explícito debe rondar
-10-12pt). Tras duplicar el tamaño, verifica y corrige cualquier sobreflujo
-resultante ensanchando el `text width` del nodo (misma regla ya vigente,
-nunca reduzcas el tamaño de vuelta para "resolver" el desbordamiento).
+**Tamaño de letra de los nodos del diagrama — valores canónicos fijos
+(regla permanente).** Todo texto dentro de los bloques del mapa de estado
+del arte usa un tamaño de fuente EXPLÍCITO vía `\fontsize{Npt}{Mpt}\selectfont`
+(nunca un tamaño relativo como `\tiny` o `\small` sin más — su valor en
+puntos varía según si el archivo se compila standalone o inline en
+`main.tex`, ver "Sin hyphenation..." abajo para el mismo problema de doble
+contexto de compilación). A diferencia de versiones anteriores de esta
+regla, el tamaño **no se recalcula cada corrida** duplicando un tamaño
+relativo — se fija a los siguientes valores canónicos, que ya fueron
+ajustados y verificados visualmente sin sobreflujo, y que Diseñador-TikZ y
+tikz-optimizer DEBEN reutilizar tal cual en toda regeneración del diagrama
+para preservar la jerarquía visual entre elementos:
+
+| Elemento | Estilo TikZ | Tamaño canónico |
+|---|---|---|
+| Texto de nodo de paper (autor-año + frase-concepto azul) | `paperNode` | `\fontsize{12pt}{14pt}` |
+| Frase de limitante por cluster (rojo) | `limTexto` | `\fontsize{12pt}{14pt}` |
+| Título de cluster (azulUNAL) | `clusterTitulo` | `\fontsize{14pt}{17pt}` |
+
+El título de cluster queda deliberadamente solo un ~17% más grande que el
+texto de los nodos (14pt vs. 12pt) — suficiente para jerarquizarlo
+visualmente como encabezado del bloque sin dominar el diagrama ni forzar el
+título a varias líneas en los clusters de `text width` más angosto. Si en
+una corrida futura el contenido (títulos de subsección más largos, más
+clusters, distinto layout) genera sobreflujo con estos tamaños canónicos, la
+corrección es SIEMPRE ensanchar el `text width` del nodo/título o dar más
+espacio vertical entre título y fila de papers (mismo patrón aplicado en
+`c2title`/`c4title`/`c5title` de la corrida de referencia) — nunca reducir
+estos tamaños canónicos ni volver a un tamaño relativo (`\tiny`/`\small`)
+para "resolver" el desbordamiento.
 
 Cierra la sección con un **párrafo de síntesis** que resuma las estrategias más relevantes identificadas en la literatura, preparando el terreno para la hipótesis (§5). Este párrafo de cierre DEBE citar el mapa de estado del arte con `\Cref{fig:estado_arte}` (regla permanente) — mismo patrón ya usado por §3 con `\ref{fig:arbol_problemas}` en su propio párrafo de cierre: referenciar la figura de la MISMA sección no viola la autocontención científica (esa regla prohíbe referenciar OTRAS secciones, no la propia figura de §4). Aplican aquí, con el mismo rigor, la **Regla de autocontención científica** y la **Regla de densidad de citas** definidas al final de §3 arriba.
 
@@ -228,6 +248,15 @@ deliberadamente concisa en conjunto frente a §4/§10) y lo conecta con la
 limitación tecnológica de §3 que fundamenta (punto 3 arriba) sin repetir el
 detalle algorítmico de §10.
 
+**Regla de densidad de citas (regla permanente).** Cuando una subsección
+requiera sustento técnico o teórico de las ideas presentadas (p. ej. al
+fundamentar un enfoque de Deep Learning, una arquitectura o una técnica
+concreta), cita literatura Q1/Q2 que lo respalde — una definición de término
+puramente terminológica puede quedar sin cita, pero ninguna afirmación
+técnica o teórica se plantea sin sustento cuando lo requiere. Acumula, en
+conjunto para toda la sección, **entre 8 y 10 referencias Q1/Q2 distintas**.
+Compatible con el tope de reúso de §16.
+
 ### 9. Equipo de trabajo
 
 **Instrucción para el agente:** Presentar el equipo de trabajo del proyecto en una **tabla única** (`tab:equipo`) con columnas: **Integrante** | **Rol** | **Sede/Institución/Dependencia** | **Responsabilidades**. Los datos de identidad (nombres, sede, dependencia o alianza) deben tomarse de los insumos confirmados por el usuario; nunca inventarlos. El **rol y las responsabilidades** de cada integrante se derivan de los objetivos específicos (§7) y de la cadena de valor del proyecto: cada integrante debe quedar vinculado explícitamente a al menos uno de ellos, sin remitir a la Metodología (§10), que se redacta después y es la que referencia a este equipo, no al revés.
@@ -252,6 +281,21 @@ Cualquier dato de equipo que no provenga de un insumo directo del usuario (p. ej
     *   Reflejar claramente el impacto y los posibles usuarios o beneficiarios finales del producto o servicio de IA a desarrollar.
     *   Resaltar visualmente el nivel de madurez tecnológica (TRL) desde el que se parte (basado en la experiencia del grupo) hasta el TRL meta al que se quiere llegar (TRL 6 o 7).
     *   **Nunca incluir el personal responsable de cada fase dentro de los bloques del diagrama** (regla permanente) — el "personal responsable" ya se detalla en la prosa de §10 (punto 2 arriba) y en el Equipo de trabajo (§9); repetirlo como etiqueta ("Resp.: ...") dentro de cada bloque del diagrama es redundante y satura visualmente las cajas. El diagrama se centra en fases, novedades, TRL y beneficiarios — nunca en nombres o roles de personas.
+
+**Regla de densidad de citas (regla permanente).** Cuando el sustento
+teórico/metodológico de una fase (punto 2 arriba) requiera respaldo técnico
+— al nombrar un enfoque, algoritmo o técnica concreta y describir su
+funcionamiento — cita literatura Q1/Q2 que lo sustente; el detalle puramente
+operativo de una actividad (recursos, cronología) no necesita cita. Acumula,
+en conjunto para toda la sección, **entre 8 y 10 referencias Q1/Q2
+distintas**. Compatible con el tope de reúso de §16.
+
+**Ubicación del diagrama (regla permanente).** El contenido del diagrama
+esquemático metodológico se especifica como bloque comentado al final de
+`proposal/sections/10_metodologia.tex` (mismo patrón que §3/§4);
+Diseñador-TikZ lo traduce a `proposal/sections/diag_metodologico.tex`.
+Aplican las mismas reglas de conexión, anclaje de flechas e hyphenation
+definidas en Convenciones técnicas de LaTeX más abajo.
 
 ### 11. Resultados esperados
 
@@ -294,7 +338,7 @@ Todo contenido de esta sección que no provenga de un insumo directo del usuario
 
 ### 14. Cronograma de actividades
 
-**Instrucción para el agente:** El cronograma de actividades debe presentarse preferiblemente mediante una **tabla tipo cronograma** (ej. Diagrama de Gantt) estructurada en fases o periodos (meses, trimestres, semestres, etc.).
+**Instrucción para el agente:** El cronograma de actividades se presenta como **tabla tipo cronograma (Diagrama de Gantt, vía el paquete `pgfgantt`)**, estructurada en fases o periodos (meses, trimestres, semestres, etc.). Es uno de los cuatro diagramas obligatorios del pipeline (ver "Exportación de diagramas a SVG" en Convenciones técnicas de LaTeX): no es un formato preferido frente a una tabla simple sin Gantt, es el formato exigido. El bloque `pgfgantt` vive directamente dentro de `proposal/sections/14_cronograma_actividades.tex` — a diferencia del árbol de problemas, el estado del arte y el diagrama metodológico, el Gantt no tiene un archivo `diag_*.tex` separado.
 1.  **Alineación Temporal:** El cronograma debe estar rigurosamente detallado y ajustado al tiempo total de ejecución establecido en los términos de referencia de la convocatoria (por ejemplo, 6 meses, 12 meses, 3 años).
 2.  **Actividades y Responsables:** Las actividades incluidas en la tabla deben corresponder exactamente con las fases y acciones de la Metodología (§10). Además, para cada actividad o etapa, se debe designar claramente el **personal o rol responsable** (coherente con el Equipo de trabajo, §9).
 3.  **Hitos y Productos:** El cronograma debe describir y evidenciar con claridad cómo y en qué momento exacto del tiempo se obtendrán y entregarán los resultados (§11) y productos (§15) prometidos.
@@ -346,6 +390,21 @@ Estas convenciones son la única fuente de verdad para el ensamble LaTeX; aplíc
 | §4 Estado del arte | `\section` con 3-5 encabezados internos de agrupación temática, SIN numerar (`\subsection*`), seguidos por los párrafos de síntesis/brechas/novedad sin encabezado propio (ver detalle en §4 arriba). |
 | §8 Marco conceptual | `\section` con 3-5 encabezados internos, uno por concepto definido, SIN numerar (`\subsection*`) (ver detalle en §8 arriba). |
 | §10 Metodología | `\section` autocontenido con encabezados internos de fase OPCIONALES y SIN numerar (`\subsection*`), no `\subsection` numerado. |
+
+> **Nota sobre sub-bloques obligatorios exigidos por un TDR/doc-secciones.** Cuando
+> una convocatoria (vía su TDR o un `doc-secciones` externo) exige contenido
+> obligatorio anidado dentro de una de las 16 secciones base (p. ej. "Articulación
+> con actores externos" dentro de Equipo de trabajo, §9, o "Estrategia de
+> divulgación" dentro de Productos esperados, §15), ese contenido es un
+> **sub-bloque interno** de su sección anfitriona, NO una `\section` numerada
+> independiente: no altera la numeración §1–§16 ni las convenciones de anidamiento
+> de esta tabla. Al maquetar, se realiza como `\subsection*{}` (sin numerar) o como
+> un párrafo con encabezado en negrita dentro de la sección anfitriona, pero debe
+> quedar **visualmente identificable** (título propio) para el evaluador, porque
+> típicamente responde a un criterio de evaluación ponderado específico de esa
+> convocatoria. La guía ajustada que la Fase 0.5 genere para cada convocatoria
+> (`proposal/guia_ajustada_TDR.md`) declara estos sub-bloques explícitamente cuando
+> el TDR los exige, anclando cada uno a su sección anfitriona.
 
 **Paquetes del preámbulo**
 
