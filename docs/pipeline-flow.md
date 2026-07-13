@@ -11,7 +11,12 @@ alineado a las 16 secciones de `guiaProyectosIA_Agente.md`.
 - Fuente editable: [`pipeline-flow.mmd`](./pipeline-flow.mmd).
   Figura renderizada: [`pipeline-flow.svg`](./pipeline-flow.svg).
 - Para regenerar el SVG tras editar el `.mmd`:
-  `npx -y @mermaid-js/mermaid-cli -i docs/pipeline-flow.mmd -o docs/pipeline-flow.svg -b transparent`.
+  `npx -y @mermaid-js/mermaid-cli -i docs/pipeline-flow.mmd -o docs/pipeline-flow.svg -b white`.
+  Fondo blanco explícito (no transparente): GitHub renderiza SVG embebido en
+  markdown contra su propio fondo de página, que cambia con el tema
+  claro/oscuro del visitante — un fondo transparente deja el texto y las
+  líneas del diagrama con bajo contraste en tema oscuro. El fondo blanco fijo
+  garantiza contraste consistente sin importar el tema de quien lo mira.
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": true, "curve": "linear"}} }%%
@@ -70,15 +75,31 @@ flowchart TD
 
     subgraph Fase1["Fase 1 — Descripcion del problema (sec 3)"]
         Explore[Task: bibliografo MODE=explore<br/>mapa amplio, mas de 5 obras] --> Invest1[Task: investigador<br/>sec 3 subproblemas + pregunta de investigacion]
-        Invest1 --> FigLoop1["Bucle figura arbol de problemas:<br/>disenador-tikz to tikz-optimizer to revisor-figuras"]
-        FigLoop1 --> Gate1{GATE revisor<br/>+ evidencia de grafo}
+        Invest1 --> Tikz1[Task: disenador-tikz<br/>arbol de problemas]
+        Tikz1 --> Opt1[Task: tikz-optimizer<br/>compila PNG + token OVERFULL]
+        Opt1 --> Overfull1{Precheck determinista:<br/>OVERFULL N mayor que 0?}
+        Overfull1 -->|si| Cap1{Intentos<br/>4/4?}
+        Overfull1 -->|no, log limpio| RevFig1{Task: revisor-figuras<br/>PASS/FAIL}
+        RevFig1 -->|FAIL| Cap1
+        Cap1 -->|no, +1 intento| Opt1
+        Cap1 -->|si, agotado| Escal1[Escala a usuario:<br/>diagrama, 4/4 intentos, ultimo hallazgo]
+        RevFig1 -->|PASS| Gate1{GATE revisor<br/>+ evidencia de grafo}
         Gate1 -->|FAIL| Invest1
     end
     Fase1 --> Fase2
 
     subgraph Fase2["Fase 2 — Estado del arte + Hipotesis (sec 4, 5)"]
         Sota2[Task: bibliografo sec 4<br/>estado del arte, 30+ refs Q1/Q2] --> Hip2["Task: investigador sec 5<br/>hipotesis (en paralelo)"]
-        Hip2 --> Gate2{GATE revisor}
+        Sota2 --> Tikz2[Task: disenador-tikz<br/>mapa estado del arte]
+        Tikz2 --> Opt2[Task: tikz-optimizer<br/>compila PNG + token OVERFULL]
+        Opt2 --> Overfull2{Precheck determinista:<br/>OVERFULL N mayor que 0?}
+        Overfull2 -->|si| Cap2{Intentos<br/>4/4?}
+        Overfull2 -->|no, log limpio| RevFig2{Task: revisor-figuras<br/>PASS/FAIL}
+        RevFig2 -->|FAIL| Cap2
+        Cap2 -->|no, +1 intento| Opt2
+        Cap2 -->|si, agotado| Escal2[Escala a usuario:<br/>diagrama, 4/4 intentos, ultimo hallazgo]
+        RevFig2 -->|PASS| Gate2{GATE revisor}
+        Hip2 --> Gate2
         Gate2 -->|FAIL| Sota2
     end
     Fase2 --> Fase3
@@ -95,14 +116,28 @@ flowchart TD
     end
     Fase4 --> Fase5
 
-    subgraph Fase5["Fase 5 — Marco conceptual + Equipo + Metodologia (sec 8, 9, 10)"]
+    subgraph Fase5["Fase 5 — Marco conceptual + Equipo de trabajo (sec 8, 9)"]
         Invest5[Task: investigador sec 8<br/>marco conceptual] --> Redactor5a["Task: redactor sec 9<br/>equipo de trabajo (roles desde sec 7)"]
-        Redactor5a --> Redactor5b[Task: redactor sec 10 metodologia]
-        Redactor5b --> FigLoop5[Bucle figura diagrama metodologico]
-        FigLoop5 --> Gate5{GATE revisor<br/>+ evidencia de grafo}
+        Redactor5a --> Gate5{GATE revisor<br/>+ evidencia de grafo}
         Gate5 -->|FAIL| Invest5
+        Gate5 -->|aprobado| PDF5[Dispatcher: ensambla/compila<br/>main.tex a main.pdf]
     end
-    Fase5 --> Fase6
+    Fase5 --> Fase55
+
+    subgraph Fase55["Fase 5.5 — Metodologia (sec 10)"]
+        Redactor5b[Task: redactor sec 10<br/>metodologia] --> Tikz5[Task: disenador-tikz<br/>diagrama metodologico]
+        Tikz5 --> Opt5[Task: tikz-optimizer<br/>compila PNG + token OVERFULL]
+        Opt5 --> Overfull5{Precheck determinista:<br/>OVERFULL N mayor que 0?}
+        Overfull5 -->|si| Cap5{Intentos<br/>4/4?}
+        Overfull5 -->|no, log limpio| RevFig5{Task: revisor-figuras<br/>PASS/FAIL}
+        RevFig5 -->|FAIL| Cap5
+        Cap5 -->|no, +1 intento| Opt5
+        Cap5 -->|si, agotado| Escal5[Escala a usuario:<br/>diagrama, 4/4 intentos, ultimo hallazgo]
+        RevFig5 -->|PASS| Gate55{GATE revisor<br/>+ evidencia de grafo}
+        Gate55 -->|FAIL| Redactor5b
+        Gate55 -->|aprobado| PDF55[Dispatcher: ensambla/compila<br/>main.tex a main.pdf]
+    end
+    Fase55 --> Fase6
 
     subgraph Fase6["Fase 6 — Resultados + Consideraciones eticas (sec 11, 12)"]
         Redactor6["Task: redactor sec 11 resultados esperados<br/>Task: redactor sec 12 consideraciones eticas"]
@@ -149,13 +184,13 @@ flowchart TD
 
     classDef gate fill:#fff3cd,stroke:#b8860b,stroke-width:1px
     classDef graph3 fill:#e6f0ff,stroke:#4a6fa5,stroke-width:1px
-    class Guard,Ambig,HasTDR,Corrob,OptIn,GateG05,GateG1a,CheckG1a,GateG1b,Gate1,Gate2,Gate3,Gate4,Gate5,ModeRes,LoopP,GateP,Gate65,AuditFinal gate
+    class Guard,Ambig,HasTDR,Corrob,OptIn,GateG05,GateG1a,CheckG1a,GateG1b,Overfull1,Cap1,RevFig1,Gate1,Overfull2,Cap2,RevFig2,Gate2,Gate3,Gate4,Gate5,Overfull5,Cap5,RevFig5,Gate55,ModeRes,LoopP,GateP,Gate65,AuditFinal gate
     class GPapers,GVault,GPipeline graph3
 ```
 
 ## Notas de lectura
 
-- Las compuertas `GATE revisor` de las Fases 1-5, más la Fase 6.4 de
+- Las compuertas `GATE revisor` de las Fases 1-5.5, más la Fase 6.4 de
   Presupuesto, reciben el bloque `EVIDENCIA DE GRAFO` inyectado por el
   dispatcher a partir del grafo de vault actualizado — es asesor, nunca
   cambia el veredicto por sí solo. La Fase 6.5 (front-matter) NO recibe este
@@ -176,3 +211,17 @@ flowchart TD
   verifica en firme en la auditoría final de la Fase 7.
 - Fase 6 y 6.45 no tienen compuerta `GATE revisor` propia: se auditan en
   bloque en la Fase 7, igual que en el diseño original.
+- **Fase 5 vs. Fase 5.5**: la Fase 5 (marco conceptual §8 + equipo de
+  trabajo §9) y la Fase 5.5 (metodología §10 + su propio bucle de figura)
+  son dos compuertas `GATE revisor` separadas, cada una seguida de un
+  ensamblado/compilación de `main.pdf` — no una única fase combinada.
+- **Bucle de figuras — precheck de overflow y tope de reintentos**: en los 3
+  bucles (árbol de problemas, mapa de estado del arte, diagrama
+  metodológico), `tikz-optimizer` compila y `proposal/scripts/compile_tikz.py`
+  detecta determinísticamente `Overfull \hbox` en el log de `pdflatex`
+  (token `OVERFULL: <diagrama> <N> occurrence(s)`). Si `N > 0`, el
+  dispatcher vuelve directo a `tikz-optimizer` con la línea mapeada,
+  saltando `revisor-figuras` esa iteración; solo con el log limpio pasa a
+  la revisión visual. El contador de intentos es compartido entre fallos de
+  overflow y fallos visuales, con tope de 4 por diagrama y por corrida — al
+  agotarse, el dispatcher escala al usuario en vez de reintentar sin límite.

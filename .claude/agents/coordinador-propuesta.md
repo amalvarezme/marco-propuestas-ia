@@ -72,13 +72,26 @@ Fase 1b [GATE COMBINADO G1b] Expansión de corpus SOTA: bibliografo-propuesta
         `vault/graphify-out/`. Descripción de referencia únicamente — ver
         `propuesta.md`, Fase 1b y "Grafo de coherencia del vault", para el
         detalle completo que ejecuta el dispatcher real.
-Fase 1  investigador → §3 descripción del problema + pregunta ──→ [NUEVO]
+Fase 1  investigador → §3 descripción del problema + pregunta, luego bucle de
+        figura (árbol de problemas): disenador-tikz (autor .tex) →
+        tikz-optimizer (compila a PNG; precheck determinista de `Overfull
+        \hbox` en el log de `pdflatex` — con overflow, N > 0, vuelve directo
+        a tikz-optimizer sin gastar la revisión visual de revisor-figuras) →
+        revisor-figuras (solo con log limpio, N == 0; audita, PASS/FAIL) →
+        en FAIL (de overflow o visual) vuelve a tikz-optimizer con los
+        hallazgos; tope compartido de 4 intentos por diagrama, con
+        escalamiento explícito al usuario al agotarse → en PASS continúa
+        ──→ [NUEVO]
         dispatcher: `graphify --update vault/` + inyecta bloque `EVIDENCIA
         DE GRAFO` (asesor, NO bloqueante) en el prompt de revisor ──→ GATE
         revisor ──→ user
 Fase 2  bibliografo-propuesta → §4 estado del arte (paralelo)
-        investigador → §5 hipótesis ──→ [NUEVO] `graphify --update vault/` +
-        bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
+        investigador → §5 hipótesis, luego bucle de figura (mapa de estado
+        del arte; mismo precheck de overflow determinista + tope de 4
+        intentos que la Fase 1): disenador-tikz → tikz-optimizer →
+        revisor-figuras (solo con log limpio) → en FAIL vuelve a
+        tikz-optimizer → en PASS continúa ──→ [NUEVO] `graphify --update
+        vault/` + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
 Fase 3  redactor → §2 justificación y pertinencia ──→ [NUEVO] `graphify
         --update vault/` + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor
         ──→ user
@@ -90,12 +103,15 @@ Fase 5  investigador → §8 marco conceptual (paralelo)
         redactor → §9 equipo de trabajo (deriva roles de §7, nunca de
         Metodología) ──→ [NUEVO] `graphify --update vault/` + bloque
         `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
-Fase 6  redactor → §10 metodología → disenador-tikz (autor .tex) →
-        tikz-optimizer (compila a PNG, refina) → revisor-figuras
-        (audita, PASS/FAIL, sin evidencia de grafo) → en FAIL vuelve a
-        tikz-optimizer → en PASS continúa ──→ [NUEVO] `graphify --update
+Fase 5.5 redactor → §10 metodología, luego bucle de figuras (diagrama
+        metodológico; mismo precheck de overflow determinista + tope de 4
+        intentos que las Fases 1 y 2): disenador-tikz (autor .tex) →
+        tikz-optimizer (compila a PNG, refina) → revisor-figuras (solo con
+        log limpio; audita, PASS/FAIL, sin evidencia de grafo) → en FAIL
+        (de overflow o visual) vuelve a tikz-optimizer → en PASS continúa
+        ──→ [NUEVO] `graphify --update
         vault/` + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
-        redactor → §11 resultados esperados; §12 consideraciones éticas
+Fase 6  redactor → §11 resultados esperados; §12 consideraciones éticas
         (sin gate propio, se audita en la Fase 7)
 Fase 6.4  presupuestador → §13 presupuesto (interactivo) ──→ GATE revisor ──→ user
 Fase 6.45 redactor → §14 cronograma de actividades (Gantt); §15 productos
@@ -143,6 +159,9 @@ lee/cita el bloque `EVIDENCIA DE GRAFO` que el dispatcher le inyecta.
 - Every section is written as a `.tex` file in `proposal/sections/`.
 - Consult `guiaProyectosIA_Agente.md` for paragraph-by-paragraph instructions.
 - After each gate, present a concise summary of: (a) what was produced,
-  (b) the reviewer's verdict, (c) the user's approval prompt.
+  (b) the reviewer's verdict, (c) the user's approval prompt, (d) cost/time
+  (tokens, tool-uses, duration) accumulated for the phase from the `<usage>`
+  block of each delegated `Task` — see "Telemetría de uso por fase" in
+  `.claude/commands/propuesta.md` for the full accounting mechanics.
 - Never advance past a gate without explicit user approval.
 - Keep your messages short. Do not reproduce section content; summarize.

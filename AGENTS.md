@@ -89,22 +89,38 @@ No existen agentes llamados `orquestador`, `observador` (a secas) ni
 
 ```
 Fase 0  Insumos-Observador → ingerir insumos
-Fase 1  Investigador → §3 descripción del problema + pregunta ──→ GATE Revisor ──→ user
+Fase 1  Investigador → §3 descripción del problema + pregunta, luego bucle de
+        figura (árbol de problemas):
+          Diseñador-TikZ (autor .tex)
+          → Tikz-Optimizer (compila a PNG; precheck determinista de
+            `Overfull \hbox` en el log de `pdflatex` — con overflow, vuelve
+            directo a Tikz-Optimizer sin gastar la revisión visual)
+          → Revisor-Figuras (solo con log limpio; audita, PASS/FAIL)
+          → en FAIL (overflow o visual), vuelve a Tikz-Optimizer con los
+            hallazgos; tope compartido de 4 intentos, con escalamiento
+            explícito al usuario al agotarse
+          → en PASS, continúa
+        ──→ GATE Revisor ──→ user
 Fase 2  Bibliografo-Propuesta → §4 estado del arte (paralelo)
-        Investigador → §5 hipótesis ──→ GATE Revisor ──→ user
+        Investigador → §5 hipótesis, luego bucle de figura (mapa de estado
+        del arte; mismo precheck de overflow + tope de 4 intentos que la
+        Fase 1) ──→ GATE Revisor ──→ user
 Fase 3  Redactor → §2 justificación y pertinencia ──→ GATE Revisor ──→ user
 Fase 4  Investigador → §6 objetivo general + §7 objetivos específicos ──→ GATE Revisor
         (subproblema↔objetivo específico; también valida hipótesis↔objetivo general) ──→ user
 Fase 5  Investigador → §8 marco conceptual (paralelo)
         Redactor → §9 equipo de trabajo (deriva roles de §7, nunca de Metodología) ──→ GATE Revisor ──→ user
-Fase 6  Redactor → §10 metodología, luego bucle de figuras:
+Fase 5.5 Redactor → §10 metodología, luego bucle de figuras (diagrama
+        metodológico; mismo precheck de overflow + tope de 4 intentos que
+        las Fases 1 y 2):
           Diseñador-TikZ (autor .tex)
           → Tikz-Optimizer (compila a PNG, primer ajuste)
-          → Revisor-Figuras (audita, PASS/FAIL)
-          → en FAIL, vuelve a Tikz-Optimizer con los hallazgos
+          → Revisor-Figuras (solo con log limpio; audita, PASS/FAIL)
+          → en FAIL (overflow o visual), vuelve a Tikz-Optimizer con los
+            hallazgos
           → en PASS, continúa
         ──→ GATE Revisor ──→ user
-        Redactor → §11 resultados esperados; §12 consideraciones éticas (sin gate propio)
+Fase 6  Redactor → §11 resultados esperados; §12 consideraciones éticas (sin gate propio)
 Fase 6.4  Presupuestador → §13 presupuesto (interactivo) ──→ GATE Revisor ──→ user
 Fase 6.45 Redactor → §14 cronograma de actividades (Gantt); §15 productos esperados
           Bibliografo-Propuesta → §16 bibliografía (BibTeX) (sin gate propio)
@@ -116,7 +132,11 @@ Fase 7  Revisor → auditoría final ──→ user; Coordinador-Propuesta → e
 En cada **GATE**, el asistente primario de Claude Code (siguiendo la
 referencia de `coordinador-propuesta`) **detiene** el flujo y espera
 aprobación del usuario antes de avanzar. El Revisor devuelve PASS/FAIL +
-correcciones.
+correcciones. Cada cierre de gate agrega además un punto de costo/tiempo
+(tokens, tool-uses, duración) al resumen presentado al usuario, acumulado
+por fase a partir del bloque `<usage>` de cada `Task` delegado — ver
+"Telemetría de uso por fase" en `.claude/commands/propuesta.md` para el
+detalle completo del cálculo y persistencia (`proposal/pipeline/_estado.md`).
 
 ## Dispatch directo de agentes de propuesta
 
@@ -166,7 +186,7 @@ por su cuenta, salvo la auditoría final de Fase 7. Resumen de asignación:
 | §8 Marco conceptual | Investigador |
 | §9 Equipo de trabajo | Redactor |
 | §10 Metodología | Redactor |
-| Diagramas (árbol de problemas, metodológico, Gantt) | Diseñador-TikZ |
+| Diagramas (árbol de problemas, mapa de estado del arte, diagrama metodológico) | Diseñador-TikZ |
 | Auditoría visual de figuras (publication-ready) | Revisor-Figuras |
 | Compilación/optimización visual de diagramas (loop PNG) | Tikz-Optimizer |
 | §11 Resultados esperados | Redactor |

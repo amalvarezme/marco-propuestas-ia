@@ -36,6 +36,26 @@ contenido, la extracción de cada archivo de `info_data/`: corridas repetidas
 contra el mismo insumo (p. ej. la misma convocatoria) no vuelven a procesarlo
 desde cero.
 
+**Telemetría de uso por fase.** El dispatcher lee el bloque `<usage>` que
+devuelve cada `Task` delegado (tokens, tool-uses, duración), lo acumula por
+fase y lo persiste en `proposal/pipeline/_estado.md` (columnas `Tokens |
+Tool-uses | Duración`) y en el frontmatter de cada evento de fase
+(`proposal/pipeline/<NN>-<fase>.md`: `tokens_total`, `tool_uses`,
+`duration_ms`). Cada cierre de gate agrega un 4º punto — "(d) Costo/tiempo" —
+a la tríada habitual (resumen, veredicto, aprobación), y la Fase 7 cierra con
+una tabla resumen de una fila por fase.
+
+**Bucle de figuras: precheck de overflow y tope de reintentos.** Antes de la
+revisión visual de `revisor-figuras`, `proposal/scripts/compile_tikz.py`
+detecta determinísticamente `Overfull \hbox` en el log de `pdflatex` y lo
+mapea a la línea del `.tex` fuente (token `OVERFULL: <diagrama> <N>
+occurrence(s)`); si `N > 0`, el dispatcher reenvía directo a
+`tikz-optimizer` sin gastar el `Read` visual de `revisor-figuras` en esa
+iteración. Los 3 bucles de figura (árbol de problemas, estado del arte,
+diagrama metodológico) comparten un tope de 4 intentos entre fallos de
+overflow y fallos visuales, con escalamiento explícito al usuario si se
+agota — nunca reintentan sin límite.
+
 ## Estructura
 
 ```
