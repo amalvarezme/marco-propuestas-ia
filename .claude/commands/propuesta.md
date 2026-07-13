@@ -770,11 +770,27 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         tabla de mapeo de subsecciones; si la Fase 1b no corrió (o no cerró
         en APROBADA), omite este bloque adicional y el despacho sigue el
         comportamiento previo al cambio.
-        ──→ luego bucle de figura (árbol de problemas):
+        ──→ luego bucle de figura (árbol de problemas; contador de intentos
+        compartido por diagrama-por-corrida, tope 4, ver "Tope de reintentos
+        del bucle de figuras" más abajo):
           Task → disenador-tikz (autor diag_arbol_problemas.tex)
-          → Task → tikz-optimizer (compila a PNG, primer ajuste)
-          → Task → revisor-figuras (audita, PASS/FAIL)
-          → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
+          → Task → tikz-optimizer (compila a PNG, primer ajuste; el reporte
+          de esta Task incluye el token verbatim `OVERFULL: arbol_problemas
+          <N> occurrence(s)`)
+          → DISPATCHER: precheck determinístico sobre ese token — si N > 0,
+          incrementa el contador de intentos de este diagrama y vuelve
+          directo a Task → tikz-optimizer con el detalle de línea mapeada
+          (`diag_arbol_problemas.tex:<línea>`), SIN despachar
+          revisor-figuras en esta iteración; si N == 0, continúa a
+          Task → revisor-figuras (audita, PASS/FAIL)
+          → en FAIL (de overflow o de revisor-figuras), incrementa el mismo
+          contador compartido y vuelve a Task → tikz-optimizer con el
+          detalle correspondiente (línea mapeada u hallazgos de
+          revisor-figuras)
+          → si el contador llega a 4/4 intentos, DETENTE: no despaches un
+          5.º intento; escala al usuario (nombre del diagrama, "4/4
+          intentos", último hallazgo conocido verbatim) y espera su guía
+          antes de continuar
           → en PASS, continúa
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/03_descripcion_problema.md` cambió en esta fase
@@ -811,14 +827,29 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo).
         inyecta inline al inicio del prompt.
         ──→ luego bucle de figura (mapa de estado del arte), solo después de
         que la Task de §4 complete (necesita el bloque comentado con el
-        contenido del diagrama):
+        contenido del diagrama; contador de intentos compartido por
+        diagrama-por-corrida, tope 4, ver "Tope de reintentos del bucle de
+        figuras" más abajo):
           Task → disenador-tikz (autor diag_estado_arte.tex a partir del
           bloque comentado en 04_estado_arte.tex)
           → Task → tikz-optimizer (compila a PNG, primer ajuste;
-          `python3 proposal/scripts/compile_tikz.py estado_arte:tikz`)
-          → Task → revisor-figuras (audita, PASS/FAIL, incluye criterio 8
-          "Frase de limitante")
-          → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
+          `python3 proposal/scripts/compile_tikz.py estado_arte:tikz`; el
+          reporte de esta Task incluye el token verbatim `OVERFULL:
+          estado_arte <N> occurrence(s)`)
+          → DISPATCHER: precheck determinístico sobre ese token — si N > 0,
+          incrementa el contador de intentos de este diagrama y vuelve
+          directo a Task → tikz-optimizer con el detalle de línea mapeada
+          (`diag_estado_arte.tex:<línea>`), SIN despachar revisor-figuras en
+          esta iteración; si N == 0, continúa a Task → revisor-figuras
+          (audita, PASS/FAIL, incluye criterio 8 "Frase de limitante")
+          → en FAIL (de overflow o de revisor-figuras), incrementa el mismo
+          contador compartido y vuelve a Task → tikz-optimizer con el
+          detalle correspondiente (línea mapeada u hallazgos de
+          revisor-figuras)
+          → si el contador llega a 4/4 intentos, DETENTE: no despaches un
+          5.º intento; escala al usuario (nombre del diagrama, "4/4
+          intentos", último hallazgo conocido verbatim) y espera su guía
+          antes de continuar
           → en PASS, continúa
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/04_estado_arte.md` o `vault/secciones/05_hipotesis.md`
@@ -933,14 +964,30 @@ Fase 5.5 [NUEVO] Task → redactor → §10 metodología (compuerta propia,
         separada de la Fase 5). Antes de despachar esta Task, el dispatcher
         arma el bloque `## FRAGMENTO DE GUÍA` con Directrices Generales +
         §10 (Metodología) + Convenciones técnicas de LaTeX y lo inyecta
-        inline al inicio del prompt. Luego bucle de figuras:
+        inline al inicio del prompt. Luego bucle de figuras (contador de
+        intentos compartido por diagrama-por-corrida, tope 4, ver "Tope de
+        reintentos del bucle de figuras" más abajo):
           Task → disenador-tikz (autor diag_metodologico.tex — nunca incluir
           personal responsable dentro de los bloques del diagrama, ver
           `disenador-tikz.md` diagrama 3)
-          → Task → tikz-optimizer (compila a PNG, primer ajuste)
-          → Task → revisor-figuras (audita, PASS/FAIL, incluye chequeo de
-          ausencia de "Resp.:" en los bloques)
-          → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
+          → Task → tikz-optimizer (compila a PNG, primer ajuste; el reporte
+          de esta Task incluye el token verbatim `OVERFULL: metodologico
+          <N> occurrence(s)`)
+          → DISPATCHER: precheck determinístico sobre ese token — si N > 0,
+          incrementa el contador de intentos de este diagrama y vuelve
+          directo a Task → tikz-optimizer con el detalle de línea mapeada
+          (`diag_metodologico.tex:<línea>`), SIN despachar revisor-figuras
+          en esta iteración; si N == 0, continúa a Task → revisor-figuras
+          (audita, PASS/FAIL, incluye chequeo de ausencia de "Resp.:" en los
+          bloques)
+          → en FAIL (de overflow o de revisor-figuras), incrementa el mismo
+          contador compartido y vuelve a Task → tikz-optimizer con el
+          detalle correspondiente (línea mapeada u hallazgos de
+          revisor-figuras)
+          → si el contador llega a 4/4 intentos, DETENTE: no despaches un
+          5.º intento; escala al usuario (nombre del diagrama, "4/4
+          intentos", último hallazgo conocido verbatim) y espera su guía
+          antes de continuar
           → en PASS, continúa
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/10_metodologia.md` cambió en esta fase; si no
@@ -1154,6 +1201,35 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
         `<razón>`" en la misma sección y continúa — la Fase 7 se da por
         completa igual.
 ```
+
+## Tope de reintentos del bucle de figuras
+
+Aplica idéntico a los 3 bucles de figura (árbol de problemas, mapa de
+estado del arte, diagrama metodológico):
+
+- El bucle de un diagrama alterna entre un precheck determinístico sobre el
+  token `OVERFULL: <name> <N> occurrence(s)` (verbatim en el reporte de
+  `tikz-optimizer`) y el veredicto visual de `revisor-figuras`. `N > 0` en el
+  precheck → vuelve directo a `tikz-optimizer` con la línea mapeada,
+  saltando `revisor-figuras` esa iteración. `N == 0` → despacha
+  `revisor-figuras` como antes.
+- El contador de intentos es POR DIAGRAMA y POR CORRIDA (nunca global, nunca
+  persiste entre corridas distintas de `/propuesta`), y es COMPARTIDO entre
+  FAILs por overflow (precheck `N > 0`) y FAILs de `revisor-figuras` — ambos
+  cuentan como el mismo "este diagrama todavía no está bien" desde la
+  perspectiva del usuario. El despacho inicial de `tikz-optimizer` es el
+  intento 1; cada re-despacho por cualquiera de los dos tipos de FAIL suma
+  uno más.
+- Tope = 4 intentos totales de `tikz-optimizer` por diagrama (1 inicial + 3
+  remediaciones). Al llegar al 4.º FAIL (de cualquier tipo), el dispatcher
+  DETIENE el bucle — no despacha un 5.º intento — y escala al usuario con:
+  (1) nombre del diagrama y su fase/§, (2) intentos usados vs. tope ("4/4
+  intentos"), (3) el último hallazgo conocido verbatim (el token
+  `OVERFULL:` si el último FAIL fue por overflow, o los ítems
+  `CORRECCIONES` si fue de `revisor-figuras`), (4) pedido explícito de guía
+  al usuario. Nunca reintenta en silencio más allá del tope ni abandona en
+  silencio sin avisar; no avanza a la siguiente fase sin la guía del
+  usuario.
 
 ## Reglas de dependencia (haz que `revisor` las valide en cada gate)
 

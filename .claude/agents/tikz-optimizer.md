@@ -111,8 +111,24 @@ source and before any `revisor-figuras` review exists for it.
    size roughly DOUBLE the point value `\tiny` had in that compile context
    (≈10-12pt from a ≈5-6pt `\tiny`). Fix any resulting overflow by widening
    `text width` — never by shrinking the font back down.
+9. **Deterministic overflow confirmation via the `OVERFULL:` token.** After
+   running `compile_tikz.py`, read its stdout for the structured line
+   `OVERFULL: <name> <N> occurrence(s)` — this is the deterministic signal
+   for constraint 7's overflow check, not a raw-log hunt (the raw log at
+   `log_<name>.txt` stays reserved for the compile-failure path in
+   constraint 3, and no longer exists after a successful compile). If `N` is
+   greater than 0, the same line also reports the first hit's `pt too wide`
+   value and the corresponding line inside `diag_<name>.tex` (or "line
+   unavailable" when pdflatex's message carried no line info): widen that
+   node's `text width` at the reported line, recompile, and confirm the
+   token now reads `OVERFULL: <name> 0 occurrence(s)` before considering
+   constraint 7 satisfied for that diagram. Never report the overflow check
+   as done while `N` is still greater than 0.
 
 ## Output
 
 Return a short summary: which diagram(s) you compiled/fixed, what defects
 you addressed (if any), and the paths to the resulting PNG(s) and SVG(s).
+Also surface the verbatim `OVERFULL: <name> <N> occurrence(s)` line from the
+compiler's stdout in your report — the dispatcher routes the next step
+deterministically off this exact line, so it must appear unmodified.

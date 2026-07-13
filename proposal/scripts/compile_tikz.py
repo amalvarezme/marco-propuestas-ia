@@ -42,6 +42,55 @@ ROOT = HERE.parent.parent
 WORK = ROOT / "proposal" / "sections" / "figuras"
 WORK.mkdir(parents=True, exist_ok=True)
 
+# Overfull-hbox detection (anchored to the literal `Overfull \hbox` prefix
+# only): matches ONLY the pdflatex header line that announces horizontal
+# overflow, e.g. "Overfull \hbox (15.03pt too wide) in paragraph at lines
+# 45--47" or "...detected at line 45". This structurally REJECTS
+# `Underfull \hbox (badness N)` lines (different literal prefix, no "too
+# wide") and never scans the discretionary-hyphen content lines pdflatex
+# echoes immediately AFTER an Overfull header (e.g. "me-mo-ria") — those are
+# separate lines this regex is never applied to in a hyphen-matching way,
+# since we only ever match the header line itself.
+OVERFULL_RE = re.compile(
+    r'^Overfull \\hbox \((\d+(?:\.\d+)?)pt too wide\)'
+    r'(?:.*?at lines (\d+)--(\d+)| at line (\d+))?',
+    re.MULTILINE,
+)
+
+
+def _diag_line(wrapper_line, preamble_offset, d0):
+    """Map a 1-based line number inside the compiled wrapper back to the
+    corresponding 1-based line inside the real source file. Returns None
+    (never a fabricated guess) when any input is unavailable."""
+    if wrapper_line is None or preamble_offset is None or d0 is None:
+        return None
+    return d0 + wrapper_line - preamble_offset - 1
+
+
+def _scan_overfull(log_text, preamble_offset, d0):
+    """Scan a decoded pdflatex log for Overfull \\hbox occurrences.
+
+    Returns (count, first_pt, first_diag_line): count of matches (may be 0),
+    the first match's "...pt too wide" value (str, or None if count == 0),
+    and the first match's mapped source line (int, or None when the log
+    message carried no at-line(s) info, or when preamble_offset/d0 are
+    unavailable for this kind).
+    """
+    count = 0
+    first_pt = None
+    first_wrapper_line = None
+    for match in OVERFULL_RE.finditer(log_text):
+        count += 1
+        if first_pt is None:
+            first_pt = match.group(1)
+            if match.group(2) is not None:
+                first_wrapper_line = int(match.group(2))
+            elif match.group(4) is not None:
+                first_wrapper_line = int(match.group(4))
+    first_diag_line = _diag_line(first_wrapper_line, preamble_offset, d0)
+    return count, first_pt, first_diag_line
+
+
 def build(name, kind):
     if kind == "gantt":
         # §14 Cronograma is authored inline by Redactor, not as a standalone
@@ -62,8 +111,13 @@ def build(name, kind):
         if not m:
             raise SystemExit(f"no tikzpicture found in {src}")
         body = m.group(0)
+        # Source-line mapping (design ADR-5): D0 = 1-based line of
+        # \begin{tikzpicture} inside the real diag_<name>.tex; preamble_offset
+        # is computed below from the actual wrapper text just built, never
+        # hardcoded, so it survives future preamble edits.
+        d0 = text[:m.start()].count("\n") + 1
         wrapper = WORK / f"wrap_{name}.tex"
-        wrapper.write_text(
+        wrapper_text = (
             "\\documentclass[tikz,border=10pt]{standalone}\n"
             "\\usepackage[utf8]{inputenc}\n"
             "\\usepackage[T1]{fontenc}\n"
@@ -81,7 +135,12 @@ def build(name, kind):
             "\\exhyphenpenalty=10000\n"
             "\\begin{document}\n"
             + body + "\n"
-            + "\\end{document}\n", encoding='utf-8')
+            + "\\end{document}\n"
+        )
+        preamble_offset = wrapper_text[
+            :wrapper_text.index("\\begin{document}\n") + len("\\begin{document}\n")
+        ].count("\n")
+        wrapper.write_text(wrapper_text, encoding='utf-8')
     elif kind == "gantt":
         # extract the ganttchart block. redactor.md permits two forms for §14:
         #   (a) a bare \begin{ganttchart}...\end{ganttchart}, or
@@ -113,9 +172,14 @@ def build(name, kind):
                     end = tikz_end + len(r'\end{tikzpicture}')
 
         body = text[idx:end]
+        # Line-mapping for gantt is best-effort/non-critical (design ADR-5):
+        # no diag_<name>.tex file, no revisor-figuras loop consumes it, but
+        # computing it is cheap and harmless since idx is already the real
+        # extraction start.
+        d0 = text[:idx].count("\n") + 1
         # Use article class with explicit paper size to avoid standalone bbox detection issues
         wrapper = WORK / f"wrap_{name}.tex"
-        wrapper.write_text(
+        wrapper_text = (
             "\\documentclass[11pt]{article}\n"
             "\\usepackage[paperwidth=17cm,paperheight=24cm,margin=0.5cm]{geometry}\n"
             "\\usepackage[utf8]{inputenc}\n"
@@ -137,7 +201,12 @@ def build(name, kind):
             "\\begin{document}\n"
             "\\centering\n"
             + body + "\n"
-            + "\\end{document}\n", encoding='utf-8')
+            + "\\end{document}\n"
+        )
+        preamble_offset = wrapper_text[
+            :wrapper_text.index("\\begin{document}\n") + len("\\begin{document}\n")
+        ].count("\n")
+        wrapper.write_text(wrapper_text, encoding='utf-8')
     else:
         raise SystemExit(f"unknown kind: {kind}")
 
@@ -152,6 +221,12 @@ def build(name, kind):
     if r.returncode != 0:
         print(f"COMPILE FAILED for {name}, see {log}")
         sys.exit(1)
+    # Overfull-hbox parse runs ONLY on this success branch — the hard-failure
+    # sys.exit(1) above is completely untouched by everything below.
+    log_text = (r.stdout + r.stderr).decode('utf-8', errors='replace')
+    overfull_count, overfull_pt, overfull_diag_line = _scan_overfull(
+        log_text, preamble_offset, d0
+    )
     pdf = WORK / f"wrap_{name}.pdf"
     if not pdf.exists():
         print(f"PDF not produced for {name}")
@@ -166,6 +241,28 @@ def build(name, kind):
     # SVG export (vector, for easier visualization/zoom) from the same PDF —
     # no second LaTeX compile needed. Single-page standalone diagrams only.
     subprocess.run(["pdftocairo", "-svg", str(pdf), str(WORK / f"fig_{name}.svg")], check=True)
+    # Structured Overfull signal (always printed, N may be 0 — the explicit
+    # 0 is the release signal downstream tooling greps for).
+    if overfull_count > 0:
+        if overfull_diag_line is not None:
+            print(
+                f"OVERFULL: {name} {overfull_count} occurrence(s) "
+                f"(first: {overfull_pt}pt too wide at {src.name}:{overfull_diag_line})"
+            )
+        else:
+            print(
+                f"OVERFULL: {name} {overfull_count} occurrence(s) "
+                f"(first: {overfull_pt}pt too wide, line unavailable)"
+            )
+    else:
+        print(f"OVERFULL: {name} {overfull_count} occurrence(s)")
+    # Cleanup intermediates on success: keep ONLY the 2 consumed outputs,
+    # fig_<name>-1.png and fig_<name>.svg. Glob-based and tolerant of files
+    # that don't exist (.fls/.fdb_latexmk aren't produced under this plain
+    # -pdflatex invocation). Never touches fig_* (distinct prefix).
+    for stale in WORK.glob(f"wrap_{name}.*"):
+        stale.unlink(missing_ok=True)
+    log.unlink(missing_ok=True)
     print(f"OK: {name}")
 
 if __name__ == "__main__":
