@@ -200,6 +200,12 @@ flowchart TD
   no tiene tope de rondas y el dispatcher nunca aprueba en silencio.
 - Fase 0.5, 1a y 1b son condicionales: 0.5 solo corre si hay TDR; 1b solo si
   1a cerró aprobada.
+- El nodo `Archive[Archivado y reinicio]` de la Fase 0 también es invocable
+  standalone vía `/propuesta-limpiar`, sin necesidad de arrancar `/propuesta`
+  primero — mismo procedimiento, mismo bloque ARCHIVADO-Y-REINICIO. En
+  ambos casos el archivado es **solo local** (`proposals/<run-id>/` está
+  gitignored): GitHub nunca recibe el contenido de una propuesta, activa o
+  archivada — solo el esqueleto del framework.
 - El gate G0.5 no presenta un resumen en prosa de `guia_ajustada_TDR.md`: el
   dispatcher copia la "Tabla de secciones definitivas" (§, Sección,
   Alcance/ajuste frente al TDR, Prioridad, Owner) completa y la renderiza

@@ -70,23 +70,45 @@ agota — nunca reintentan sin límite.
 ├── .claude/                         # Runtime canónico — única fuente editada a mano
 │   ├── agents/                      # 10 archivos: 9 subagentes + coordinador-propuesta
 │   └── commands/
-│       └── propuesta.md             # Comando /propuesta
+│       ├── propuesta.md             # Comando /propuesta
+│       └── propuesta-limpiar.md     # Comando /propuesta-limpiar (archiva + resetea, standalone)
 ├── .opencode/                       # Runtime secundario — GENERADO desde .claude/, no se edita a mano
 │   ├── agents/                      # 9 subagentes portados (1:1 con .claude/agents/, sin coordinador)
-│   └── commands/propuesta.md        # Comando /propuesta portado
+│   └── commands/                    # propuesta.md + propuesta-limpiar.md portados
 ├── vault/                           # Mirror Obsidian navegable (Markdown) — capa visual, no versión de verdad
 │   ├── secciones/                   # Espejo de proposal/sections/*.tex por sección
 │   └── insumos/                     # Espejo de proposal/insumos.md
-├── proposals/                       # Registro + corridas archivadas de /propuesta
-│   └── registry.md                  # Tabla append-only (run-id, estado, archivo, commit)
+├── proposals/                       # Índice + corridas archivadas de /propuesta (local, no en GitHub)
+│   └── registry.md                  # Único archivo versionado: tabla append-only de metadatos
+│                                     #   (run-id, estado, ruta local) — proposals/<run-id>/ en sí
+│                                     #   está en .gitignore
 └── proposal/                        # Framework de salida LaTeX (versión de referencia)
     ├── build.sh                     # Compilación PDF/DOCX
     ├── scripts/                     # compile_tikz.py, prep_docx.py — específico del build LaTeX/DOCX
     ├── logos/                       # Logos institucionales embebidos en el PDF (header/footer)
     ├── templates/reference.docx     # Plantilla pandoc (export DOCX)
-    │   # Generados por cada corrida de /propuesta (no committeados):
+    │   # Generados por cada corrida de /propuesta (gitignored, ver "Qué se versiona" abajo):
     └── ...                         #   main.tex, refs.bib, sections/, estado_propuesta.md
 ```
+
+### Qué se versiona en GitHub (y qué no)
+
+El repo remoto solo contiene lo necesario para **correr el pipeline en
+local**: agentes (`.claude/agents/`, `.opencode/agents/`), comandos
+(`.claude/commands/`, `.opencode/commands/`), tooling (`scripts/`,
+`proposal/scripts/`, `proposal/build.sh`), plantillas/logos
+(`proposal/templates/`, `proposal/logos/`), la guía
+(`guiaProyectosIA_Agente.md`) y `proposals/registry.md` (solo metadatos:
+run-id, fechas, idea breve, ruta local — nunca contenido de la propuesta).
+
+**Nunca** se sincroniza el contenido de una propuesta, ni de la corrida
+activa ni de las archivadas: `proposal/sections/`, `proposal/refs.bib`,
+`proposal/main.tex/.pdf/.docx`, `vault/secciones/`, `vault/insumos/`,
+`info_data/` y `proposals/<run-id>/` completo están en `.gitignore`. El
+comando `/propuesta-limpiar` (§Uso) archiva la corrida activa a
+`proposals/<run-id>/` — **solo en disco local** — y resetea `proposal/` y
+`vault/` a scaffolding limpio, sin residuos de build ni cachés, listos para
+la próxima corrida.
 
 `scripts/` (raíz) y `proposal/scripts/` son intencionalmente distintos: el
 primero es tooling del repo (portabilidad de agentes Claude Code → OpenCode,
@@ -102,6 +124,14 @@ fase, deteniéndose en cada gate para aprobación del usuario. El mismo
 comando también está disponible en OpenCode (`.opencode/commands/propuesta.md`,
 generado desde las fuentes de Claude Code) — requiere sesión interactiva:
 las compuertas de aprobación no funcionan en `opencode run` headless.
+
+`/propuesta-limpiar` archiva la corrida activa (si existe) a
+`proposals/<run-id>/` en disco local y deja `proposal/` y `vault/` en
+scaffolding limpio para una corrida nueva, sin tener que arrancar
+`/propuesta` primero. Ejecuta el mismo procedimiento de archivado que
+`/propuesta` dispara automáticamente al detectar una corrida sin terminar
+(Fase 0, bloque ARCHIVADO-Y-REINICIO), pero de forma standalone y con
+confirmación explícita del usuario antes de vaciar el árbol activo.
 
 ## Flujo del pipeline
 

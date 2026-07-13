@@ -57,3 +57,12 @@ vault/secciones/*
 # corrida, no del framework base
 info_data/*
 !info_data/.gitkeep
+
+# --- Corridas archivadas de /propuesta ------------------------------------
+# proposals/<run-id>/ contiene el volcado completo (proposal/ + vault/) de
+# una corrida ya cerrada. Es contenido de propuesta, igual que lo de arriba:
+# nunca se sincroniza con GitHub, solo vive en el disco local de quien corrió
+# el pipeline. Se conserva `proposals/registry.md` (índice de metadatos:
+# run-id, fechas, idea breve, ruta local — sin contenido de la propuesta en
+# sí), que sí se versiona.
+proposals/*/

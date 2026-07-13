@@ -20,7 +20,7 @@
       "revisor.md",
       "tikz-optimizer.md"
     ],
-    "command_files": ["propuesta.md"]
+    "command_files": ["propuesta.md", "propuesta-limpiar.md"]
   },
   "frontmatter": {
     "agent_key_order": ["description", "mode", "model", "permission"],

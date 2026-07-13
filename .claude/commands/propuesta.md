@@ -295,25 +295,47 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
              corrida activa a `proposals/<run-id-previo>/proposal/` y
              `proposals/<run-id-previo>/vault/` (misma superficie que la
              eliminación única de la corrida actual, ver Fase de limpieza
-             única en el diseño).
+             única en el diseño). Esta copia es **solo local**:
+             `proposals/*/` está en `.gitignore` — el contenido de una
+             propuesta (activa o archivada) nunca se sincroniza con GitHub;
+             el repo remoto solo contiene lo necesario para correr el
+             pipeline (agentes, comandos, scripts, plantillas), nunca el
+             producto de una corrida.
           3. Escribe `proposals/<run-id-previo>/run.md` (manifiesto: run-id,
              idea, fechas, estado final de cada compuerta, conteo de
-             referencias, commit); marca la fila del registro como
-             `archivada`, fija `cerrada` y `archivo`.
-          4. Commit `chore(proposals): archive run <run-id-previo>`;
-             force-add los tres `graph.json`/`GRAPH_REPORT.md`/`graph.html`
-             (viven bajo `graphify-out/`, gitignored) para que la corrida
-             archivada quede autocontenida en el historial.
-          5. Reinicia el árbol activo a scaffolding: vacía
-             `proposal/sections/`, `proposal/scoping/papers/`,
-             `proposal/pipeline/`; reescribe vacíos
-             `proposal/estado_propuesta.md`, `proposal/refs.bib`,
-             `proposal/insumos.md`; vacía `vault/secciones/` y
-             `vault/insumos/` (conserva `.gitkeep`); borra los dos árboles
-             scratch `graphify-out/` (scoping, vault) — `proposal/pipeline/`
-             ya no produce grafo, solo se vacía como parte del scaffolding
-             de arriba. CONSERVA
-             `proposal/build.sh`, `proposal/scripts/`, `proposal/logos/`.
+             referencias); marca la fila del registro como `archivada`, fija
+             `cerrada` y `archivo` (ruta local, no URL de GitHub).
+          4. Commit **solo** de `proposals/registry.md` (nunca del contenido
+             archivado, que está gitignored):
+             `chore(proposals): record archive of run <run-id-previo>`. No
+             hay `git add -f`/force-add de nada bajo `proposals/<run-id-previo>/`
+             — si algún archivo ahí quedara trackeado por error, es un bug a
+             corregir en `.gitignore`, no un caso para forzar el add.
+          5. Reinicia el árbol activo a scaffolding, dejando `proposal/` y
+             `vault/` exactamente como en un clon nuevo del repo más las
+             carpetas vacías de trabajo. Regla general: borra todo lo que no
+             esté en la lista CONSERVA de abajo y no sea uno de los 3
+             archivos que se reescriben vacíos — build auxiliar, residuos de
+             compilación y cachés de la corrida cerrada nunca deben
+             sobrevivir al reinicio, aunque ya estén gitignored (esto es
+             limpieza de disco, no de git). En esta corrida eso incluye
+             concretamente:
+             - Vacía: `proposal/sections/`, `proposal/scoping/papers/`,
+               `proposal/pipeline/`, `vault/secciones/`, `vault/insumos/`
+               (conserva `.gitkeep` en estas dos últimas).
+             - Reescribe vacíos (0 bytes): `proposal/estado_propuesta.md`,
+               `proposal/refs.bib`, `proposal/insumos.md`.
+             - Borra por completo: `proposal/guia_ajustada_TDR.md`;
+               `proposal/main.tex`, `proposal/main.pdf`, `proposal/main.docx`
+               y todo build auxiliar de LaTeX (`main.aux/.bbl/.blg/
+               .fdb_latexmk/.fls/.log/.out/.synctex.gz`); `proposal/
+               pixelshot-out/`; `proposal/scoping/graphify-out/` y cualquier
+               snapshot (`proposal/scoping/graphify-out-*-snapshot/`);
+               `vault/graphify-out/`; `proposal/scripts/__pycache__/`.
+             - CONSERVA siempre: `proposal/build.sh`, `proposal/scripts/*.py`,
+               `proposal/logos/`, `proposal/templates/`. Nunca toques
+               `vault/.obsidian/` (estado local del editor Obsidian, no es
+               contenido de la corrida).
           6. Continúa con el nuevo run-id (paso "RESOLUCIÓN DE RUN-ID"
              arriba).
         ──→ SIN CORRIDA PREVIA: si no existe una corrida anterior, omite

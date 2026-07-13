@@ -56,8 +56,12 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
    `proposal/sections/`; referencias en `proposal/refs.bib`; ensamblaje en
    `proposal/main.tex`. El template `main.tex` incluye un footer con los logos
    institucionales (`proposal/logos/`: LabIA, UNAL, GCPDS) vía `fancyhdr`; los
-   agentes no deben eliminarlo. `proposal/` (con su historial de git sobre los
-   `.tex`/`.bib`) es la **fuente de verdad versionada**.
+   agentes no deben eliminarlo. `proposal/` es la **fuente de verdad** dentro
+   de una corrida, pero **no está versionada**: `.tex`/`.bib`/`.pdf`/`.docx`
+   y el resto del contenido de la corrida están en `.gitignore` (igual que
+   las corridas archivadas bajo `proposals/<run-id>/`) — GitHub solo aloja el
+   esqueleto del framework (agentes, comandos, scripts, plantillas), nunca
+   el contenido de una propuesta específica.
 8. **Espejo `vault/`:** `vault/secciones/` y `vault/insumos/` son un espejo
    Markdown compatible con Obsidian, generado a partir de `proposal/` para
    navegación y coherencia (graphify) — **no** se versiona por separado ni se
