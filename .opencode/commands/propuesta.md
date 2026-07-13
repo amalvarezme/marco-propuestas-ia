@@ -90,7 +90,10 @@ del Skill:
 3. Avanza fase por fase según el pipeline de `coordinador-propuesta.md`
    (resumido abajo). Tras cada gate, presenta al usuario: (a) resumen de lo
    producido, (b) veredicto del `revisor` (o `revisor-figuras` en los bucles
-   de figura de las Fases 1, 2 y 5.5), (c) petición de aprobación explícita.
+   de figura de las Fases 1, 2 y 5.5), (c) petición de aprobación explícita,
+   (d) Costo/tiempo: `<tokens_total>` tokens, `<tool_uses>` tool-calls,
+   `<duration_ms>` — o `no medible directamente` (ver "Telemetría de uso por
+   fase" abajo para el detalle de cómo se calculan estos valores).
    **NO avances sin aprobación.**
 4. Recuerda: toda la salida del documento es en español; los archivos van en
    `proposal/sections/*.tex` y `proposal/refs.bib`; ensambla `proposal/main.tex`
@@ -161,6 +164,9 @@ agentes: [<subagente(s)>]
 gate: <Gx | none>
 veredicto: <PASS | FAIL | pending | n/a>
 fecha: <YYYY-MM-DD>
+tokens_total: <N | no medible directamente>
+tool_uses: <N | no medible directamente>
+duration_ms: <N | no medible directamente>
 ---
 # Fase <id> — <nombre>
 ## Entradas
@@ -171,6 +177,18 @@ fecha: <YYYY-MM-DD>
 - <fase previa de la que depende>
 ```
 
+`proposal/pipeline/_estado.md` mantiene el mismo set de columnas en cada
+actualización — encabezado exacto:
+
+```
+| Fase | Gate | Veredicto | Fecha | Tokens | Tool-uses | Duración |
+```
+
+Cada fila corresponde a un evento de fase; los valores de las 3 columnas
+nuevas (`Tokens`, `Tool-uses`, `Duración`) son los mismos totales
+acumulados por fase descritos más abajo en "Telemetría de uso por fase" —
+nunca se recalculan aparte.
+
 Cuándo actualiza: en CADA transición de compuerta (los mismos puntos donde
 el dispatcher voltea `gate_status`, ver "Reglas de gate (obligatorias)"
 abajo) — ver el bloque `[NUEVO] DISPATCHER: pipeline-graph` dentro de cada
@@ -179,6 +197,42 @@ archivo de evento `.md` y `proposal/pipeline/_estado.md` — no se ejecuta
 `graphify` sobre `proposal/pipeline/` (build/update/export eliminados por
 no aportar valor consumido; overhead de token descartado). Nunca lo hace
 `revisor` (solo Read/Grep/Glob) — siempre lo hace el dispatcher.
+
+## Telemetría de uso por fase
+
+Tras cada llamado delegado (Task/Agent) que retorna dentro de una fase, lee
+el bloque `<usage>` al final de su resultado (`subagent_tokens: N`,
+`tool_uses: N`, `duration_ms: N`) y súmalo al acumulador de esta fase. El
+acumulador arranca en 0 al iniciar la fase y acumula TODOS los despachos de
+la fase, incluidos los re-despachos por FAIL y los bucles de figura, hasta
+el cierre de compuerta.
+
+Suma `subagent_tokens`, `tool_uses` y `duration_ms` de todos los despachos
+de la fase; `duration_ms` es tiempo de cómputo agregado, no reloj de pared
+(no se mide solapamiento entre despachos).
+
+Si la fase no despachó ningún llamado delegado (trabajo puramente inline del
+dispatcher, sin ningún despacho — a la fecha ninguna fase del pipeline cae
+en este caso, pero la regla debe cubrir cualquier fase futura que sí lo
+haga), registra los tres campos (`tokens_total`, `tool_uses`, `duration_ms`) con el
+literal `no medible directamente` — nunca un número estimado o inferido. El
+trabajo inline vía Skill/Bash (graphify, build de PDF, pixelshot, cálculo de
+run-id, escrituras de pipeline-graph) no está delegado y no aporta a este
+acumulador; su costo simplemente no se cuenta, nunca se estima.
+
+Si un llamado delegado retorna sin bloque `<usage>`, su aporte es
+desconocido y nunca se fabrica. Si TODOS los llamados delegados de la fase
+carecen de `<usage>`, el registro de la fase es el sentinel
+`no medible directamente` en los tres campos. Si SOLO ALGUNOS carecen de él,
+suma los que sí lo traen y agrega el sufijo `(parcial: K/M sin usage)`
+(K = llamados con `<usage>`, M = llamados totales de la fase), para que el
+número nunca se presente como completo sin serlo.
+
+Estos totales por fase (numéricos, sentinel, o con sufijo parcial) son los
+que se escriben en el frontmatter del evento (`tokens_total`, `tool_uses`,
+`duration_ms`), en las 3 columnas nuevas de `_estado.md`, y en el punto (d)
+del cierre de compuerta — ver las referencias en cada bloque
+`[NUEVO] DISPATCHER: pipeline-graph` de cada fase abajo.
 
 ## Formato exacto — inyección de guide_fingerprint hacia insumos-observador
 
@@ -564,7 +618,16 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         subproblemas tempranos con su gap/`paper-N`, y Estado G1a).
         ──→ [NUEVO] DISPATCHER: pipeline-graph (primera inicialización):
         escribe `proposal/pipeline/00-fase0.md` + `10-fase1a.md` (evento de
-        esta compuerta) y `proposal/pipeline/_estado.md`.
+        esta compuerta) y `proposal/pipeline/_estado.md`. Fase 0 no tiene
+        compuerta propia, así que su fila/evento se escribe recién acá, en
+        la primera transición de compuerta de la corrida (G1a): cada archivo
+        de evento lleva los campos de uso acumulados de SU PROPIA fase
+        (`00-fase0.md` con el acumulador de la Fase 0 — el único despacho
+        delegado de esa fase es `Task → insumos-observador`, más
+        re-despachos si el GATE DE AMBIGÜEDAD repite el paso — y
+        `10-fase1a.md` con el acumulador, independiente, de la Fase 1a),
+        nunca un valor combinado; ídem las dos filas correspondientes en
+        `_estado.md` (ver "Telemetría de uso por fase").
 Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         siempre que la Fase 1a cerró con G1a = APROBADA (ver
         `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano");
@@ -655,7 +718,8 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         `proposal/scoping/graphify-out/`.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/11-fase1b.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`.
+        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        de uso acumulados de la fase (ver "Telemetría de uso por fase").
         ──→ [NUEVO] Grafo de ideas del vault — build completo (primera vez):
         inmediatamente después de lo anterior, en esta misma transición de
         aprobación final de G1b (NO en cada iteración del bucle de G1b), el
@@ -731,7 +795,8 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/20-fase1.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`.
+        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo).
         Además del texto de §4 (3-5 subsecciones), esta Task produce, como
         bloque comentado al final de `04_estado_arte.tex`, el contenido del
@@ -772,7 +837,8 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo).
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/30-fase2.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`.
+        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 3  Task → redactor → §2 justificación y pertinencia. Antes de despachar
         esta Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
         Directrices Generales + §2 (Justificación y pertinencia) +
@@ -793,7 +859,8 @@ Fase 3  Task → redactor → §2 justificación y pertinencia. Antes de despach
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/40-fase3.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`.
+        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específicos.
         Antes de despachar esta Task, el dispatcher arma el bloque `##
         FRAGMENTO DE GUÍA` con Directrices Generales + §6 (Objetivo
@@ -823,7 +890,8 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/50-fase4.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`.
+        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 5  Task → investigador → §8 marco conceptual (en paralelo; 3-5
         subsecciones, título claro por concepto — ver `investigador.md`
         constraint 10). Antes de
@@ -860,7 +928,8 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo; 3-5
         (obligatorias)") antes de presentar el veredicto al usuario.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/60-fase5.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`.
+        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 5.5 [NUEVO] Task → redactor → §10 metodología (compuerta propia,
         separada de la Fase 5). Antes de despachar esta Task, el dispatcher
         arma el bloque `## FRAGMENTO DE GUÍA` con Directrices Generales +
@@ -898,7 +967,8 @@ Fase 5.5 [NUEVO] Task → redactor → §10 metodología (compuerta propia,
         veredicto al usuario.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/65-fase5_5.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`.
+        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 6  Task → redactor → §11 resultados esperados (sin gate propio; §11 y
         §12 se auditan juntas en la Fase 7 junto con el resto del
         documento, igual que antes). Antes de despachar esta
@@ -974,7 +1044,8 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/65-fase6_4.md` (evento de esta compuerta, misma
         plantilla mínima descrita arriba en "Grafo de pipeline") y actualiza
-        `proposal/pipeline/_estado.md`.
+        `proposal/pipeline/_estado.md`, incluye además los campos de uso
+        acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt) (sin gate
         propio; §14, §15 y §16 se auditan juntas en la Fase 7, mismo patrón
         que la Fase 6). Antes de despachar esta Task, el dispatcher arma el
@@ -1015,7 +1086,9 @@ Fase 6.5 Task → redactor → secciones preliminares (front-matter), como
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.45 + Fase 6.5,
-        evento de esta compuerta) y actualiza `proposal/pipeline/_estado.md`.
+        evento de esta compuerta) y actualiza `proposal/pipeline/_estado.md`,
+        incluye además los campos de uso acumulados de la fase (ver
+        "Telemetría de uso por fase").
 Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre el vault
         completo (todas las secciones ya escritas) → `graphify export html`
         → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
@@ -1029,7 +1102,15 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
         aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/80-fase7.md` (evento de la auditoría final) y
-        actualiza `proposal/pipeline/_estado.md`.
+        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        de uso acumulados de la fase (ver "Telemetría de uso por fase").
+        ──→ [NUEVO] DISPATCHER: resumen de costo/tiempo de la corrida
+        completa — lee directamente las filas ya acumuladas de
+        `proposal/pipeline/_estado.md` (sin recomputar nada) y presenta una
+        tabla `Fase | Tokens | Tool-uses | Duración`, una fila por cada fase
+        de `_estado.md` (ninguna fase omitida), más una fila `TOTAL` que
+        suma solo las filas numéricas (las filas con el sentinel
+        `no medible directamente` quedan excluidas de la suma).
         Tú (el asistente primario) ensamblas `proposal/main.tex` una vez aprobado.
         Los 3 archivos `00_*.tex` (Resumen → Resumen ejecutivo → Palabras
         clave, en ese orden) DEBEN incluirse antes del contenido de §2,
