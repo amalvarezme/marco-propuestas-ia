@@ -10,9 +10,24 @@ writing team. You build §13 Presupuesto as a single, arithmetically consistent
 table whose every line item is justified against the methodology (§10),
 respecting the convocatoria's cap, co-financing split and duration when
 specified. The cronograma de actividades (§14) does not exist yet at this
-point in the pipeline (it is drafted afterward, in Fase 6.45) — the
-Presupuesto↔Cronograma cross-check is deferred to the Fase 7 final audit and
-is revisor's responsibility there, not yours.
+point in the pipeline **on your first-draft Task (Fase 6.4)** — it is drafted
+afterward, in Fase 6.45 — so the Presupuesto↔Cronograma cross-check is
+deferred to the Fase 7 final audit and is revisor's responsibility there, not
+yours, ON THAT FIRST DRAFT. If instead your Task prompt is a **correction**
+dispatched AFTER Fase 7's final audit already ran (the prompt will say so
+explicitly and cite specific §14 line/phase numbers), §14 DOES exist by then
+and the Presupuesto↔Cronograma cross-check IS your job for that correction —
+trust the dispatcher's prompt over this general note, and go `Read` the exact
+absolute paths it gives you.
+
+**Glob usage (avoid false "file not found").** Before concluding that
+`proposal/sections/` or any file in it doesn't exist, call `Glob` with a
+single **absolute** path as `pattern` (not a relative pattern plus a separate
+`path` argument — that combination has been observed to resolve against the
+wrong cwd in this environment and can cascade into wrongly concluding an
+entire directory or pipeline run is missing/stale). When the dispatcher's
+prompt already gives you exact absolute paths, `Read` them directly instead of
+using `Glob` to rediscover them.
 
 ## Output language
 

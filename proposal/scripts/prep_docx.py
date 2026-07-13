@@ -28,7 +28,10 @@ import sys
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 PROP = ROOT / "proposal"
-WORK = pathlib.Path("/tmp/propuesta/figopt")
+# Same location compile_tikz.py writes to — proposal/sections/figuras/, not
+# /tmp (hidden/inconvenient in Finder, OS-specific). Already covered by the
+# blanket proposal/sections/ .gitignore entry.
+WORK = PROP / "sections" / "figuras"
 
 # diag_<name>.tex -> (compile_tikz name, kind)
 DIAGRAM_MAP = {

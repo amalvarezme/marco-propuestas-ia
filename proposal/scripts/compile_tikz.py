@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Build standalone wrapper for a diagram source, compile, and render PNG.
+"""Build standalone wrapper for a diagram source, compile, and render PNG + SVG.
 
 Usage:
-    python3 compile_tikz.py arbol_problemas:tikz metodologico:tikz gantt:gantt
+    python3 compile_tikz.py arbol_problemas:tikz estado_arte:tikz metodologico:tikz gantt:gantt
 
 For kind "tikz", looks for diag_<name>.tex under proposal/sections/. For kind
 "gantt", the source is instead the Redactor's real §14 output,
@@ -10,18 +10,36 @@ For kind "tikz", looks for diag_<name>.tex under proposal/sections/. For kind
 diag_gantt.tex (single-owner fix: Disenador-TikZ does not produce a separate
 Gantt file; Redactor owns §14 inline, as either a `tabular`+`tikz` table or a
 `ganttchart` spec). Both relative to the repo root (this script lives at
-proposal/scripts/compile_tikz.py, so the repo root is two parents up).  All
-intermediate files (.tex wrappers, .pdf, .png, .log) go under
-/tmp/propuesta/figopt/.
+proposal/scripts/compile_tikz.py, so the repo root is two parents up). All
+intermediate files (.tex wrappers, .pdf, .png, .svg, .log) go under
+`proposal/sections/figuras/` (see WORK below and "Output location" note).
 
-Requires: pdflatex, pdftoppm in PATH.
+Every diagram is rendered to BOTH `fig_<name>-1.png` (raster, for the
+compiled PDF/DOCX) and `fig_<name>.svg` (vector, for easier visualization —
+zoom without loss, Obsidian/browser preview). The SVG comes from the same
+intermediate PDF as the PNG via `pdftocairo -svg`, no second LaTeX compile.
+This applies to all four diagrams (árbol de problemas, mapa de estado del
+arte, diagrama metodológico, Gantt de §14) and is runtime-agnostic (Claude
+Code/OpenCode both call this same script).
+
+Requires: pdflatex, pdftoppm, pdftocairo in PATH (all three ship with a
+standard poppler install alongside pdftoppm, already a prerequisite).
+
+Output location: `proposal/sections/figuras/`, alongside the `.tex` section
+sources (NOT `/tmp` — a hidden/inconvenient path in Finder and most file
+managers, and one that differs across machines). This directory is
+per-run scratch just like the rest of `proposal/sections/`: already covered
+by the blanket `proposal/sections/` entry in `.gitignore`, wiped on
+ARCHIVADO-Y-REINICIO between corridas, and identical on Claude Code and
+OpenCode since both resolve it as a path relative to the repo root, not an
+OS-specific temp directory.
 """
 import sys, subprocess, re, pathlib
 
 # Repo root = parent of parent of this script's directory.
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
-WORK = pathlib.Path("/tmp/propuesta/figopt")
+WORK = ROOT / "proposal" / "sections" / "figuras"
 WORK.mkdir(parents=True, exist_ok=True)
 
 def build(name, kind):
@@ -55,6 +73,12 @@ def build(name, kind):
             "\\definecolor{azulUNAL}{HTML}{0066B3}\n"
             "\\definecolor{grisLabIA}{HTML}{666666}\n"
             "\\definecolor{verdeGCPDS}{HTML}{2E8B57}\n"
+            "\\definecolor{rojoLimitante}{HTML}{C0392B}\n"
+            # No mid-word hyphenation in diagram node text (guiaProyectosIA_Agente.md,
+            # "Convenciones técnicas de LaTeX" > hyphenation rule): a broken word inside
+            # a fixed-width TikZ node reads as a layout defect, not normal prose wrapping.
+            "\\hyphenpenalty=10000\n"
+            "\\exhyphenpenalty=10000\n"
             "\\begin{document}\n"
             + body + "\n"
             + "\\end{document}\n", encoding='utf-8')
@@ -104,7 +128,12 @@ def build(name, kind):
             "\\definecolor{azulUNAL}{HTML}{0066B3}\n"
             "\\definecolor{grisLabIA}{HTML}{666666}\n"
             "\\definecolor{verdeGCPDS}{HTML}{2E8B57}\n"
+            "\\definecolor{rojoLimitante}{HTML}{C0392B}\n"
             "\\pagestyle{empty}\n"
+            # No mid-word hyphenation in Gantt labels either — same rationale as the
+            # tikz wrapper above.
+            "\\hyphenpenalty=10000\n"
+            "\\exhyphenpenalty=10000\n"
             "\\begin{document}\n"
             "\\centering\n"
             + body + "\n"
@@ -127,10 +156,16 @@ def build(name, kind):
     if not pdf.exists():
         print(f"PDF not produced for {name}")
         sys.exit(1)
-    # clean up old PNGs
+    # clean up old PNGs and SVG
     for old in WORK.glob(f"fig_{name}-*.png"):
         old.unlink()
+    svg_old = WORK / f"fig_{name}.svg"
+    if svg_old.exists():
+        svg_old.unlink()
     subprocess.run(["pdftoppm", "-png", "-r", "200", str(pdf), str(WORK / f"fig_{name}")], check=True)
+    # SVG export (vector, for easier visualization/zoom) from the same PDF —
+    # no second LaTeX compile needed. Single-page standalone diagrams only.
+    subprocess.run(["pdftocairo", "-svg", str(pdf), str(WORK / f"fig_{name}.svg")], check=True)
     print(f"OK: {name}")
 
 if __name__ == "__main__":

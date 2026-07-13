@@ -89,8 +89,9 @@ del Skill:
    `graphify` completamente distintas, sobre entradas y salidas distintas).
 3. Avanza fase por fase según el pipeline de `coordinador-propuesta.md`
    (resumido abajo). Tras cada gate, presenta al usuario: (a) resumen de lo
-   producido, (b) veredicto del `revisor` (o `revisor-figuras` en la Fase 5),
-   (c) petición de aprobación explícita. **NO avances sin aprobación.**
+   producido, (b) veredicto del `revisor` (o `revisor-figuras` en los bucles
+   de figura de las Fases 1, 2 y 5.5), (c) petición de aprobación explícita.
+   **NO avances sin aprobación.**
 4. Recuerda: toda la salida del documento es en español; los archivos van en
    `proposal/sections/*.tex` y `proposal/refs.bib`; ensambla `proposal/main.tex`
    al final (Fase 7). También existen `vault/secciones/*.md` y
@@ -731,15 +732,30 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/20-fase1.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo)
-        Antes de despachar esta Task, el dispatcher arma el bloque `##
-        FRAGMENTO DE GUÍA` con Directrices Generales + §4 (Estado del arte)
-        + Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
-        prompt.
+Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo).
+        Además del texto de §4 (3-5 subsecciones), esta Task produce, como
+        bloque comentado al final de `04_estado_arte.tex`, el contenido del
+        diagrama de estado del arte (clusters, papers, relaciones, frase
+        roja por cluster) — ver `bibliografo-propuesta.md` constraint 11.
+        Antes de despachar esta Task, el dispatcher arma el
+        bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §4 (Estado
+        del arte) + Convenciones técnicas de LaTeX y lo inyecta inline al
+        inicio del prompt.
         Task → investigador → §5 hipótesis. Antes de despachar esta Task, el
         dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
         Generales + §5 (Hipótesis) + Convenciones técnicas de LaTeX y lo
         inyecta inline al inicio del prompt.
+        ──→ luego bucle de figura (mapa de estado del arte), solo después de
+        que la Task de §4 complete (necesita el bloque comentado con el
+        contenido del diagrama):
+          Task → disenador-tikz (autor diag_estado_arte.tex a partir del
+          bloque comentado en 04_estado_arte.tex)
+          → Task → tikz-optimizer (compila a PNG, primer ajuste;
+          `python3 proposal/scripts/compile_tikz.py estado_arte:tikz`)
+          → Task → revisor-figuras (audita, PASS/FAIL, incluye criterio 8
+          "Frase de limitante")
+          → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
+          → en PASS, continúa
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/04_estado_arte.md` o `vault/secciones/05_hipotesis.md`
         cambiaron en esta fase; si no cambiaron, reutiliza el
@@ -808,7 +824,9 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/50-fase4.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
-Fase 5  Task → investigador → §8 marco conceptual (en paralelo). Antes de
+Fase 5  Task → investigador → §8 marco conceptual (en paralelo; 3-5
+        subsecciones, título claro por concepto — ver `investigador.md`
+        constraint 10). Antes de
         despachar esta Task, el dispatcher arma el bloque `## FRAGMENTO DE
         GUÍA` con Directrices Generales + §8 (Marco conceptual) +
         Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
@@ -818,39 +836,68 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo). Antes de
         el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
         Generales + §9 (Equipo de trabajo) + Convenciones técnicas de LaTeX
         y lo inyecta inline al inicio del prompt.
-        Task → redactor → §10 metodología. Antes de despachar esta Task, el
-        dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
-        Generales + §10 (Metodología) + Convenciones técnicas de LaTeX y lo
-        inyecta inline al inicio del prompt. Luego bucle de figuras:
-          Task → disenador-tikz (autor diag_metodologico.tex)
-          → Task → tikz-optimizer (compila a PNG, primer ajuste)
-          → Task → revisor-figuras (audita, PASS/FAIL)
-          → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
-          → en PASS, continúa
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
-        `vault/secciones/08_marco_conceptual.md`,
-        `vault/secciones/09_equipo_trabajo.md` o
-        `vault/secciones/10_metodologia.md` cambiaron en esta fase; si no
+        `vault/secciones/08_marco_conceptual.md` o
+        `vault/secciones/09_equipo_trabajo.md` cambiaron en esta fase; si no
         cambiaron, reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar
         `graphify`. Si cambiaron: `cd vault/ && graphify --update .` (sin
         export HTML — ver "Vault graph HTML export limited to G1b and Fase
         7") → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
-        revisor de este gate (nota: este paso es distinto del bucle de
-        figuras arriba, que usa `revisor-figuras`, no `revisor`, y no recibe
-        evidencia de grafo); si hay hallazgo, agrégalo a `## Hallazgos de
+        revisor de este gate; si hay hallazgo, agrégalo a `## Hallazgos de
         coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
         despachar la Task de este gate, el dispatcher arma además el bloque
         `## FRAGMENTO DE GUÍA` con Directrices Generales + §3 (Descripción
         del problema) + §7 (Objetivos específicos) + §8 (Marco conceptual) +
-        §9 (Equipo de trabajo) + §10 (Metodología) — §3 y §7 son necesarias
-        acá porque el gate audita §8↔§3 (marco conceptual↔limitaciones del
-        problema) y §9/§10↔§7 (equipo de trabajo y metodología derivan de
-        los objetivos específicos), no solo las tres secciones producidas
-        en esta misma fase — y lo inyecta inline al inicio del prompt.
+        §9 (Equipo de trabajo) — §3 y §7 son necesarias acá porque el gate
+        audita §8↔§3 (marco conceptual↔limitaciones del problema) y
+        §9↔§7 (equipo de trabajo deriva de los objetivos específicos), no
+        solo las dos secciones producidas en esta misma fase — y lo inyecta
+        inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER PDF-en-compuerta: ensambla/compila
+        `proposal/main.tex` → `proposal/main.pdf` (ver "Reglas de gate
+        (obligatorias)") antes de presentar el veredicto al usuario.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/60-fase5.md` (evento de esta compuerta) y
+        actualiza `proposal/pipeline/_estado.md`.
+Fase 5.5 [NUEVO] Task → redactor → §10 metodología (compuerta propia,
+        separada de la Fase 5). Antes de despachar esta Task, el dispatcher
+        arma el bloque `## FRAGMENTO DE GUÍA` con Directrices Generales +
+        §10 (Metodología) + Convenciones técnicas de LaTeX y lo inyecta
+        inline al inicio del prompt. Luego bucle de figuras:
+          Task → disenador-tikz (autor diag_metodologico.tex — nunca incluir
+          personal responsable dentro de los bloques del diagrama, ver
+          `disenador-tikz.md` diagrama 3)
+          → Task → tikz-optimizer (compila a PNG, primer ajuste)
+          → Task → revisor-figuras (audita, PASS/FAIL, incluye chequeo de
+          ausencia de "Resp.:" en los bloques)
+          → en FAIL, vuelve a Task → tikz-optimizer con los hallazgos
+          → en PASS, continúa
+        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        `vault/secciones/10_metodologia.md` cambió en esta fase; si no
+        cambió, reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar
+        `graphify`. Si cambió: `cd vault/ && graphify --update .` (sin
+        export HTML — ver "Vault graph HTML export limited to G1b and Fase
+        7") → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
+        inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
+        revisor de este gate (nota: distinto del bucle de figuras arriba,
+        que usa `revisor-figuras`, no `revisor`, y no recibe evidencia de
+        grafo); si hay hallazgo, agrégalo a `## Hallazgos de coherencia
+        (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
+        Task de este gate, el dispatcher arma además el bloque `##
+        FRAGMENTO DE GUÍA` con Directrices Generales + §7 (Objetivos
+        específicos) + §8 (Marco conceptual) + §9 (Equipo de trabajo) + §10
+        (Metodología) — §7/§8/§9 son necesarias acá porque el gate audita
+        §10↔§7 (metodología deriva de los objetivos específicos) y
+        §10↔§8/§9 (sustento conceptual y responsables coherentes) — y lo
+        inyecta inline al inicio del prompt.
+        ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
+        ──→ [NUEVO] DISPATCHER PDF-en-compuerta: ensambla/compila
+        `proposal/main.tex` → `proposal/main.pdf` antes de presentar el
+        veredicto al usuario.
+        ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
+        `proposal/pipeline/65-fase5_5.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`.
 Fase 6  Task → redactor → §11 resultados esperados (sin gate propio; §11 y
         §12 se auditan juntas en la Fase 7 junto con el resto del
@@ -989,7 +1036,7 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
         maquetados con `\section*{}`. Orden del cuerpo (`\input{sections/...}`,
         16 secciones en este orden exacto): `02_justificacion`,
         `03_descripcion_problema` (con `diag_arbol_problemas`),
-        `04_estado_arte`, `05_hipotesis`, `06_objetivo_general`,
+        `04_estado_arte` (con `diag_estado_arte`), `05_hipotesis`, `06_objetivo_general`,
         `07_objetivos_especificos`, `08_marco_conceptual`,
         `09_equipo_trabajo`, `10_metodologia` (con `diag_metodologico`),
         `11_resultados_esperados`, `12_consideraciones_eticas`,
@@ -1084,6 +1131,24 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
   `proposal/estado_propuesta.md`. En FAIL, deja `gate_status` en `pending` (o
   cámbialo a `fail` si el re-despacho vuelve a fallar) hasta que el
   re-despacho apruebe.
+- **PDF en cada compuerta de aprobación de usuario; DOCX solo al final
+  (regla permanente).** En TODA compuerta que requiera aprobación explícita
+  del usuario (cualquier "GATE Task → revisor... → usuario" o compuerta
+  interactiva equivalente como G-Presupuesto, en cualquier fase del
+  pipeline, no solo Fase 7), el dispatcher ensambla y compila un PDF ANTES
+  de presentar el veredicto, para que la aprobación se dé sobre un documento
+  real, no solo sobre fragmentos `.tex` o un resumen de texto. Mecánica:
+  genera/actualiza `proposal/main.tex` incluyendo `\input{}` únicamente de
+  las secciones que YA existen en disco en `proposal/sections/` en ese punto
+  de la corrida (mismo orden documentado en la Fase 7, "Orden del cuerpo" —
+  nunca stubs ni placeholders de secciones no escritas todavía), luego
+  ejecuta `./build.sh` (nunca `./build.sh --docx` en estas compuertas
+  intermedias) para producir `proposal/main.pdf`. Comparte con el usuario la
+  ruta del PDF junto con el veredicto del revisor (usa `pixelshot` si quieres
+  dar un resumen visual además de la ruta). El `.docx` NUNCA se genera en
+  estas compuertas intermedias — se produce UNA sola vez, en la Fase 7
+  final, tras la aprobación del documento completo (`./build.sh --docx`, ver
+  Fase 7).
 
 Comienza ahora confirmando la idea del usuario y listando los insumos
 detectados, luego arranca la Fase 0 despachando `insumos-observador` con

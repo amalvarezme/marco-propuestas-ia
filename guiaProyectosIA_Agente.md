@@ -18,6 +18,8 @@
 
 **Secciones preliminares (front-matter, sin numerar).** Las tres secciones siguientes (Resumen, Resumen ejecutivo, Palabras clave) son preliminares: se redactan como SÍNTESIS del documento completo en una fase tardía del pipeline (Fase 6.5, ver `.claude/commands/propuesta.md`) y en el documento final se renderizan ANTES de la sección 2, inmediatamente después del Título. NO llevan número (no alteran la numeración §2–§16); en el ensamble LaTeX se maquetan con `\section*{}` (sin numerar).
 
+**Invariante de precedencia (aplica también a `proposal/guia_ajustada_TDR.md`).** El Título es SIEMPRE la primera sección del documento — antes que el front-matter y antes que cualquier sección numerada — sin importar el orden en que un TDR o un `doc-secciones` externo enumere sus secciones obligatorias. Cualquier guía ajustada al TDR que la Fase 0.5 genere DEBE preservar este orden (Título → Resumen → Resumen ejecutivo → Palabras clave → §2...), tanto en su tabla de secciones definitivas como en el cuerpo del documento.
+
 ### Resumen
 **Instrucción para el agente:** Redacta un resumen de máximo 400 palabras, en un solo bloque de texto (sin subdivisión en párrafos nombrados), que cubra en este orden: (1) el problema o contexto que motiva el proyecto; (2) el objetivo general; (3) una síntesis del enfoque metodológico; (4) el resultado o impacto esperado, incluyendo el TRL objetivo (6 o 7).
 
@@ -44,7 +46,26 @@
 5. **Alineación con los TDR y el espíritu de la convocatoria:** explicar cómo la propuesta responde directamente al propósito declarado de la convocatoria y a sus términos de referencia (si se adjuntan), sin repetir literalmente el texto del TDR.
 6. **Crecimiento y potencial de la IA en la temática de interés:** describir la evolución reciente de la IA (predictiva, generativa, agéntica, etc.) aplicable al sector, su nivel de adopción actual y su potencial de impacto, argumentando por qué este momentum tecnológico hace viable y oportuna la propuesta.
 
-**Soporte bibliográfico obligatorio.** La sección debe citar **al menos 10 referencias de artículos en revistas Q1 o Q2** que validen las afirmaciones presentadas (motivación, alineación ODS/PND/plan departamental, hallazgos de OCDE/Banco Mundial u otro organismo multilateral, y evidencia del crecimiento y potencial de la IA en la temática). Estas 10 referencias son adicionales a las exigidas en Estado del arte (§4); pueden coincidir con ellas cuando una fuente sea pertinente en ambas secciones, siempre respetando el tope de reutilización por clave definido en Bibliografía (§16).
+**Soporte bibliográfico obligatorio.** La sección debe citar **al menos 13 referencias de artículos en revistas Q1 o Q2** (piso elevado un 30% sobre el mínimo original de 10, regla permanente — ver "Presupuesto de reúso" en §16 para el porqué: nutrir con margen suficiente las secciones posteriores) que validen las afirmaciones presentadas (motivación, alineación ODS/PND/plan departamental, hallazgos de OCDE/Banco Mundial u otro organismo multilateral, y evidencia del crecimiento y potencial de la IA en la temática). Estas 13 referencias son adicionales a las exigidas en Estado del arte (§4); pueden coincidir con ellas cuando una fuente sea pertinente en ambas secciones, siempre respetando el tope de reutilización por clave definido en Bibliografía (§16).
+
+**Regla de densidad de citas (obligatoria, misma exigencia que §3/§4).** Cada uno de
+los 6 párrafos obligatorios, sin excepción, debe citar **al menos 3-4 referencias
+Q1/Q2 distintas** (`\citet{}`/`\citep{}`) que respalden explícitamente sus
+afirmaciones (motivación con evidencia del sector, ODS con la meta oficial y su
+sustento, PND/plan departamental con el eje citado, hallazgos de OCDE/Banco
+Mundial con la fuente primaria, alineación TDR con evidencia de pertinencia,
+crecimiento de la IA con literatura reciente). Ninguna idea, cifra o afirmación se
+plantea sin sustento bibliográfico directo en el mismo párrafo. Esta densidad, no
+el piso de ≥10 de arriba, es la referencia práctica: 6 párrafos × 3-4 citas
+distintas supera ampliamente las 10 mínimas. Compatible con el tope de reúso de
+§16 (máx. 3 usos por clave en todo el documento, cada uso en sección distinta):
+dentro de §2, las claves citadas deben ser distintas entre sí (nunca la misma
+clave dos veces dentro de esta sección). A diferencia de §3/§4, §2 SÍ puede
+referirse a "la propuesta", al TDR/la convocatoria y al TRL del producto esperado
+en sus puntos 5 y de cierre — esa autorreferencia es parte del propósito mismo de
+Justificación (persuadir sobre la pertinencia del proyecto), no una violación de
+la regla de autocontención científica que aplica solo a §3/§4 (secciones
+estrictamente técnicas, sin voz de "propuesta").
 
 Adicionalmente, tras cubrir los seis puntos anteriores, cierra la sección con:
 * **Justificación técnica del uso de IA:** por qué el enfoque de IA elegido (predictiva, generativa, agéntica, etc.) es superior a métodos tradicionales para este problema específico.
@@ -57,25 +78,113 @@ Cualquier cifra socioeconómica, tecnológica o ambiental que soporte la relevan
 **Instrucción para el agente:** Esta sección presenta y delimita el problema técnico que la propuesta resuelve. Se estructura en el siguiente orden de párrafos:
 
 * **Párrafo 1:** Presentar un contexto general de la problemática. Introduce el problema desde el sector de aplicación, contextualizando las principales limitaciones o desafíos operativos, económicos o sociales.
-* **Párrafo 2:** Dar contexto a los desafíos técnicos desde la perspectiva de la inteligencia artificial, el aprendizaje automático o el procesamiento de señales. El párrafo debe terminar listando (en ítems) dos o tres subproblemas técnicos a resolver. Estos deben vincularse lógicamente con los objetivos de la propuesta (§6, §7) y responder al propósito de la convocatoria.
+* **Párrafo 2:** Dar contexto a los desafíos técnicos desde la perspectiva de la inteligencia artificial, el aprendizaje automático o el procesamiento de señales. El párrafo debe terminar listando (en ítems) dos o tres subproblemas técnicos a resolver. Estos deben diseñarse de forma que, más adelante, cada uno mapee 1:1 con un objetivo específico (§7); esa alineación es un requisito de diseño del agente, no algo que se mencione textualmente en el párrafo (ver "Regla de autocontención científica" abajo).
+  **Formato de cada ítem SP1/SP2/SP3 (regla permanente).** Cada ítem identifica el subproblema con su rótulo plano (`SP1.`, `SP2.`, `SP3.`) — sin negrita adicional sobre una palabra que resuma el subproblema (nunca `\textbf{SP1 --- Motivación.}`; el rótulo del subproblema no es un título temático). El cuerpo del ítem es una frase corta que señala la limitante o necesidad técnica — nunca la solución: prohibido abrir con un verbo de diseño/construcción de la propia solución ("Diseñar el ecosistema para...", "Dotar al ecosistema de...", "Convertir X en Y..."). En su lugar, usa una construcción de carencia/necesidad ("Falta de un ecosistema multiagente que...", "Limitada capacidad de...", "Se requiere superar...", "Ausencia de...", "Opacidad que impide..."), seguida de la limitación técnica concreta. El SUBPROBLEMA describe qué falta o qué limita al estudiante/sistema actual; la solución (el ecosistema de agentes como medio) se presenta en §6/§7, nunca aquí.
 * **Párrafo 3:** Describir las causas, limitaciones tecnológicas y conceptos principales asociados al **subproblema 1**.
 * **Párrafo 4:** Describir las causas, limitaciones tecnológicas y conceptos principales asociados al **subproblema 2**.
 * **Párrafo 5:** Describir las causas, limitaciones tecnológicas y conceptos principales asociados al **subproblema 3** (si aplica).
-* **Párrafo 6 (cierre del planteamiento):** Presentar una conclusión general que resalte la necesidad imperante de resolver dichos problemas y cómo la propuesta integral busca darles respuesta. Este párrafo **debe concluir formulando explícitamente la pregunta de investigación**. Finalmente, se debe proponer el contenido para una figura explicativa (tipo árbol de problemas) que resuma visualmente este planteamiento.
+* **Párrafo 6 (cierre del planteamiento):** Presentar una conclusión general, sustentada en evidencia, que resalte la necesidad imperante de resolver dichos problemas. Este párrafo **debe concluir formulando explícitamente la pregunta de investigación**. Finalmente, se debe proponer el contenido para una figura explicativa (tipo árbol de problemas) que resuma visualmente este planteamiento.
 
 Esta sección **no incluye** revisión de literatura ni hipótesis: el sustento bibliográfico de los subproblemas se desarrolla en Estado del arte (§4), y la hipótesis se formula en su propia sección (§5).
 
 **Estructura de redacción recomendada:** párrafos 1-2 (contexto general y desafíos técnicos, cerrando con la lista de subproblemas) → párrafos 3-5 (detalle de cada subproblema) → párrafo 6 (cierre, pregunta de investigación y figura de árbol de problemas).
 
+**Regla de autocontención científica (obligatoria, §3 y §4).** Estas dos secciones son estrictamente científico-técnicas: describen el problema (§3) o la literatura y el estado de la técnica (§4), **nunca la estructura ni el contenido de este documento de propuesta**. Prohibido: (a) referenciar textualmente otras secciones de la propuesta (p. ej. "(§7)", "ver Metodología", "se retoma en §10"); (b) mencionar los objetivos específicos, el equipo, el presupuesto, el cronograma o cualquier otro artefacto estructural de la propuesta; (c) usar fórmulas autorreferenciales como "esta propuesta", "el proyecto propone", "la propuesta integral" para hablar del documento mismo. Sí se permite, y se espera, como parte normal de un estado del arte, argumentar la novedad **técnica** del enfoque frente a las brechas identificadas (punto 4 de §4 abajo): la restricción es sobre la auto-referencia al documento y su estructura, no sobre describir el enfoque técnico en sí. La alineación §3↔§7 (subproblemas↔objetivos específicos) la verifica `revisor` comparando ambos archivos; nunca se menciona esa alineación dentro del texto de §3 ni de §4.
+
+**Regla de densidad de citas (obligatoria, §3 y §4).** Cada párrafo, sin excepción (incluidos los párrafos 1, 2 y 6 de §3), debe citar **al menos 3-4 referencias Q1/Q2 distintas** (`\citet{}`/`\citep{}`) que respalden explícitamente sus afirmaciones. Ninguna idea, causa, brecha o dato puede plantearse sin sustento bibliográfico directo en el mismo párrafo. Esta densidad es compatible con el tope de reúso de §16 (máx. 3 usos por clave en todo el documento, cada uso en una sección distinta): dentro de un mismo párrafo, y dentro de una misma sección, las claves citadas deben ser distintas entre sí.
+
 ### 4. Estado del arte
 
 **Instrucción para el agente:** Esta sección, independiente de la Descripción del problema (§3), presenta la revisión de literatura que sustenta empíricamente los subproblemas allí planteados. El agente debe:
-1.  **Investigar y agrupar el estado del arte global:** realizar una búsqueda exhaustiva de literatura académica, agrupando las estrategias o metodologías identificadas por filosofías de abordaje o por tipo de limitante, relacionándolas explícitamente con cada subproblema (1, 2 y, si aplica, 3) de §3. **Nota indispensable:** incluir al menos 30 referencias de artículos en revistas Q1 o Q2 publicadas en los últimos tres años.
-2.  **Estado actual de la tecnología (punto de partida del equipo):** presentar el nivel tecnológico desde el cual parten los investigadores de la propuesta, con referencias, evidencias o pruebas empíricas que demuestren si se parte de cero o si ya existe un avance previo, detallando cómo se pretende potenciar dicha base aprovechando la presente convocatoria.
-3.  **Identificar brechas tecnológicas:** comparar las soluciones y grupos existentes en el estado del arte global con la propuesta del proyecto, evidenciando críticamente qué aspectos no han sido resueltos.
-4.  **Posicionar la propuesta (la novedad):** argumentar explícita y contundentemente la novedad científica o tecnológica de la propuesta frente a las brechas identificadas.
+1.  **Investigar y agrupar el estado del arte global:** realizar una búsqueda exhaustiva de literatura académica, agrupando las estrategias o metodologías identificadas por filosofías de abordaje o por tipo de limitante, relacionándolas explícitamente con cada subproblema (1, 2 y, si aplica, 3) de §3. **Nota indispensable:** incluir al menos 39 referencias de artículos en revistas Q1 o Q2 publicadas en los últimos tres años (piso elevado un 30% sobre el mínimo original de 30, regla permanente, para nutrir con margen suficiente las secciones que citan literatura más adelante en el pipeline — §2, y las subsecciones de §4 mismas).
+2.  **Estado actual de la tecnología (punto de partida del equipo):** presentar el nivel tecnológico desde el cual parten los investigadores, con referencias, evidencias o pruebas empíricas que demuestren si se parte de cero o si ya existe un avance previo.
+3.  **Identificar brechas tecnológicas:** comparar las soluciones y grupos existentes en el estado del arte global entre sí, evidenciando críticamente qué aspectos no han sido resueltos.
+4.  **Posicionar la novedad técnica:** argumentar explícita y contundentemente la novedad científica o tecnológica del enfoque frente a las brechas identificadas, sin describir cómo esta propuesta en particular la implementa (eso corresponde a Metodología, §10).
 
-Cierra la sección con un **párrafo de síntesis** que resuma las estrategias más relevantes identificadas en la literatura, preparando el terreno para la hipótesis (§5).
+**Estructura en subsecciones (regla permanente).** §4 se organiza en **3 a 5
+subsecciones** (`\subsection*{}`, sin numerar, mismo patrón que los
+sub-bloques de otras secciones — ver "Anidamiento de encabezados" en
+Convenciones técnicas de LaTeX), cada una agrupando un grupo temático
+coherente de la literatura revisada. Cada subsección debe poder
+identificar, dentro de su propio grupo, los **3 a 5 trabajos más relevantes**
+que la sustentan — esta selección es la base del diagrama de estado del arte
+descrito abajo. Los párrafos de síntesis, comparación de brechas y
+posicionamiento de novedad (puntos 2-4 arriba) van DESPUÉS de las
+subsecciones, sin numerar como sub-bloque propio (mismo patrón de cierre que
+§3: sub-bloques primero, síntesis narrativa al final).
+
+**Títulos de subsección — filosofía del método, nunca el subproblema
+(regla permanente).** El título de cada subsección NUNCA menciona "SP1",
+"SP2", "SP3" ni la palabra "subproblema" — eso nombra el PROBLEMA (que ya
+se planteó en §3), y §4 es autocontenida frente a §3 (misma regla de
+autocontención científica de arriba). En su lugar, el título describe,
+conciso, la **filosofía o familia metodológica** de los trabajos agrupados
+en esa subsección: qué tipo de enfoque técnico estudian esos papers (p. ej.
+"Tutoría personalizada y motivación autodeterminada" en vez de "Motivación
+del estudiante (SP1)"; "Andamiaje adaptativo de la resolución de problemas"
+en vez de "Resolución de problemas (SP2)"). El lector debe poder inferir de
+qué habla la literatura de esa subsección sin necesitar cruzarla contra los
+subproblemas de §3.
+
+**Extensión y densidad de citas por subsección (regla permanente).** Cada
+subsección tiene **2 a 4 párrafos** y acumula, en conjunto, **al menos 6 a
+10 referencias Q1/Q2 distintas** relevantes a su tema (la cifra exacta
+depende de cuánta literatura sustente ese grupo — 6 es el piso, no un
+objetivo a recortar si el tema amerita más). Esto es un requisito agregado
+a nivel de subsección, adicional a la regla de densidad de citas por
+párrafo (≥3-4 por párrafo) ya vigente para §3/§4 — ambas reglas conviven:
+cumplir la densidad por párrafo en 2-4 párrafos ya tiende a satisfacer el
+piso de 6-10 por subsección, pero verifícalo explícitamente antes de dar
+por cerrada cada subsección.
+
+**Diagrama de estado del arte (regla permanente, 4º diagrama del pipeline).**
+§4 lleva una visualización obligatoria — `proposal/sections/diag_estado_arte.tex`
+— que sintetiza, por cada subsección (3-5 clusters), sus 3-5 trabajos más
+relevantes, las relaciones entre ellos, y la limitante general de ese grupo
+de literatura escrita como una **frase corta y contundente en color rojo**
+(nuevo color canónico `rojoLimitante`, definido junto a `azulUNAL`/
+`grisLabIA`/`verdeGCPDS` — ver "Colores institucionales" abajo) dentro del
+propio bloque del cluster. La selección de trabajos y relaciones de cada
+cluster NO se inventa: se fundamenta en el grafo ya construido sobre el
+corpus de papers (`proposal/scoping/graphify-out/graph.json` +
+`GRAPH_REPORT.md` — God Nodes, Communities, Hyperedges), priorizando los
+papers con más conexiones (God Nodes) y las comunidades temáticas que el
+grafo ya identificó, en vez de una selección arbitraria. El
+Bibliografo-Propuesta especifica el contenido del diagrama (clusters, papers,
+relaciones, frase roja por cluster) como bloque comentado al final de
+`04_estado_arte.tex`, mismo patrón que usa Investigador para el árbol de
+problemas en `03_descripcion_problema.tex`; el Diseñador-TikZ lo traduce a
+TikZ. Aplican las mismas reglas de conexión, orientación de flechas e
+hyphenation ya establecidas para los otros dos diagramas (ver más abajo en
+esta sección).
+
+**Frase-concepto en azul por nodo de paper (regla permanente).** Cada nodo
+de paper del diagrama lleva, además de "Autor et al., Año", una segunda
+línea DEBAJO en color `azulUNAL` (ya canónico, no crear uno nuevo): una
+frase codificada corta (**3 a 5 palabras**, no una oración completa) que
+resuma el concepto o hallazgo principal de ese trabajo (p. ej. "andamiaje
+graduado sin automatizar", "motivación mediada por autodeterminación").
+Bibliografo-Propuesta especifica esta frase para cada paper en el mismo
+bloque comentado del contenido del diagrama (junto al cite_key y la
+relación); Diseñador-TikZ la renderiza como segunda línea del nodo, en
+`azulUNAL`, visualmente diferenciada del autor-año (p. ej. tamaño menor o
+cursiva) y de la frase de limitante del cluster (que es roja, no azul, y
+está a nivel de cluster completo, no por paper).
+
+**Tamaño de letra de los nodos del diagrama (regla permanente).** El texto
+dentro de los bloques del mapa de estado del arte (autor-año, frase-concepto
+en azul, frase de limitante en rojo) usa un tamaño de fuente EXPLÍCITO vía
+`\fontsize{Npt}{Mpt}\selectfont` (nunca un tamaño relativo como `\tiny` sin
+más — su valor en puntos varía según si el archivo se compila standalone o
+inline en `main.tex`, ver "Sin hyphenation..." abajo para el mismo problema
+de doble contexto de compilación) — el tamaño debe ser el DOBLE en puntos
+del que tendría el equivalente `\tiny` en ese contexto (p. ej. si el primer
+borrador usó `\tiny` ≈ 5-6pt, el tamaño final explícito debe rondar
+10-12pt). Tras duplicar el tamaño, verifica y corrige cualquier sobreflujo
+resultante ensanchando el `text width` del nodo (misma regla ya vigente,
+nunca reduzcas el tamaño de vuelta para "resolver" el desbordamiento).
+
+Cierra la sección con un **párrafo de síntesis** que resuma las estrategias más relevantes identificadas en la literatura, preparando el terreno para la hipótesis (§5). Este párrafo de cierre DEBE citar el mapa de estado del arte con `\Cref{fig:estado_arte}` (regla permanente) — mismo patrón ya usado por §3 con `\ref{fig:arbol_problemas}` en su propio párrafo de cierre: referenciar la figura de la MISMA sección no viola la autocontención científica (esa regla prohíbe referenciar OTRAS secciones, no la propia figura de §4). Aplican aquí, con el mismo rigor, la **Regla de autocontención científica** y la **Regla de densidad de citas** definidas al final de §3 arriba.
 
 ### 5. Hipótesis
 
@@ -106,7 +215,18 @@ El objetivo general debe derivarse directamente y ser la respuesta exacta a la p
 2.  **Fundamentar Teóricamente:** Establecer las bases teóricas de la línea de investigación seleccionada. Esto implica argumentar cómo la propuesta se sitúa dentro de los enfoques más relevantes y actualizados de la teoría o tecnología en cuestión (por ejemplo, Deep Learning, Machine Learning, Visión por Computador, Procesamiento de Lenguaje Natural, etc.).
 3.  **Conectar con el Problema:** Justificar cómo estas bases teóricas seleccionadas abordan directamente las limitaciones tecnológicas identificadas en §3 (Descripción del problema).
 
-Esta sección es deliberadamente breve (1-3 párrafos): describe los conceptos y su fundamento, sin repetir el detalle de cada enfoque algorítmico por subproblema, que corresponde a la Metodología (§10).
+Esta sección describe los conceptos y su fundamento, sin repetir el detalle de cada enfoque algorítmico por subproblema, que corresponde a la Metodología (§10).
+
+**Estructura en subsecciones (regla permanente).** §8 se organiza en **3 a 5
+subsecciones** (`\subsection*{}`, sin numerar, mismo patrón que §4), cada
+una con un **título claro y conciso que nombre el concepto que define**
+(p. ej. "Memoria persistente en agentes de IA", "Planificación multi-paso",
+no un título genérico como "Conceptos fundamentales"). Cada subsección
+desarrolla un concepto o familia de conceptos estrechamente relacionados
+(1-2 párrafos por subsección es razonable dado que §8 sigue siendo
+deliberadamente concisa en conjunto frente a §4/§10) y lo conecta con la
+limitación tecnológica de §3 que fundamenta (punto 3 arriba) sin repetir el
+detalle algorítmico de §10.
 
 ### 9. Equipo de trabajo
 
@@ -131,6 +251,7 @@ Cualquier dato de equipo que no provenga de un insumo directo del usuario (p. ej
     *   Destacar las novedades metodológicas o algorítmicas más importantes de la investigación en IA.
     *   Reflejar claramente el impacto y los posibles usuarios o beneficiarios finales del producto o servicio de IA a desarrollar.
     *   Resaltar visualmente el nivel de madurez tecnológica (TRL) desde el que se parte (basado en la experiencia del grupo) hasta el TRL meta al que se quiere llegar (TRL 6 o 7).
+    *   **Nunca incluir el personal responsable de cada fase dentro de los bloques del diagrama** (regla permanente) — el "personal responsable" ya se detalla en la prosa de §10 (punto 2 arriba) y en el Equipo de trabajo (§9); repetirlo como etiqueta ("Resp.: ...") dentro de cada bloque del diagrama es redundante y satura visualmente las cajas. El diagrama se centra en fases, novedades, TRL y beneficiarios — nunca en nombres o roles de personas.
 
 ### 11. Resultados esperados
 
@@ -177,6 +298,7 @@ Todo contenido de esta sección que no provenga de un insumo directo del usuario
 1.  **Alineación Temporal:** El cronograma debe estar rigurosamente detallado y ajustado al tiempo total de ejecución establecido en los términos de referencia de la convocatoria (por ejemplo, 6 meses, 12 meses, 3 años).
 2.  **Actividades y Responsables:** Las actividades incluidas en la tabla deben corresponder exactamente con las fases y acciones de la Metodología (§10). Además, para cada actividad o etapa, se debe designar claramente el **personal o rol responsable** (coherente con el Equipo de trabajo, §9).
 3.  **Hitos y Productos:** El cronograma debe describir y evidenciar con claridad cómo y en qué momento exacto del tiempo se obtendrán y entregarán los resultados (§11) y productos (§15) prometidos.
+4.  **Nunca incluir etapas de prórroga (regla permanente).** El cronograma se ajusta SIEMPRE al tiempo de ejecución definido en el TDR o, si el TDR no aplica, en la guía/insumos del usuario — nunca a un periodo de prórroga o extensión, aunque el TDR contemple esa prórroga como mecanismo opcional disponible tras solicitud. Todas las fases, hitos y la entrega de productos/informe final deben caber dentro de la ventana de ejecución base. Si el tiempo de ejecución NO está claramente definido en el TDR ni en la guía aplicable (`guia_ajustada_TDR.md`/`guiaProyectosIA_Agente.md`) ni en los insumos del usuario, el agente (`redactor`) NO debe asumir una duración por su cuenta: debe reportarlo al dispatcher para que este pregunte explícitamente al usuario antes de construir el cronograma.
 
 ### 15. Productos esperados
 
@@ -188,6 +310,21 @@ Todo contenido de esta sección que no provenga de un insumo directo del usuario
 1.  **Formato:** Utilizar **APA, autor-año** (no numeración estilo IEEE `[1]`). En LaTeX esto implica `natbib` con `\citet{clave}` (autor como sujeto gramatical: "Pérez (2025) encontró que...") o `\citep{clave}` (cita parentética: "...se ha reportado (Pérez, 2025)") — nunca `\cite{}` genérico ni reemplazo mecánico ciego entre `\citet`/`\citep`, la elección depende del rol gramatical de la cita en la oración. `\bibliographystyle{apalike}` (o equivalente `natbib`/`plainnat` en autor-año) en el ensamble final.
 2.  **Tope de citas por referenciación:** máximo **3 claves** por cada llamada de cita (`\citet{}`/`\citep{}`). Si un punto del texto tiene soporte de más de 3 referencias relevantes, citar solo las **más relevantes y más recientes**, no acumularlas todas en un solo cluster (evitar patrones como `\cite{a, b, c, d, e}`, que consumen espacio sin aportar lectura útil). Una misma llamada `\citet{}`/`\citep{}` puede estar partida en varias líneas físicas del fuente `.tex`; el tope de 3 claves se mide sobre la llamada LÓGICA (uniendo las líneas partidas y contando las claves entre `{` y `}`), no por línea física.
 3.  **Tope de reutilización por clave:** una misma referencia **no puede citarse más de 3 veces** en todo el documento. Si se reutiliza (2ª o 3ª vez), cada reutilización debe estar en una **sección distinta** del documento — nunca repetida dos veces dentro de la misma sección. El conteo de reutilización también se mide sobre llamadas lógicas: una llamada partida en varias líneas cuenta una sola vez.
+
+    **Presupuesto de reúso, verificación obligatoria antes de citar (para cualquier
+    agente que redacte una sección con citas, §2 en adelante).** Las secciones de
+    mayor densidad de citas (§2, §3, §4, con el piso de 3-4 citas distintas por
+    párrafo) consumen rápidamente el presupuesto de 3 usos de la mayoría de las
+    claves del corpus, dejando poco margen fresco para las secciones posteriores
+    (§8-§16). Antes de citar CUALQUIER clave en una sección que no sea la primera
+    vez que se escribe esa clave en el documento, verifica con un `grep`/`rg` de la
+    clave contra TODOS los `.tex` ya escritos en `proposal/sections/` (no solo los 1
+    o 2 archivos que el dispatcher mencionó como contexto) cuántas secciones
+    DISTINTAS ya la citan. Si ya son 3, esa clave está agotada: no la cites de
+    nuevo, y si no hay ninguna clave fresca genuina que respalde la afirmación,
+    prefiere dejar la oración sin cita explícita (aceptable fuera de §2/§3/§4, que
+    sí tienen piso obligatorio) antes que introducir un 4º uso o fabricar una cita
+    forzada.
 4.  **Calidad y Actualidad:** Se debe favorecer e incluir mayoritariamente artículos publicados en revistas indexadas en **cuartiles Q1 y Q2 de los últimos tres años**.
 5.  **Volumen:** Para demostrar rigor en proyectos de investigación aplicada, se recomienda integrar un soporte bibliográfico sólido con **más de 50 citas**.
 6.  **Fuentes Permitidas:**
@@ -205,7 +342,9 @@ Estas convenciones son la única fuente de verdad para el ensamble LaTeX; aplíc
 
 | Secciones | Convención |
 |---|---|
-| Todas las secciones (§1–§9, §11–§16) | `\section` autocontenido, sin subsecciones. |
+| Todas las secciones (§1–§3, §5–§7, §9, §11–§16) | `\section` autocontenido, sin subsecciones. |
+| §4 Estado del arte | `\section` con 3-5 encabezados internos de agrupación temática, SIN numerar (`\subsection*`), seguidos por los párrafos de síntesis/brechas/novedad sin encabezado propio (ver detalle en §4 arriba). |
+| §8 Marco conceptual | `\section` con 3-5 encabezados internos, uno por concepto definido, SIN numerar (`\subsection*`) (ver detalle en §8 arriba). |
 | §10 Metodología | `\section` autocontenido con encabezados internos de fase OPCIONALES y SIN numerar (`\subsection*`), no `\subsection` numerado. |
 
 **Paquetes del preámbulo**
@@ -220,13 +359,128 @@ Estas convenciones son la única fuente de verdad para el ensamble LaTeX; aplíc
 
 **Colores institucionales**
 
-Definidos una única vez aquí (fuente de verdad); estos tres colores están actualmente duplicados en `main.tex`, `compile_tikz.py` y comentarios de `diag_*.tex` — los agentes de diagramación deben referenciar estos nombres canónicos, no redefinir los valores.
+Definidos una única vez aquí (fuente de verdad); estos cuatro colores están actualmente duplicados en `main.tex`, `compile_tikz.py` y comentarios de `diag_*.tex` — los agentes de diagramación deben referenciar estos nombres canónicos, no redefinir los valores.
 
 ```latex
 \definecolor{azulUNAL}{HTML}{0066B3}
 \definecolor{grisLabIA}{HTML}{666666}
 \definecolor{verdeGCPDS}{HTML}{2E8B57}
+\definecolor{rojoLimitante}{HTML}{C0392B}
 ```
+
+`rojoLimitante` es EXCLUSIVO de la frase de limitante dentro del diagrama de
+estado del arte (§4) — no se usa para ningún otro elemento (ni siquiera
+alertas o advertencias en otras figuras), para que el rojo mantenga su
+significado semántico único: "esto es lo que la literatura no resuelve".
+
+**Exportación de diagramas a SVG (obligatoria).** Los cuatro diagramas del
+pipeline (árbol de problemas §3, mapa de estado del arte §4, diagrama
+metodológico §10, Gantt del cronograma §14) se compilan SIEMPRE a PNG **y
+también a SVG**, para facilitar
+su visualización (zoom sin pérdida, edición vectorial, previsualización en
+Obsidian/navegador). El SVG se genera con `pdftocairo -svg` sobre el mismo PDF
+intermedio que ya produce el PNG (no requiere una segunda compilación de
+LaTeX). Mecánica y agentes responsables: ver `.claude/agents/tikz-optimizer.md`
+(árbol de problemas, diagrama metodológico) y `.claude/agents/redactor.md`
+(Gantt de §14) — ambos runtimes, Claude Code y OpenCode, comparten el mismo
+script `proposal/scripts/compile_tikz.py`, así que este requisito aplica sin
+distinción de runtime.
+
+**Árbol de problemas — la copa NUNCA se conecta visualmente con las raíces,
+pero SÍ con las ramas (regla permanente).** La copa (nodo solución/medio
+integrador) no lleva ninguna flecha, curva ni línea (punteada o continua)
+que la conecte directamente con las raíces (causas/subproblemas) — un cruce
+de líneas desde la copa (arriba) hasta las raíces (abajo), atravesando el
+tronco y las ramas, satura visualmente el árbol y contradice su lectura
+jerárquica de abajo hacia arriba. La intervención del medio integrador sobre
+las causas raíz se explica en el pie de figura (`\caption{}`) y en el cuerpo
+de §3, nunca como conector adicional. En cambio, el árbol SÍ debe mostrar el
+flujo vertical completo hasta su culminación: cada bloque de las ramas
+(efectos) se conecta con el bloque copa (solución) — el único flujo visual
+de conectores es raíces → tronco → ramas → copa, de abajo hacia arriba sin
+saltos. Agentes responsables: `.claude/agents/disenador-tikz.md` (nunca
+proponer copa↔raíces; sí conectar ramas→copa) y
+`.claude/agents/revisor-figuras.md` (FAIL si falta la conexión ramas→copa o
+si aparece cualquier conector copa↔raíces).
+
+**Toda flecha/conector entre bloques DEBE tocar visualmente ambos bloques,
+origen y destino, y NUNCA debe superponerse horizontalmente con un bloque
+ajeno (regla permanente, aplica a los cuatro diagramas).** Dos requisitos
+complementarios:
+1. *Tocar ambos bloques:* nunca calcules manualmente un punto intermedio con
+   la sintaxis `(nodoA.borde -| nodoB.borde) -- (nodoB.borde)`: ese punto
+   solo cae sobre el borde real de `nodoA` si la coordenada del otro eje de
+   `nodoB` queda dentro del ancho/alto de `nodoA` — si `nodoB` está
+   desplazado lateralmente más allá del ancho de `nodoA` (p. ej. una rama
+   externa del árbol de problemas frente a un tronco más angosto), la flecha
+   nace flotando en el vacío, sin tocar `nodoA`, y ningún compilador lo
+   detecta (sigue siendo TikZ válido). Usa siempre los anclajes reales de
+   cada nodo (`nodoA.norte`, `nodoB.sur`, etc.), nunca un punto calculado que
+   pueda caer fuera de ambos.
+2. *Orientación según el flujo, sin cruzar bloques ajenos:* para diagramas
+   de flujo VERTICAL (como el árbol de problemas: raíces→tronco→ramas→copa)
+   prevalecen las flechas **verticales o diagonales**; para diagramas de
+   flujo HORIZONTAL prevalecen las flechas **horizontales o diagonales**.
+   Evita en particular los operadores de escuadra `-|`/`|-` cuando varios
+   nodos destino comparten la misma coordenada en el eje del tramo
+   horizontal/vertical compartido (p. ej. varias ramas a la misma altura): el
+   tramo recto que viaja de un extremo a otro para alcanzar el nodo más
+   lejano queda exactamente al nivel del borde de los nodos intermedios y se
+   percibe como si la flecha atravesara o se superpusiera con esos bloques
+   ajenos — aunque técnicamente toque los dos nodos que conecta, visualmente
+   ensucia el diagrama. Prefiere entonces una línea diagonal directa entre
+   los anclajes reales de origen y destino (`\draw (nodoA.norte) --
+   (nodoB.sur);`), que nunca se superpone con un bloque intermedio salvo que
+   pase exactamente por su interior (verificable visualmente tras
+   recompilar). Reserva `-|`/`|-` solo para el caso alineado (mismo eje X o Y
+   entre origen y destino), donde no hay ambigüedad de superposición.
+   Agentes responsables: `.claude/agents/disenador-tikz.md` y
+   `.claude/agents/tikz-optimizer.md` (elegir el operador/anclaje correcto
+   según flujo y alineación) y `.claude/agents/revisor-figuras.md` (criterio
+   de auditoría "Conexiones", FAIL si algún conector no toca visualmente sus
+   dos bloques o si se superpone horizontalmente con un bloque ajeno en un
+   diagrama de flujo vertical).
+
+**Sin hyphenation dentro de los bloques TikZ; nunca sobreflujo de texto
+(regla permanente, los cuatro diagramas).** El texto de un nodo TikZ de ancho
+fijo (`text width=...`) es contenido gráfico, no prosa continua: una palabra
+partida con guion a mitad de línea (p. ej. "argumen-tación") se percibe como
+un defecto de composición, no como el ajuste normal de un párrafo. Reglas:
+1. **Nunca hyphenation automática.** `proposal/scripts/compile_tikz.py` ya
+   desactiva la hyphenation (`\hyphenpenalty=10000`, `\exhyphenpenalty=10000`)
+   en el preámbulo del wrapper standalone que rasteriza PNG/SVG — pero ese
+   wrapper solo envuelve el `tikzpicture` extraído por regex, así que esas
+   dos líneas también deben ir DENTRO del propio `tikzpicture` de cada
+   diagrama (justo después de `\begin{tikzpicture}[...]`, antes del primer
+   `\node`), para que la desactivación sobreviva tanto a la extracción de
+   `compile_tikz.py` como a la compilación normal cuando el archivo se
+   `\input{}`ea dentro de `main.tex`.
+2. **Si una palabra no cabe, mejor un salto de línea explícito que
+   cortarla.** Sin hyphenation automática, una palabra larga que no quepa en
+   el ancho restante de una línea se desplaza completa a la línea
+   siguiente — LaTeX ya hace esto solo. Si el resultado se ve desbalanceado
+   (p. ej. una palabra larga sola en su propia línea dejando mucho espacio
+   en blanco en la línea anterior), usa un `\\` explícito para controlar
+   dónde exactamente se corta el texto, siempre en un límite de palabra
+   completa, nunca a mitad de una palabra.
+3. **Nunca generar sobreflujo de texto fuera del nodo.** Desactivar la
+   hyphenation sin más puede hacer que una palabra larga se salga del
+   ancho del nodo (`text width`) en vez de partirse. Tras cualquier cambio,
+   verifica visualmente en el PNG recompilado que ningún texto se sale del
+   borde del bloque. Si ocurre, la solución es **ajustar el `text width` del
+   nodo** (ensancharlo lo necesario) — nunca reactivar la hyphenation ni
+   dejar el texto desbordado.
+4. **Ajusta tamaños de bloque según convenga.** El `text width` de cada
+   estilo de nodo (`arbolCausa`, `arbolEfecto`, `arbolTronco`,
+   `arbolSolucion`, etc.) no es un valor fijo inamovible: ajústalo por
+   diagrama o por nodo individual (`text width` como opción local del nodo,
+   sobreescribiendo el estilo) cuando el contenido real de un bloque
+   concreto lo requiera para evitar hyphenation y sobreflujo simultáneamente.
+   Agentes responsables: `.claude/agents/disenador-tikz.md` y
+   `.claude/agents/tikz-optimizer.md` (aplicar las 4 reglas al redactar/
+   optimizar) y `.claude/agents/revisor-figuras.md` (criterios "Escala" y
+   "Etiquetas" ampliados: FAIL si hay una palabra partida con guion o texto
+   que se sale del borde de su bloque).
 
 **Convención `\label{}`/`\Cref{}`**
 
@@ -234,6 +488,48 @@ Definidos una única vez aquí (fuente de verdad); estos tres colores están act
 |---|---|
 | `fig:*` | Figuras |
 | `tab:*` | Tablas |
+| `sec:*` | Secciones (uno por cada `\section{}`, ver regla de referencias cruzadas abajo) |
+
+**Referencias cruzadas entre secciones — SIEMPRE `\cref{}`/`\Cref{}`, NUNCA un número
+literal (regla permanente).** Los rótulos internos del pipeline ("§2 Justificación"
+... "§16 Bibliografía") son bookkeeping del propio flujo, no el número real que
+LaTeX imprime: como el Título y las secciones de portada (Resumen, Resumen
+ejecutivo, Palabras clave) van sin numerar (`\title{}`/`\section*{}`), el primer
+`\section{}` numerado (Justificación) imprime como "1.", corriendo TODA la
+numeración real un dígito por debajo del rótulo interno de la guía. Escribir
+`\S9` o `§9` como texto literal en el cuerpo de una sección (p. ej. "(véase §9)")
+produce una referencia que se desincroniza en cuanto cambia el front-matter o el
+orden de secciones — y no lo detecta ningún compilador, porque sigue siendo
+LaTeX válido, solo imprime el número equivocado. En su lugar:
+- Cada `\section{...}` YA lleva `\label{sec:<nombre>}` en la línea siguiente
+  (ver tabla de arriba) — referencia esa etiqueta con `\cref{sec:<nombre>}`
+  (minúscula, uso intercalado/parentético) o `\Cref{sec:<nombre>}` (mayúscula,
+  inicio de oración). `cleveref` resuelve el número real en cada compilación,
+  sin importar cuánto se desplace la numeración.
+- Para referenciar un sub-bloque interno SIN numerar (`\subsection*{}`, ver
+  tabla de anidamiento arriba), añade `\label{subsec:<nombre>}` justo después
+  del encabezado y referencia con `\nameref{subsec:<nombre>}` (imprime el
+  título del sub-bloque como texto/enlace, nunca un número — un `\subsection*`
+  no tiene contador que `\cref` pueda resolver).
+- Excepción: las referencias a la numeración de un documento EXTERNO (p. ej.
+  "TDR §6.2", una cláusula de los términos de referencia de la convocatoria)
+  SÍ se escriben como texto literal, porque no existe ningún `\label{}` interno
+  que resolver — solo aplica a la numeración de ESTA propuesta.
+- Excepción: dentro de `diag_arbol_problemas.tex`, `diag_metodologico.tex` y la
+  figura del cronograma (`14_cronograma_actividades.tex`, bloque `pgfgantt`),
+  NUNCA uses `\cref{}`/`\Cref{}`/`\nameref{}`. Estos tres archivos se compilan
+  DOS VECES en contextos distintos: (1) `\input{}` dentro de `main.tex`, donde
+  todas las etiquetas `sec:*`/`subsec:*` existen; y (2) de forma AISLADA vía
+  `proposal/scripts/compile_tikz.py` (rasterizado PNG/SVG, ver "Exportación de
+  diagramas a SVG" arriba), donde NO se carga `cleveref` ni existe ningún
+  `\label{}` externo — un `\cref{}` ahí es un `Undefined control sequence`
+  fatal que rompe la compilación aislada (confirmado: así falló
+  `compile_tikz.py` al rasterizar el diagrama metodológico tras una primera
+  corrección que sí usó `\cref{}` dentro del nodo TikZ). Dentro de estos tres
+  archivos, referencia otra sección SIEMPRE con texto plano descriptivo (p.
+  ej. "Concepto (marco conceptual):", "Formación de RH (resultados
+  esperados)"), nunca con un comando de cross-reference ni con un número
+  literal.
 
 **Encabezado y pie institucional (logos)**
 
