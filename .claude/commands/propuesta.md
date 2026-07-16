@@ -174,6 +174,10 @@ duration_ms: <N | no medible directamente>
 - <sección/artefacto producido>  [[<nota-vault-o-sección>]]
 ## Dependencias
 - <fase previa de la que depende>
+## Desglose por despacho (suma = totales del frontmatter)
+| # | Agente | MODE/Etiqueta | Tokens | Tool-uses | Duración (ms) |
+|---|--------|---------------|--------|-----------|---------------|
+| 1 | insumos-observador | — | 12345 | 8 | 45000 |
 ```
 
 `proposal/pipeline/_estado.md` mantiene el mismo set de columnas en cada
@@ -201,10 +205,40 @@ no aportar valor consumido; overhead de token descartado). Nunca lo hace
 
 Tras cada llamado delegado (Task/Agent) que retorna dentro de una fase, lee
 el bloque `<usage>` al final de su resultado (`subagent_tokens: N`,
-`tool_uses: N`, `duration_ms: N`) y súmalo al acumulador de esta fase. El
-acumulador arranca en 0 al iniciar la fase y acumula TODOS los despachos de
-la fase, incluidos los re-despachos por FAIL y los bucles de figura, hasta
-el cierre de compuerta.
+`tool_uses: N`, `duration_ms: N`). ANTES de sumarlo al acumulador de la fase,
+agrega una fila a `## Desglose por despacho` del evento de esta fase (ver
+plantilla en "Grafo de pipeline" arriba) con el ordinal `#` del despacho, el
+nombre del agente despachado, su `MODE/Etiqueta`, y los mismos 3 campos
+numéricos ya leídos de `<usage>` — reutilizados tal cual, sin ninguna nueva
+lectura ni parseo del resultado. Recién después de escribir esa fila, súmalo
+al acumulador de esta fase. El acumulador arranca en 0 al iniciar la fase y
+acumula TODOS los despachos de la fase, incluidos los re-despachos por FAIL
+y los bucles de figura, hasta el cierre de compuerta.
+
+Regla de etiquetado de `## Desglose por despacho`: `#` es un ordinal
+monótono de despacho por fase — nunca se reinicia dentro de la misma fase y
+avanza también con los re-despachos por FAIL o los reintentos del bucle de
+figuras (nunca se salta ni se reutiliza un número; cada despacho, incluido
+un re-despacho, ocupa su propia fila). `MODE/Etiqueta` lleva el rol del
+despacho dentro de cualquier bucle en curso más el contador de intentos
+compartido con el resto del pipeline — p. ej. `tikz-optimizer intento 2/4`,
+`MODE=deliverable` — o `—` cuando el agente no tiene MODE ni contador de
+intentos aplicable en ese despacho. En el bucle de figuras, `revisor-figuras`
+lleva el MISMO número de intento que el despacho de `tikz-optimizer` que
+audita en esa iteración (p. ej. `revisor-figuras intento 2/4`), ya que ambos
+comparten el contador único por diagrama (ver "Tope de reintentos del bucle
+de figuras").
+
+Regla de sentinel por despacho: si un despacho puntual retorna sin bloque
+`<usage>`, su fila en `## Desglose por despacho` escribe el literal
+`no medible directamente` en sus 3 celdas numéricas (Tokens, Tool-uses,
+Duración (ms)) — nunca un valor estimado o inferido. La regla de
+sentinel/parcial a NIVEL DE FASE (ver debajo: sentinel en los 3 campos si
+TODOS los despachos de la fase carecen de `<usage>`, o el sufijo
+`(parcial: K/M sin usage)` si solo ALGUNOS carecen de él) queda sin cambios;
+la suma de las filas de despacho que sí traen `<usage>` debe seguir
+igualando exactamente el total (íntegro o parcial) que se registra a nivel
+de fase.
 
 Suma `subagent_tokens`, `tool_uses` y `duration_ms` de todos los despachos
 de la fase; `duration_ms` es tiempo de cómputo agregado, no reloj de pared
@@ -281,14 +315,24 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
         `proposals/registry.md` (crea el archivo con su tabla de encabezado
         si no existe: `| run-id | creada | cerrada | estado | idea (breve) |
         archivo | commit |`).
-        ──→ GUARDIA DE COLISIÓN (corrida sin terminar): si
+        ──→ GUARDIA DE COLISIÓN (corrida previa sin archivar): si
         `proposal/estado_propuesta.md` ya existe con `estado: activa` en su
-        bloque "Identidad de la corrida" y no todas las compuertas están
-        cerradas, DETENTE y exige confirmación explícita: "Existe una
-        corrida SIN terminar (`<run-id>`, última compuerta `<Gx>`).
-        ¿Archivarla y empezar una nueva? (sí/no)". Solo "sí" continúa con
-        ARCHIVADO-Y-REINICIO (abajo); "no" ofrece reanudar la corrida
-        existente en vez de iniciar una nueva.
+        bloque "Identidad de la corrida", DETENTE y exige confirmación
+        explícita — **sin importar si todas las compuertas están cerradas o
+        no**: una corrida con Fase 7 en PASS pero nunca archivada vía
+        ARCHIVADO-Y-REINICIO o `/propuesta-limpiar` sigue teniendo su
+        `main.pdf`/`main.docx` únicamente en el árbol de trabajo efímero
+        `proposal/`, no en `proposals/<run-id>/`; arrancar una corrida nueva
+        sin este guardado los sobrescribiría sin dejar copia. Si quedan
+        compuertas pendientes: "Existe una corrida SIN terminar
+        (`<run-id>`, última compuerta `<Gx>`). ¿Archivarla y empezar una
+        nueva? (sí/no)". Si todas las compuertas están cerradas: "La
+        corrida `<run-id>` ya terminó (todas las compuertas en PASS) pero
+        no fue archivada — su `main.pdf`/`main.docx` siguen solo en
+        `proposal/`. ¿Archivarla a `proposals/<run-id>/` (copia local
+        permanente) y empezar una corrida nueva? (sí/no)". Solo "sí"
+        continúa con ARCHIVADO-Y-REINICIO (abajo); "no" ofrece
+        reanudar/revisar la corrida existente en vez de iniciar una nueva.
         ──→ ARCHIVADO-Y-REINICIO (solo corridas futuras, tras "sí" arriba):
           1. Lee el `run_id` previo de `estado_propuesta.md`.
           2. `mkdir -p proposals/<run-id-previo>/`; copia el contenido de la
@@ -1204,6 +1248,12 @@ Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre e
         sombreado de §13 no se conserva; el Gantt de §14 Cronograma de
         actividades queda como imagen). Es un paso mecánico
         post-compilación que corres tú (asistente primario), no un agente.
+        `build.sh` ahora falla con `exit 1` si LaTeX reportó errores reales
+        (`^!` en `main.log`) durante el ensamblado del PDF; si eso ocurre,
+        tratá la falla como un STOP explícito: mostrale al usuario el mensaje
+        de error tal cual lo emite `build.sh` y NO continúes a
+        `./build.sh --docx` ni des por cerrada la Fase 7/compuerta hasta que
+        el usuario corrija el error o apruebe explícitamente seguir igual.
         [NUEVO] Como último paso de la Fase 7, ya con `main.pdf` ensamblado,
         corres una pasada de QA visual asesora: `pixelshot proposal/main.pdf
         -o proposal/pixelshot-out/` y revisas los tiles renderizados en busca
