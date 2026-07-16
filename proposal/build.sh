@@ -112,7 +112,8 @@ build_latexmk() {
     warns=$(grep -c 'Warning' "${SCRIPT_DIR}/main.log" 2>/dev/null; true)
     warns="${warns:-0}"
     if [[ "${errs}" -gt 0 ]]; then
-      warn "LaTeX reportó ${errs} error(es) — revisa main.log"
+      err "LaTeX reportó ${errs} error(es) real(es) — revisa ${SCRIPT_DIR}/main.log; el PDF puede estar incompleto o mal formado"
+      exit 1
     fi
     if [[ "${warns}" -gt 0 ]]; then
       warn "LaTeX emitió ${warns} advertencia(s) — revisa main.log"
