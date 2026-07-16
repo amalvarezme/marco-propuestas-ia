@@ -36,6 +36,7 @@ WORK = PROP / "sections" / "figuras"
 # diag_<name>.tex -> (compile_tikz name, kind)
 DIAGRAM_MAP = {
     "diag_arbol_problemas.tex": ("arbol_problemas", "tikz"),
+    "diag_estado_arte.tex": ("estado_arte", "tikz"),
     "diag_metodologico.tex": ("metodologico", "tikz"),
 }
 
@@ -110,6 +111,75 @@ def stage_diagram_image(name: str, stage: pathlib.Path) -> str:
     return dest_name
 
 
+_FIGURE_ENV_RE = re.compile(r'\\begin\{figure\}.*?\\end\{figure\}', re.DOTALL)
+_FIGURE_HEAD_RE = re.compile(r'\\begin\{figure\}[^\n]*\n(\\centering\n)?')
+_CAPTION_START_RE = re.compile(r'\\caption\{')
+
+
+def swap_figure_graphics(text: str, png_name: str) -> str:
+    """Replace only the graphics-producing body of the single `figure` env
+    in `text` with a plain `\\includegraphics`, preserving `\\begin{figure}`,
+    an optional leading `\\centering`, and everything from `\\caption{`
+    onward (caption + label + `\\end{figure}`) — so section headers, labels,
+    and surrounding prose survive the docx staging swap, and pandoc still
+    gets a real caption/label to resolve `\\ref{}` against."""
+    fig_m = _FIGURE_ENV_RE.search(text)
+    if not fig_m:
+        raise SystemExit("prep_docx: no figure environment found to swap graphics into")
+    block = fig_m.group(0)
+    cap_m = _CAPTION_START_RE.search(block)
+    if not cap_m:
+        raise SystemExit("prep_docx: figure environment has no \\caption{}")
+    head_m = _FIGURE_HEAD_RE.match(block)
+    if not head_m:
+        raise SystemExit("prep_docx: could not parse \\begin{figure} header")
+    new_block = (
+        head_m.group(0)
+        + f"\\includegraphics[width=\\linewidth]{{{png_name}}}\n"
+        + block[cap_m.start():]
+    )
+    return text[:fig_m.start()] + new_block + text[fig_m.end():]
+
+
+_CREF_NOUNS = {"fig": "Figura", "sec": "Sección", "tab": "Tabla"}
+_CREF_RE = re.compile(r'\\([Cc])ref\{((fig|sec|tab):[^}]+)\}')
+
+
+def resolve_cref(text: str) -> str:
+    """Rewrite cleveref `\\Cref{}`/`\\cref{}` into `<Noun>~\\ref{}` before
+    pandoc runs — pandoc's LaTeX reader resolves plain `\\ref{}` to a bare
+    number but does not know cleveref, so `\\Cref{fig:x}` would otherwise
+    survive as a raw, unresolved label or a bare number with no noun."""
+    def repl(m):
+        cap, label, prefix = m.groups()
+        noun = _CREF_NOUNS[prefix]
+        if cap == "c":
+            noun = noun.lower()
+        return f"{noun}~\\ref{{{label}}}"
+    return _CREF_RE.sub(repl, text)
+
+
+_RESIZEBOX_DIAG_RE = re.compile(
+    r'\\resizebox\{[^{}]*\}\{[^{}]*\}\{(\\input\{sections/diag_[a-zA-Z_]+\})\}'
+)
+
+
+def strip_resizebox_diagrams(text: str) -> str:
+    """Unwrap `\\resizebox{...}{...}{\\input{sections/diag_*}}` in main.tex
+    down to the bare `\\input{...}`.
+
+    Pandoc's LaTeX reader has no built-in understanding of `\\resizebox` and
+    silently drops its whole argument (verified empirically: no warning, no
+    error — the macro and everything inside it is just skipped). After
+    diagram staging, that argument is a plain `\\includegraphics{fig_*.png}`,
+    so leaving `\\resizebox` in place means the diagram images for the árbol
+    de problemas, estado del arte, and metodológico figures never reach the
+    docx media stream even though the PNGs are staged correctly. The PDF
+    build never goes through this staging tree, so removing the wrapper
+    here does not affect print scaling in main.pdf."""
+    return _RESIZEBOX_DIAG_RE.sub(lambda m: m.group(1), text)
+
+
 def build_stage(stage: pathlib.Path) -> pathlib.Path:
     stage.mkdir(parents=True, exist_ok=True)
     (stage / "sections").mkdir(parents=True, exist_ok=True)
@@ -123,6 +193,10 @@ def build_stage(stage: pathlib.Path) -> pathlib.Path:
         raise SystemExit(f"prep_docx: {main_tex} does not exist — compile the PDF first")
 
     shutil.copy2(main_tex, stage / "main.tex")
+    (stage / "main.tex").write_text(
+        strip_resizebox_diagrams((stage / "main.tex").read_text(encoding="utf-8")),
+        encoding="utf-8",
+    )
     if refs_bib.exists():
         shutil.copy2(refs_bib, stage / "refs.bib")
     if logos_dir.exists():
@@ -141,12 +215,15 @@ def build_stage(stage: pathlib.Path) -> pathlib.Path:
                 )
             elif f.name == CRONOGRAMA_FILE and cronograma_is_diagram:
                 png_name = stage_diagram_image("gantt", stage)
+                original = f.read_text(encoding="utf-8")
                 (stage / "sections" / f.name).write_text(
-                    f"\\includegraphics[width=\\linewidth]{{{png_name}}}\n",
-                    encoding="utf-8",
+                    swap_figure_graphics(original, png_name), encoding="utf-8",
                 )
             else:
                 shutil.copy2(f, stage / "sections" / f.name)
+
+    for staged_tex in [stage / "main.tex", *sorted((stage / "sections").glob("*.tex"))]:
+        staged_tex.write_text(resolve_cref(staged_tex.read_text(encoding="utf-8")), encoding="utf-8")
 
     return stage / "main.tex"
 
