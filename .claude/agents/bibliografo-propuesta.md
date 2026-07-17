@@ -353,7 +353,7 @@ across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
 |--------|-----------|-----------|
 | OpenAlex (270M+ works, filters by year/quartile, 1-hop citation graph) | `openalex` | `openalex_resolve_name`, `openalex_search_entities`, `openalex_analyze_trends`, `openalex_get_citation_graph` (one hop from a seed work: `cites`/`cited_by`/`related_to`, stackable with filters like `publication_year`/`is_oa` — a Connected-Papers-style relation, not a multi-hop map), `openalex_describe_fields`. Requires `OPENALEX_API_KEY` (an email, not a real key) set in `.mcp.json`. |
 | Crossref (DOI metadata lookup) | `crossref` | `searchByTitle`, `searchByAuthor`, `getWorkByDOI` (`@botanicastudios/crossref-mcp`). No combined-keyword search and **no outgoing-references tool** — use `getWorkByDOI` only to enrich/verify a DOI already found via OpenAlex/Semantic Scholar. |
-| Semantic Scholar (citation counts, recommendations) | `semanticscholar` | `search_papers`, `get_paper`, `get_paper_citations`, `get_paper_references`, `get_recommendations` (plus `search_authors`, `get_author`, `get_author_papers`). |
+| Semantic Scholar (citation counts, recommendations) | `semanticscholar` | `search_papers`, `get_paper`, `get_paper_citations`, `get_paper_references`, `get_recommendations`, `batch_get_papers` (resuelve/verifica hasta 500 IDs por llamada) (plus `search_authors`, `get_author`, `get_author_papers`). |
 | PubMed / Europe PMC (biomedical + preprints, full text) | `pubmed` | `pubmed_search_articles`, `pubmed_fetch_articles`, `pubmed_fetch_fulltext`, `pubmed_format_citations` (`@cyanheads/pubmed-mcp-server`). **No separate `pubmed_europepmc_search` tool** — Europe PMC/PMC/Unpaywall full text is covered by `pubmed_fetch_fulltext`, not a dedicated search tool. |
 | arXiv (preprints — only recognized labs/leaders) | `arxiv` | `arxiv_search`, `arxiv_get_metadata`, `arxiv_read_paper` (`@cyanheads/arxiv-mcp-server`). |
 | Consensus (220M+ papers, native SJR-quartile filter) | `consensus` | `search` |
@@ -394,13 +394,31 @@ aplica a esos caminos.
 Invariante: cada entrada nueva en `refs.bib` debe tener:
 1. Un `proposal/scoping/papers/paper-N.md` con un bloque `## Verificación`.
 2. Una nota `vault/insumos/<cite_key>.md`.
-3. Verificación de existencia APROBADA antes de escribir la entrada: la
-   referencia debe resolverse contra `crossref` (DOI), `openalex` o
-   `semanticscholar` y registrar su ID estable en `## Verificación`. Si el
-   candidato NO se puede resolver en ninguna de esas fuentes, se **rechaza**:
-   no se escribe en `refs.bib`, no genera `paper-N.md` ni nota de vault, y se
-   reporta al dispatcher como `descartada: inverificable` con el título y la
-   razón. Nunca escribas una entrada con `Resuelto: no` o sin ID estable.
+3. Verificación de existencia APROBADA antes de escribir la entrada,
+   resuelta por lote temático (batch), no candidato por candidato: (a) tras
+   la búsqueda amplia del lote temático (candidatos de una misma pasada de
+   búsqueda/clúster de subsección SOTA, o de una query amplia si no hay
+   tabla de agrupación) se reúnen los IDs candidatos (DOI/S2/arXiv) del
+   lote; (b) se resuelve/verifica TODO el lote en UNA sola llamada
+   `semanticscholar` `batch_get_papers` (hasta 500 IDs/llamada). `crossref`
+   `getWorkByDOI` (sin endpoint de batch) queda como fallback per-DOI solo
+   para candidatos residuales que el batch no pudo resolver. Este flujo de 2
+   pasos aplica a los dos caminos reales que escriben `refs.bib`:
+   MODE=sota, sub-paso WRITE-REFS, y MODE=deliverable (consolidación Fase 6,
+   §4+§16); ningún otro camino se ve afectado. Cada paper devuelto por el
+   batch debe emparejarse 1:1 y de forma estable con su ID candidato
+   original antes de escribirse en `## Verificación`. Si un ID candidato NO
+   aparece resuelto en la respuesta del batch (ni en el fallback residual de
+   crossref), se **rechaza**: no se escribe en `refs.bib`, no genera
+   `paper-N.md` ni nota de vault, y se reporta al dispatcher como
+   `descartada: inverificable` con el título y la razón. Nunca escribas una
+   entrada con `Resuelto: no` o sin ID estable, y nunca sustituyas
+   silenciosamente un candidato rechazado por otro. Si la llamada
+   `batch_get_papers` en sí falla o no está disponible (no un ID individual
+   sin resolver dentro de una respuesta exitosa), degrada el lote completo a
+   verificación candidato-por-candidato contra `crossref`, `openalex` o
+   `semanticscholar` — el mismo invariante de ID estable 1:1 y la misma
+   regla de rechazo aplican igual en ese modo degradado.
 
 Plantilla mínima de paper `.md` (extiende el esquema de MODE=scope):
 
@@ -408,7 +426,7 @@ Plantilla mínima de paper `.md` (extiende el esquema de MODE=scope):
 # {Título}
 - Autores: ... | Año: ... | Venue: ... | Cuartil: Q1|Q2 | DOI: ...
 ## Verificación
-- Herramienta: <crossref|openalex|semanticscholar>
+- Herramienta: <semanticscholar (batch_get_papers)|crossref|openalex|semanticscholar (individual)>
 - ID estable: <DOI o ID>  | Resuelto: sí
 ## Relevancia
 {una línea}

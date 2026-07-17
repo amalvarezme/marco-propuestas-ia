@@ -879,7 +879,7 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         `proposal/pipeline/20-fase1.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
-Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo).
+Fase 2  Task → bibliografo-propuesta → §4 estado del arte.
         Además del texto de §4 (3-5 subsecciones), esta Task produce, como
         bloque comentado al final de `04_estado_arte.tex`, el contenido del
         diagrama de estado del arte (clusters, papers, relaciones, frase
@@ -888,10 +888,13 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte (en paralelo).
         bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §4 (Estado
         del arte) + Convenciones técnicas de LaTeX y lo inyecta inline al
         inicio del prompt.
-        Task → investigador → §5 hipótesis. Antes de despachar esta Task, el
-        dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
-        Generales + §5 (Hipótesis) + Convenciones técnicas de LaTeX y lo
-        inyecta inline al inicio del prompt.
+        Task → investigador → §5 hipótesis, despachada DESPUÉS de que §4
+        complete (§5 consume la síntesis de cierre de §4; corrección
+        puramente documental de esta nota — el dispatcher ya secuencia
+        §4→§5 hoy, sin cambio de comportamiento). Antes de despachar esta
+        Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
+        Directrices Generales + §5 (Hipótesis) + Convenciones técnicas de
+        LaTeX y lo inyecta inline al inicio del prompt.
         ──→ luego bucle de figura (mapa de estado del arte), solo después de
         que la Task de §4 complete (necesita el bloque comentado con el
         contenido del diagrama; contador de intentos compartido por
@@ -1001,6 +1004,10 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo; 3-5
         el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con Directrices
         Generales + §9 (Equipo de trabajo) + Convenciones técnicas de LaTeX
         y lo inyecta inline al inicio del prompt.
+        Estas dos Tasks (§8 y §9) se despachan como llamadas independientes
+        en el MISMO turno/bloque de herramientas del dispatcher — no en
+        turnos secuenciales — ya que §9 deriva solo de §7 (ya aprobada en la
+        Fase 4) y §8 no depende de §9.
         ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
         `vault/secciones/08_marco_conceptual.md` o
         `vault/secciones/09_equipo_trabajo.md` cambiaron en esta fase; si no
