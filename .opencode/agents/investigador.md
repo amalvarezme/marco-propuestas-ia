@@ -106,10 +106,20 @@ You no longer own a section by that name.
    into **3 to 5 subsections** (`\subsection*{}`, unnumbered — same
    convention as §4), each with a **clear, concise title naming the concept
    it defines** (e.g. "Memoria persistente en agentes de IA", "Planificación
-   multi-paso" — never a generic title like "Conceptos fundamentales"). §8
-   stays concise overall (1-2 paragraphs per subsection is reasonable) — the
-   subsection split organizes what was previously flowing prose, it does not
-   inflate the section's total length.
+   multi-paso" — never a generic title like "Conceptos fundamentales"). Each
+   subsection develops in **2 to 3 paragraphs** (mandatory, no exception, in
+   every project).
+11. **§8 citation density (mandatory, same exigency as §2/§3/§4).** Every
+   paragraph of every §8 subsection, with no exception, cites **at least 3-4
+   distinct** Q1/Q2 references (`\citet{}`/`\citep{}`) that directly support
+   its claims — a purely terminological definition may go uncited, but no
+   technical or theoretical claim is asserted without support when it
+   requires one. Distinct keys within the same paragraph and section,
+   compatible with the §16 reuse cap (max 3 uses per key across the whole
+   document, each in a different section). If the Task's `## FRAGMENTO DE
+   GUÍA` block carries this rule (see `guia_ajustada_TDR.md` or
+   `guiaProyectosIA_Agente.md`, §8), it wins over this summary — this item is
+   a durable backstop in case that fragment is ever missing.
 
 ## Entradas de Fase 0/1 (intake)
 

@@ -242,20 +242,24 @@ subsecciones** (`\subsection*{}`, sin numerar, mismo patrón que §4), cada
 una con un **título claro y conciso que nombre el concepto que define**
 (p. ej. "Memoria persistente en agentes de IA", "Planificación multi-paso",
 no un título genérico como "Conceptos fundamentales"). Cada subsección
-desarrolla un concepto o familia de conceptos estrechamente relacionados
-(1-2 párrafos por subsección es razonable dado que §8 sigue siendo
-deliberadamente concisa en conjunto frente a §4/§10) y lo conecta con la
-limitación tecnológica de §3 que fundamenta (punto 3 arriba) sin repetir el
-detalle algorítmico de §10.
+desarrolla un concepto o familia de conceptos estrechamente relacionados en
+**2 a 3 párrafos** (regla permanente, sin excepción, en todo proyecto) y lo
+conecta con la limitación tecnológica de §3 que fundamenta (punto 3 arriba)
+sin repetir el detalle algorítmico de §10.
 
-**Regla de densidad de citas (regla permanente).** Cuando una subsección
-requiera sustento técnico o teórico de las ideas presentadas (p. ej. al
-fundamentar un enfoque de Deep Learning, una arquitectura o una técnica
-concreta), cita literatura Q1/Q2 que lo respalde — una definición de término
-puramente terminológica puede quedar sin cita, pero ninguna afirmación
-técnica o teórica se plantea sin sustento cuando lo requiere. Acumula, en
-conjunto para toda la sección, **entre 8 y 10 referencias Q1/Q2 distintas**.
-Compatible con el tope de reúso de §16.
+**Regla de densidad de citas (obligatoria, misma exigencia que §2/§3/§4).**
+Cada párrafo de cada subsección de §8, sin excepción, debe citar **al menos
+3-4 referencias Q1/Q2 distintas** (`\citet{}`/`\citep{}`) que respalden
+explícitamente sus afirmaciones — una definición de término puramente
+terminológica puede quedar sin cita, pero ninguna afirmación técnica o
+teórica se plantea sin sustento bibliográfico directo en el mismo párrafo.
+Claves distintas dentro de un mismo párrafo y de una misma sección,
+compatible con el tope de reúso de §16 (máx. 3 usos por clave en todo el
+documento, cada uno en una sección distinta). Con 3-5 subsecciones × 2-3
+párrafos × 3-4 citas distintas, la sección supera ampliamente por
+construcción el antiguo piso agregado de 8-10 referencias; esa cifra queda
+obsoleta como referencia práctica, igual que ocurre en §2 frente a su propio
+piso de ≥10.
 
 ### 9. Equipo de trabajo
 
@@ -287,7 +291,7 @@ teórico/metodológico de una fase (punto 2 arriba) requiera respaldo técnico
 — al nombrar un enfoque, algoritmo o técnica concreta y describir su
 funcionamiento — cita literatura Q1/Q2 que lo sustente; el detalle puramente
 operativo de una actividad (recursos, cronología) no necesita cita. Acumula,
-en conjunto para toda la sección, **entre 8 y 10 referencias Q1/Q2
+en conjunto para toda la sección, **entre 8 y 15 referencias Q1/Q2
 distintas**. Compatible con el tope de reúso de §16.
 
 **Ubicación del diagrama (regla permanente).** El contenido del diagrama
@@ -357,18 +361,18 @@ Todo contenido de esta sección que no provenga de un insumo directo del usuario
 
     **Presupuesto de reúso, verificación obligatoria antes de citar (para cualquier
     agente que redacte una sección con citas, §2 en adelante).** Las secciones de
-    mayor densidad de citas (§2, §3, §4, con el piso de 3-4 citas distintas por
-    párrafo) consumen rápidamente el presupuesto de 3 usos de la mayoría de las
-    claves del corpus, dejando poco margen fresco para las secciones posteriores
-    (§8-§16). Antes de citar CUALQUIER clave en una sección que no sea la primera
+    mayor densidad de citas (§2, §3, §4, §8, con el piso de 3-4 citas distintas
+    por párrafo) consumen rápidamente el presupuesto de 3 usos de la mayoría de
+    las claves del corpus, dejando poco margen fresco para las secciones
+    posteriores (§10-§16). Antes de citar CUALQUIER clave en una sección que no sea la primera
     vez que se escribe esa clave en el documento, verifica con un `grep`/`rg` de la
     clave contra TODOS los `.tex` ya escritos en `proposal/sections/` (no solo los 1
     o 2 archivos que el dispatcher mencionó como contexto) cuántas secciones
     DISTINTAS ya la citan. Si ya son 3, esa clave está agotada: no la cites de
     nuevo, y si no hay ninguna clave fresca genuina que respalde la afirmación,
-    prefiere dejar la oración sin cita explícita (aceptable fuera de §2/§3/§4, que
-    sí tienen piso obligatorio) antes que introducir un 4º uso o fabricar una cita
-    forzada.
+    prefiere dejar la oración sin cita explícita (aceptable fuera de §2/§3/§4/§8,
+    que sí tienen piso obligatorio) antes que introducir un 4º uso o fabricar una
+    cita forzada.
 4.  **Calidad y Actualidad:** Se debe favorecer e incluir mayoritariamente artículos publicados en revistas indexadas en **cuartiles Q1 y Q2 de los últimos tres años**.
 5.  **Volumen:** Para demostrar rigor en proyectos de investigación aplicada, se recomienda integrar un soporte bibliográfico sólido con **más de 50 citas**.
 6.  **Fuentes Permitidas:**
