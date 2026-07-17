@@ -133,8 +133,9 @@ Es pista; tu checklist manual sigue siendo la autoridad del veredicto.
 Nota de renumeración: el 4º par (antes `§5.3↔§2.1`, Enfoques teóricos ↔
 subproblemas) ya no existe como sección propia — `§5.3 Enfoques teóricos` fue
 eliminada y su función (nombrar el enfoque/algoritmo por subproblema con
-causa-efecto explícito) quedó absorbida en Metodología (§10), punto 2, que
-referencia el marco conceptual (§8); de ahí el par `§10↔§8`.
+causa-efecto explícito) quedó absorbida en Metodología (§10), punto 1
+(Métodos, del desarrollo por objetivo), que referencia el marco conceptual
+(§8); de ahí el par `§10↔§8`.
 
 Si graphify revela un `[[wikilink]]` roto, una contradicción, o una idea
 huérfana frente a uno de los 4 pares de trazabilidad de arriba, el
@@ -1317,10 +1318,15 @@ estado del arte, diagrama metodológico):
 - Pregunta de investigación (cierre §3) ↔ objetivo general (§6).
 - Hipótesis (§5) ↔ objetivo general (§6).
 - Metodología (§10) ↔ objetivos específicos (§7), marco conceptual (§8) y
-  equipo de trabajo (§9), cadena de valor. El punto 2 de Metodología nombra
-  el enfoque/algoritmo por subproblema con razonamiento causa-efecto
-  explícito referenciando el marco conceptual (§8) — función que antes
-  cubría el desaparecido §5.3 Enfoques teóricos.
+  equipo de trabajo (§9), cadena de valor. El punto 1 (Métodos) del
+  desarrollo por objetivo de Metodología nombra el enfoque/algoritmo por
+  subproblema con razonamiento causa-efecto explícito referenciando el marco
+  conceptual (§8) — función que antes cubría el desaparecido §5.3 Enfoques
+  teóricos.
+- Metodología (§10) ↔ resultados esperados (§11) y productos esperados
+  (§15): el punto 5 (Resultado conceptual esperado) y el punto 6
+  (Producto(s) esperado(s)) del desarrollo por objetivo de Metodología son el
+  insumo que §11/§15 consolidan y formalizan por fase.
 - Equipo de trabajo (§9) deriva sus roles de los objetivos específicos (§7);
   nunca de la Metodología (§10).
 - Cronograma de actividades (§14) ↔ fases de la Metodología (§10).

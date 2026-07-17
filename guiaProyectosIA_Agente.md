@@ -273,26 +273,35 @@ Cualquier dato de equipo que no provenga de un insumo directo del usuario (p. ej
 
 **Instrucción para el agente:** La metodología debe ser estructurada y redactada de forma clara, concisa y sin repeticiones. Para garantizar su viabilidad y organización técnica, se deben seguir las siguientes directrices:
 
-1.  **Estructura de Cadena de Valor por Objetivo:** La metodología debe desarrollarse secuencialmente, abordando cada uno de los objetivos específicos (§7) como un eslabón de una cadena de valor.
-2.  **Detalle por Fase/Objetivo:** Para cada objetivo específico, se debe detallar:
-    *   Las actividades principales a ejecutar y el personal responsable de la fase (coherente con el Equipo de trabajo, §9).
-    *   El sustento o fundamento teórico/metodológico que respalda dichas actividades (apoyado en los conceptos y enfoques introducidos en el Marco conceptual, §8: nombrar el enfoque, algoritmo o técnica específica, describir brevemente su funcionamiento, y conectarlo causalmente con el subproblema que resuelve).
-    *   Los recursos tecnológicos necesarios.
-    *   Los elementos y herramientas disponibles gracias a la experiencia previa del equipo de investigación propuesto.
-3.  **Diagrama Esquemático Final:** La sección debe concluir planteando el contenido y la estructura para un diagrama esquemático metodológico. Este diagrama debe:
-    *   Representar visualmente las fases principales de la propuesta.
-    *   Destacar las novedades metodológicas o algorítmicas más importantes de la investigación en IA.
-    *   Reflejar claramente el impacto y los posibles usuarios o beneficiarios finales del producto o servicio de IA a desarrollar.
-    *   Resaltar visualmente el nivel de madurez tecnológica (TRL) desde el que se parte (basado en la experiencia del grupo) hasta el TRL meta al que se quiere llegar (TRL 6 o 7).
-    *   **Nunca incluir el personal responsable de cada fase dentro de los bloques del diagrama** (regla permanente) — el "personal responsable" ya se detalla en la prosa de §10 (punto 2 arriba) y en el Equipo de trabajo (§9); repetirlo como etiqueta ("Resp.: ...") dentro de cada bloque del diagrama es redundante y satura visualmente las cajas. El diagrama se centra en fases, novedades, TRL y beneficiarios — nunca en nombres o roles de personas.
+**Bloque inicial (obligatorio, regla permanente).** La sección abre con dos subsecciones fijas (`\subsection*{}`, sin numerar), antes de desarrollar la cadena de valor por objetivo:
+
+1.  **Enfoque y diseño de la investigación:** declara el tipo de investigación —cuantitativa, o híbrida (cualitativa y cuantitativa)— justificando la elección según la naturaleza de los objetivos específicos (§7); y el tamaño de muestra, cuando el diseño lo requiera (p. ej. validación con usuarios, evaluación experimental sobre una población o cohorte definida), indicando el tamaño, el criterio de cálculo o estimación (potencia estadística, saturación cualitativa, disponibilidad del corpus, etc.) y su fuente. Si el proyecto no requiere muestreo poblacional (p. ej. investigación basada íntegramente en corpora, benchmarks o modelos), decláralo explícitamente y justifica por qué no aplica — nunca omitir el punto en silencio.
+2.  **Bases de datos:** declara las bases de datos disponibles (del equipo, de aliados o por licencia institucional existente) o a capturar (fuente, instrumento y procedimiento de captura/curaduría). Incluye siempre, sin excepción, al menos una alternativa de base de datos pública reconocida en el dominio (repositorio abierto, benchmark estándar) como línea base de comparación, incluso cuando el proyecto contempla captura propia — esto garantiza reproducibilidad y un punto de referencia externo.
+
+**Desarrollo por objetivo (regla permanente).** Tras el bloque inicial, la metodología se desarrolla secuencialmente, abordando cada uno de los objetivos específicos (§7, típicamente tres o más) como un eslabón de una cadena de valor. Para cada objetivo específico se detalla:
+
+1.  **Métodos:** los métodos, algoritmos, arquitecturas o técnicas a considerar o desarrollar, con su sustento teórico/metodológico (apoyado en los conceptos y enfoques introducidos en el Marco conceptual, §8): nombrar el enfoque, algoritmo o técnica específica, describir brevemente su funcionamiento, y conectarlo causalmente con el subproblema que resuelve.
+2.  **Novedad esperada:** declarar explícitamente la novedad metodológica, algorítmica o de aplicación esperada de ese objetivo, según el caso — no todo objetivo aporta el mismo grado de novedad (p. ej., el objetivo de transferencia/validación puede aportar novedad de aplicación o de integración en vez de novedad algorítmica). Si un objetivo no aporta novedad más allá del estado del arte, decláralo así explícitamente en vez de forzar una afirmación de novedad.
+3.  **Recursos necesarios, alineados con el presupuesto (§13):** el equipo de trabajo responsable de la fase (coherente con el Equipo de trabajo, §9), el equipo de cómputo necesario, las salidas de campo (si aplica), el pago de servicios de cómputo (nube/HPC) y las licencias de software o de IA requeridas. Cada recurso nombrado aquí es el elemento que Presupuesto (§13) debe referenciar explícitamente en su columna de Justificación.
+4.  **Actividades clave:** entre **3 y 5** actividades clave por objetivo, redactadas de forma que se puedan trasladar directamente al Cronograma de actividades (§14) sin reinterpretación.
+5.  **Resultado conceptual esperado:** el resultado, desde el punto de vista conceptual (qué se logra y para quién), que produce esa fase — insumo directo para que Resultados esperados (§11) lo consolide y precise el TRL alcanzado.
+6.  **Producto(s) esperado(s):** el o los productos concretos esperados de la fase (registro de software, prototipo, artículo en revista, ponencia, trabajo de grado, vinculación de estudiantes de posgrado, etc.), elegidos según la complejidad de la fase y su coherencia con el problema, los objetivos, el equipo de trabajo, el tiempo de ejecución y el cronograma — insumo directo para que Productos esperados (§15) los tipifique y ate a un momento de entrega.
+
+**Diagrama Esquemático Final:** La sección debe concluir planteando el contenido y la estructura para un diagrama esquemático metodológico. Este diagrama debe:
+*   Representar visualmente las fases principales de la propuesta.
+*   Destacar las novedades metodológicas o algorítmicas más importantes de la investigación en IA.
+*   Reflejar claramente el impacto y los posibles usuarios o beneficiarios finales del producto o servicio de IA a desarrollar.
+*   Resaltar visualmente el nivel de madurez tecnológica (TRL) desde el que se parte (basado en la experiencia del grupo) hasta el TRL meta al que se quiere llegar (TRL 6 o 7).
+*   **Nunca incluir el personal responsable de cada fase dentro de los bloques del diagrama** (regla permanente) — el "personal responsable" ya se detalla en la prosa de §10 (punto 3, Recursos, del desarrollo por objetivo) y en el Equipo de trabajo (§9); repetirlo como etiqueta ("Resp.: ...") dentro de cada bloque del diagrama es redundante y satura visualmente las cajas. El diagrama se centra en fases, novedades, TRL y beneficiarios — nunca en nombres o roles de personas.
 
 **Regla de densidad de citas (regla permanente).** Cuando el sustento
-teórico/metodológico de una fase (punto 2 arriba) requiera respaldo técnico
-— al nombrar un enfoque, algoritmo o técnica concreta y describir su
-funcionamiento — cita literatura Q1/Q2 que lo sustente; el detalle puramente
-operativo de una actividad (recursos, cronología) no necesita cita. Acumula,
-en conjunto para toda la sección, **entre 8 y 15 referencias Q1/Q2
-distintas**. Compatible con el tope de reúso de §16.
+teórico/metodológico de un objetivo (punto 1, Métodos, del desarrollo por
+objetivo) requiera respaldo técnico — al nombrar un enfoque, algoritmo o
+técnica concreta y describir su funcionamiento — cita literatura Q1/Q2 que lo
+sustente; el detalle puramente operativo de una actividad (recursos,
+cronología) no necesita cita. Acumula, en conjunto para toda la sección,
+**entre 8 y 15 referencias Q1/Q2 distintas**. Compatible con el tope de reúso
+de §16.
 
 **Ubicación del diagrama (regla permanente).** El contenido del diagrama
 esquemático metodológico se especifica como bloque comentado al final de
@@ -303,7 +312,7 @@ definidas en Convenciones técnicas de LaTeX más abajo.
 
 ### 11. Resultados esperados
 
-**Instrucción para el agente:** Presentar los resultados conceptuales esperados por cada objetivo específico (§7), así como los resultados de generación de nuevo conocimiento (hallazgos, avances metodológicos), de transferencia tecnológica (ponencias, charlas, talleres) y de formación (tesis de pregrado, tesis de maestría, vinculación de estudiantes de posgrado o semilleros). Precisa el **TRL alcanzado** al cierre del proyecto y el impacto o beneficio esperado para los usuarios/beneficiarios del sector de aplicación. Los productos concretos y su tipología formal (software, patentes, artículos, etc.) se listan en Productos esperados (§15), no aquí: esta sección se centra en el resultado (qué se logra y para quién), aquella en el producto (qué se entrega y en qué formato).
+**Instrucción para el agente:** Presentar los resultados conceptuales esperados por cada objetivo específico (§7), así como los resultados de generación de nuevo conocimiento (hallazgos, avances metodológicos), de transferencia tecnológica (ponencias, charlas, talleres) y de formación (tesis de pregrado, tesis de maestría, vinculación de estudiantes de posgrado o semilleros). Precisa el **TRL alcanzado** al cierre del proyecto y el impacto o beneficio esperado para los usuarios/beneficiarios del sector de aplicación. Los productos concretos y su tipología formal (software, patentes, artículos, etc.) se listan en Productos esperados (§15), no aquí: esta sección se centra en el resultado (qué se logra y para quién), aquella en el producto (qué se entrega y en qué formato). Cada resultado debe ser coherente con el resultado conceptual esperado ya declarado por fase en Metodología (punto 5 del desarrollo por objetivo, §10): esta sección lo consolida a nivel de todo el proyecto y precisa su TRL e impacto, sin repetirlo literalmente.
 
 ### 12. Consideraciones éticas
 
@@ -350,7 +359,7 @@ Todo contenido de esta sección que no provenga de un insumo directo del usuario
 
 ### 15. Productos esperados
 
-**Instrucción para el agente:** Según lo descrito en Resultados esperados (§11), y cruzándolo rigurosamente con los términos de referencia de la convocatoria, el agente debe proponer y estructurar los productos académicos concretos (siguiendo la tipología institucional o de la convocatoria cuando exista, p. ej. nuevo conocimiento, formación, apropiación social/divulgación, transferencia) que garanticen la obtención del puntaje máximo estipulado para la evaluación de la propuesta. Cada producto debe indicar su tipología, un responsable y el momento del cronograma (§14) en que se entrega.
+**Instrucción para el agente:** Según lo descrito en Resultados esperados (§11), y cruzándolo rigurosamente con los términos de referencia de la convocatoria, el agente debe proponer y estructurar los productos académicos concretos (siguiendo la tipología institucional o de la convocatoria cuando exista, p. ej. nuevo conocimiento, formación, apropiación social/divulgación, transferencia) que garanticen la obtención del puntaje máximo estipulado para la evaluación de la propuesta. Cada producto debe indicar su tipología, un responsable y el momento del cronograma (§14) en que se entrega. Cada producto debe ser coherente con el o los productos esperados ya declarados por fase en Metodología (punto 6 del desarrollo por objetivo, §10): esta sección los formaliza con su tipología institucional, responsable y momento de entrega.
 
 ### 16. Bibliografía
 
@@ -393,7 +402,7 @@ Estas convenciones son la única fuente de verdad para el ensamble LaTeX; aplíc
 | Todas las secciones (§1–§3, §5–§7, §9, §11–§16) | `\section` autocontenido, sin subsecciones. |
 | §4 Estado del arte | `\section` con 3-5 encabezados internos de agrupación temática, SIN numerar (`\subsection*`), seguidos por los párrafos de síntesis/brechas/novedad sin encabezado propio (ver detalle en §4 arriba). |
 | §8 Marco conceptual | `\section` con 3-5 encabezados internos, uno por concepto definido, SIN numerar (`\subsection*`) (ver detalle en §8 arriba). |
-| §10 Metodología | `\section` autocontenido con encabezados internos de fase OPCIONALES y SIN numerar (`\subsection*`), no `\subsection` numerado. |
+| §10 Metodología | `\section` autocontenido; abre con 2 subsecciones fijas y OBLIGATORIAS, SIN numerar (`\subsection*`): Enfoque y diseño de la investigación, Bases de datos. Los encabezados internos de fase por objetivo son OPCIONALES y SIN numerar (`\subsection*`); nunca `\subsection` numerado. |
 
 > **Nota sobre sub-bloques obligatorios exigidos por un TDR/doc-secciones.** Cuando
 > una convocatoria (vía su TDR o un `doc-secciones` externo) exige contenido

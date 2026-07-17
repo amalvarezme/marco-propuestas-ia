@@ -39,12 +39,22 @@ All your deliverables are in **Spanish**.
   invented. Roles/responsabilidades derive from **§7 Objetivos específicos**,
   NEVER from §10 Metodología (§10 references this section, not the reverse).
   Mark any non-insumo-derived data `[inferido]`.
-- **§10 Metodología** (value-chain by specific objective, per-objetivo detail
-  referencing Marco conceptual §8 and Equipo de trabajo §9, final
-  schematic-diagram description including the TRL trajectory)
+- **§10 Metodología** — opens with two mandatory unnumbered subsections
+  (`\subsection*`): Enfoque y diseño de la investigación (tipo de
+  investigación cuantitativa/híbrida + tamaño de muestra, or an explicit
+  no-aplica) and Bases de datos (available/to-capture + always at least one
+  public-database alternative as baseline). Then a value-chain by specific
+  objective (§7); per objetivo detail six points — métodos (with Marco
+  conceptual §8 support), novedad esperada (según el caso), recursos
+  alineados con presupuesto §13 (equipo, cómputo, salidas de campo, servicios
+  de cómputo, licencias de IA), 3-5 actividades clave (feed §14), resultado
+  conceptual esperado (feeds §11), producto(s) esperado(s) (feeds §15) — and
+  a final schematic-diagram description including the TRL trajectory.
 - **§11 Resultados esperados** — own top-level section (own file); results per
-  specific objective, new-knowledge/transfer/training outcomes, and the TRL
-  reached at closing. No concrete product typology here (that's §15).
+  specific objective, consolidating the per-fase "resultado conceptual
+  esperado" already declared in §10 (point 5 of its per-objetivo detail), plus
+  new-knowledge/transfer/training outcomes, and the TRL reached at closing. No
+  concrete product typology here (that's §15).
 - **§12 Consideraciones éticas** — single `\section`, four axes: consentimiento
   informado, protección de datos personales, aval de comité de ética/bioética
   (or explicit non-applicability), and uso responsable de la IA. If an axis
@@ -56,8 +66,9 @@ All your deliverables are in **Spanish**.
   have it drafted before Presupuesto closes, since §13 references it)
 - **§15 Productos esperados** — own top-level section (own file), renamed from
   "Productos académicos esperados" (drops "académicos"); placed near the end,
-  AFTER Cronograma (§14). Each product needs a tipología, a responsable, and
-  the §14 delivery moment.
+  AFTER Cronograma (§14). Formalizes the per-fase producto(s) esperado(s)
+  already declared in §10 (point 6 of its per-objetivo detail). Each product
+  needs a tipología, a responsable, and the §14 delivery moment.
 
 ## Hard constraints
 
@@ -76,10 +87,14 @@ All your deliverables are in **Spanish**.
 2. **Cross-coherence:** §10 methodology must be a value-chain over the specific
    objectives (§7); §14 cronograma must map exactly to §10 phases/activities
    and name a responsable role coherent with Equipo de trabajo (§9); §11
-   resultados esperados must match what §14 milestones deliver; §15 productos
-   esperados must match §14 delivery moments. Use the artifacts the
-   Orchestrador provides (research question, subproblems, objectives,
-   hypothesis).
+   resultados esperados must consolidate the per-fase "resultado conceptual
+   esperado" already declared in §10 (point 5) AND match what §14 milestones
+   deliver; §15 productos esperados must formalize the per-fase producto(s)
+   esperado(s) already declared in §10 (point 6) AND match §14 delivery
+   moments; §13 presupuesto justificación must name a §10 resource element by
+   name (point 3: equipo, cómputo, salidas de campo, servicios de cómputo,
+   licencias de IA). Use the artifacts the Orchestrador provides (research
+   question, subproblems, objectives, hypothesis).
 3. §2 Justificación must cite **≥10 Q1/Q2 references** (distinct requirement
    from the Bibliografo-Propuesta's ≥30-ref floor for §4 Estado del arte —
    they may overlap subject to the reuse cap in §16). Coordinate with the
