@@ -172,7 +172,12 @@ scoping-stage modes that add `consensus` to the tool scope.
 - Writes `proposal/refs.bib` in **one pass**, covering the **full corpus**
   (`paper-1.md`..`paper-N.md`), deriving BibTeX fields from each paper's
   already-captured metadata (título, autores, año, venue, DOI/URL) — **no
-  re-search**, no new tool calls to `consensus`/`semanticscholar`/`openalex`.
+  re-search** for new candidate papers, no new discovery calls to
+  `consensus`/`openalex`. The only tool calls this sub-step makes are the
+  verification calls required by "Invariante de escritura de referencias"
+  (see below): the `semanticscholar` `batch_get_papers` call and, if needed,
+  its residual per-candidate fallback — never a call to discover papers not
+  already in the corpus.
 - Cite keys follow the same convention as MODE=deliverable
   (`authorYear_keyword`).
 - Until this sub-step runs, `proposal/refs.bib`'s checksum stays unchanged
@@ -384,8 +389,8 @@ across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
 
 TODOS los modos que escriban `proposal/refs.bib` deben cumplir este
 invariante (redacción a prueba de futuro), vinculante hoy en los dos
-caminos reales que existen: **MODE=sota**, sub-paso WRITE-REFS (`:142-156`,
-solo tras aprobación G1b) y **MODE=deliverable** (`:172-178`, Fase 6,
+caminos reales que existen: **MODE=sota**, sub-paso WRITE-REFS (ver la sección «Sub-step: WRITE-REFS»,
+solo tras aprobación G1b) y **MODE=deliverable** (ver la sección «Hard constraints (MODE=deliverable)», Fase 6,
 §4+§16). Ningún otro camino escribe `refs.bib`: MODE=explore devuelve
 referencias en línea sin escribir archivo; MODE=scope no produce BibTeX;
 Fase 5 solo despacha al redactor y no toca `refs.bib` — el invariante NO
@@ -400,24 +405,34 @@ Invariante: cada entrada nueva en `refs.bib` debe tener:
    búsqueda/clúster de subsección SOTA, o de una query amplia si no hay
    tabla de agrupación) se reúnen los IDs candidatos (DOI/S2/arXiv) del
    lote; (b) se resuelve/verifica TODO el lote en UNA sola llamada
-   `semanticscholar` `batch_get_papers` (hasta 500 IDs/llamada). `crossref`
-   `getWorkByDOI` (sin endpoint de batch) queda como fallback per-DOI solo
-   para candidatos residuales que el batch no pudo resolver. Este flujo de 2
+   `semanticscholar` `batch_get_papers` (hasta 500 IDs/llamada). Para
+   candidatos residuales que el batch no pudo resolver, el fallback es
+   per-candidato y sus fuentes dependen del modo: en **MODE=sota** solo
+   `openalex` o `semanticscholar` `get_paper` individual (sin endpoint de
+   batch) — **nunca `crossref`**, que no forma parte del stack de
+   MODE=sota; en **MODE=deliverable** `crossref` `getWorkByDOI` (si el
+   candidato tiene DOI), `openalex`, o `semanticscholar` `get_paper`
+   individual. En ambos modos la fuente se elige según qué identificador
+   tenga el candidato (DOI, S2 ID, o arXiv ID); `semanticscholar`
+   `get_paper` acepta IDs con prefijo `DOI:`, así que en MODE=sota un
+   candidato con DOI sigue siendo verificable sin `crossref`. Este flujo de 2
    pasos aplica a los dos caminos reales que escriben `refs.bib`:
    MODE=sota, sub-paso WRITE-REFS, y MODE=deliverable (consolidación Fase 6,
    §4+§16); ningún otro camino se ve afectado. Cada paper devuelto por el
    batch debe emparejarse 1:1 y de forma estable con su ID candidato
    original antes de escribirse en `## Verificación`. Si un ID candidato NO
-   aparece resuelto en la respuesta del batch (ni en el fallback residual de
-   crossref), se **rechaza**: no se escribe en `refs.bib`, no genera
+   aparece resuelto en la respuesta del batch (ni en el fallback residual
+   per-candidato admitido para el modo en curso), se **rechaza**: no se escribe en `refs.bib`, no genera
    `paper-N.md` ni nota de vault, y se reporta al dispatcher como
    `descartada: inverificable` con el título y la razón. Nunca escribas una
    entrada con `Resuelto: no` o sin ID estable, y nunca sustituyas
    silenciosamente un candidato rechazado por otro. Si la llamada
    `batch_get_papers` en sí falla o no está disponible (no un ID individual
    sin resolver dentro de una respuesta exitosa), degrada el lote completo a
-   verificación candidato-por-candidato contra `crossref`, `openalex` o
-   `semanticscholar` — el mismo invariante de ID estable 1:1 y la misma
+   verificación candidato-por-candidato usando exactamente las mismas
+   fuentes por modo que el fallback residual: en **MODE=sota** solo
+   `openalex` o `semanticscholar`; en **MODE=deliverable** `crossref`,
+   `openalex` o `semanticscholar` — el mismo invariante de ID estable 1:1 y la misma
    regla de rechazo aplican igual en ese modo degradado.
 
 Plantilla mínima de paper `.md` (extiende el esquema de MODE=scope):
