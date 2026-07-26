@@ -11,7 +11,9 @@
 #   ./build.sh --docx       Exporta a Word (proposal/main.docx) vía pandoc
 #   ./build.sh --help       Muestra esta ayuda
 #
-# Requisitos: pdflatex, bibtex, latexmk; para --docx: pandoc, pdftoppm (todos en PATH).
+# Requisitos: pdflatex, bibtex, latexmk; opcional: doi2bib3
+#   (instalable con 'pipx install git+https://github.com/CarlosAndres12/doi2bib3.git');
+#   para --docx: pandoc, pdftoppm (todos en PATH).
 #
 set -euo pipefail
 
@@ -24,6 +26,9 @@ ENGINE="pdflatex"
 # natbib + apalike (citas autor-año), no biblatex/biber: apalike es un .bst
 # clásico procesado por bibtex, no genera el .bcf que biber requiere.
 BIBENGINE="bibtex"
+# doi2bib3 repara/normaliza refs.bib antes de bibtex (ver repair_bib).
+BIB_FILE="refs.bib"
+DOIREPAIR_BIN="doi2bib3"
 
 # Colores (si la terminal los soporta)
 if [[ -t 1 ]]; then
@@ -54,7 +59,40 @@ clean_artifacts() {
     -o -name "*.bcf" -o -name "*.log" -o -name "*.out" -o -name "*.fls" \
     -o -name "*.fdb_latexmk" -o -name "*.run.xml" -o -name "*.synctex.gz" \) \
     -delete 2>/dev/null || true
+  # refs.bib.bak lo escribe doi2bib3 --overwrite_backup; no usar *.bak (no clobberearía operador)
+  rm -f "${SCRIPT_DIR}/refs.bib.bak" 2>/dev/null || true
   ok "Artefactos eliminados."
+}
+
+# --- Reparación de refs.bib (doi2bib3) ---------------------------------------
+repair_bib() {
+  local bib="${SCRIPT_DIR}/${BIB_FILE}"
+  if [[ ! -f "${bib}" ]]; then
+    warn "${BIB_FILE} ausente — salteando reparación DOI (se crea en Fase 2 del pipeline)."
+    return 0
+  fi
+  if ! command -v "${DOIREPAIR_BIN}" >/dev/null 2>&1; then
+    warn "${DOIREPAIR_BIN} no está en PATH. Instalalo con:"
+    warn "  pipx install git+https://github.com/CarlosAndres12/doi2bib3.git"
+    if [[ -t 0 ]]; then
+      # Sesión interactiva: parar y preguntar
+      printf "${C_YLW}[WARN]${C_RST} ¿Continuar compilando SIN reparar refs.bib? [y/N] "
+      local answer=""
+      read -r answer
+      case "${answer,,}" in
+        y|yes|s|si) warn "Continuando SIN reparación DOI." ; return 0 ;;
+        *) err "Abortando por decisión del operador. Instalá doi2bib3 y re-ejecutá." ; exit 1 ;;
+      esac
+    else
+      # No-TTY (CI/pipe): no colgar; continuar sin reparar
+      warn "stdin no es TTY — continuando SIN reparación DOI."
+      return 0
+    fi
+  fi
+  log "Reparando ${BIB_FILE} con ${DOIREPAIR_BIN} (--normalize --overwrite_backup)..."
+  ( cd "${SCRIPT_DIR}" && "${DOIREPAIR_BIN}" repair "${BIB_FILE}" --normalize --overwrite_backup ) \
+    | sed 's/^/  /' || { warn "${DOIREPAIR_BIN} reportó errores; continuando igual." ; return 0 ; }
+  ok "refs.bib reparado."
 }
 
 # --- Verificación de dependencias --------------------------------------------
@@ -260,6 +298,8 @@ main() {
   if [[ "${do_clean}" == true ]]; then
     clean_artifacts
   fi
+
+  repair_bib   # normaliza refs.bib antes de cualquier pase bibtex/citeproc
 
   case "${mode}" in
     latexmk) build_latexmk ;;

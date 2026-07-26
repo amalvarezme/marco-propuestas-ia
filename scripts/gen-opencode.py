@@ -37,10 +37,15 @@ dispatcher require an interactive/resumable OpenCode session -- headless
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+# Default root is the repo root (parent of scripts/).  The --root CLI flag
+# overrides this so marco init/upgrade can point the generator at the target
+# portable-project folder instead of CWD.  All source reads (.claude/) and
+# output writes (.opencode/) are relative to this root.
+REPO_ROOT: Path = Path(__file__).resolve().parent.parent
 RULES_PATH = Path(__file__).resolve().parent / "gen-opencode.rules.json"
 
 
@@ -63,10 +68,28 @@ def load_rules() -> dict:
     with RULES_PATH.open("r", encoding="utf-8") as fh:
         return json.load(fh)
 
+# --------------------------------------------------------------------------
+# Project config (.marco/config.json)
+# --------------------------------------------------------------------------
+
+
+def load_project_config(root: Path) -> dict | None:
+    """Read ``<root>/.marco/config.json`` and return the dict, or None if
+    the file is absent or unparseable (backward compat for legacy projects)."""
+    config_path = root / ".marco" / "config.json"
+    if not config_path.is_file():
+        return None
+    try:
+        with config_path.open("r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except (json.JSONDecodeError, OSError):
+        return None
+
 
 # --------------------------------------------------------------------------
 # Frontmatter / body split
 # --------------------------------------------------------------------------
+
 
 
 def split_frontmatter(text: str, source_path: Path) -> tuple[dict, str]:
@@ -99,7 +122,9 @@ def split_frontmatter(text: str, source_path: Path) -> tuple[dict, str]:
 # --------------------------------------------------------------------------
 
 
-def map_agent_frontmatter(fm: dict, source_path: Path, rules: dict) -> dict:
+def map_agent_frontmatter(fm: dict, source_path: Path, rules: dict,
+                          agent_name: str | None = None,
+                          config: dict | None = None) -> dict:
     out: dict = {}
 
     if "description" not in fm:
@@ -108,15 +133,31 @@ def map_agent_frontmatter(fm: dict, source_path: Path, rules: dict) -> dict:
 
     out["mode"] = rules["frontmatter"]["constants"]["mode"]
 
+    # Determine the source model id.  When a project config is present the
+    # config's per-agent model is authoritative (it may be a Claude model
+    # like "opus" or a runtime-native id like "gpt-5.6-sol").  When config
+    # is absent we read the model from the .claude/ source file's
+    # frontmatter (backward compat).
     model_map = rules["model_map"]
-    claude_model = fm.get("model")
-    if not claude_model:
-        raise GeneratorError(f"{source_path}: agent frontmatter missing 'model'")
-    if claude_model not in model_map:
-        raise GeneratorError(
-            f"{source_path}: model '{claude_model}' has no entry in rules.json model_map"
-        )
-    out["model"] = model_map[claude_model]
+    if config is not None and agent_name is not None:
+        agent_models: dict = config.get("agent_models", {})
+        source_model = agent_models.get(agent_name)
+    else:
+        source_model = None
+
+    if source_model is None:
+        source_model = fm.get("model")
+        if not source_model:
+            raise GeneratorError(f"{source_path}: agent frontmatter missing 'model'")
+
+    # Look up the source model in model_map.  If found, use the mapped
+    # value (e.g. opus -> openai/gpt-5.4 for the OpenCode runtime).  If
+    # not found (e.g. "gpt-5.6-sol" or "opencode-go/glm-5.2" which are
+    # already OpenCode-native ids), use the source directly.
+    if source_model in model_map:
+        out["model"] = model_map[source_model]
+    else:
+        out["model"] = source_model
 
     permission_map = rules["permission_map"]
     claude_tools = fm.get("tools")
@@ -239,11 +280,91 @@ def write_output(relpath: str, text: str, output_roots: tuple[str, ...], check: 
 
 
 # --------------------------------------------------------------------------
+# Config-driven overrides (.marco/config.json)
+# --------------------------------------------------------------------------
+
+
+def override_agent_models(built: list[tuple[str, str]], config: dict, agents_dir: str) -> list[tuple[str, str]]:
+    """Rewrite the ``model:`` frontmatter line in every generated agent file
+    to match ``config["agent_models"][<agent-name>]``.  Returns a new list
+    with the overridden texts; files whose agent is not in the config map
+    are left unchanged.
+    """
+    agent_models: dict = config.get("agent_models", {})
+    if not agent_models:
+        return built
+
+    out: list[tuple[str, str]] = []
+    for relpath, text in built:
+        relpath_str = str(relpath)
+        if relpath_str.startswith(agents_dir):
+            filename = relpath_str[len(agents_dir) + 1 :]
+            agent_name = filename.removesuffix(".md")
+            expected = agent_models.get(agent_name)
+            if expected is not None:
+                text = re.sub(
+                    r"^model:\s.*$",
+                    f"model: {expected}",
+                    text,
+                    count=1,
+                    flags=re.MULTILINE,
+                )
+        out.append((relpath, text))
+    return out
+
+
+def config_drift_lint(
+    built: list[tuple[str, str]], config: dict, agents_dir: str, repo_root: Path
+) -> list[str]:
+    """Check each on-disk agent file's ``model:`` line against
+    ``config["agent_models"]``.  Files that do not exist yet (first run)
+    are not flagged -- the write phase will create them correctly.
+    Returns a list of drift messages (empty = no drift).
+    """
+    agent_models: dict = config.get("agent_models", {})
+    if not agent_models:
+        return []
+
+    messages: list[str] = []
+    for relpath, _text in built:
+        relpath_str = str(relpath)
+        if not relpath_str.startswith(agents_dir):
+            continue
+        filename = relpath_str[len(agents_dir) + 1 :]
+        agent_name = filename.removesuffix(".md")
+        expected = agent_models.get(agent_name)
+        if expected is None:
+            continue
+        dest = repo_root / relpath_str
+        if not dest.is_file():
+            continue  # not created yet -- not drift
+        on_disk = dest.read_text(encoding="utf-8")
+        found_model = False
+        for line in on_disk.splitlines():
+            if line.startswith("model:"):
+                found_model = True
+                actual = line[len("model:") :].strip()
+                if actual != expected:
+                    messages.append(
+                        f'CONFIG-DRIFT: {relpath_str}: on-disk model is "{actual}", '
+                        f'expected "{expected}" (from .marco/config.json)'
+                    )
+                break
+        if not found_model:
+            messages.append(
+                f'CONFIG-DRIFT: {relpath_str}: missing "model:" line, '
+                f'expected "{expected}" (from .marco/config.json)'
+            )
+    return messages
+
+
+# --------------------------------------------------------------------------
 # Per-file pipeline (BUILD phase -- pure, no filesystem writes)
 # --------------------------------------------------------------------------
 
 
-def build_agent(filename: str, rules: dict) -> tuple[str, str]:
+def build_agent(filename: str, rules: dict,
+                config: dict | None = None) -> tuple[str, str]:
     """Return (output_relpath, output_text) for one agent. No writes."""
     paths = rules["paths"]
     source_path = REPO_ROOT / paths["source_agents_dir"] / filename
@@ -252,7 +373,9 @@ def build_agent(filename: str, rules: dict) -> tuple[str, str]:
 
     text = source_path.read_text(encoding="utf-8")
     fm, body = split_frontmatter(text, source_path)
-    out_fm = map_agent_frontmatter(fm, source_path, rules)
+    agent_name = filename.removesuffix(".md")
+    out_fm = map_agent_frontmatter(fm, source_path, rules,
+                                   agent_name=agent_name, config=config)
     out_body = apply_substitutions(body, filename, rules)
 
     rendered_fm = render_frontmatter(out_fm, rules["frontmatter"]["agent_key_order"])
@@ -284,12 +407,33 @@ def build_command(filename: str, rules: dict) -> tuple[str, str]:
 
 def main(argv: list[str]) -> int:
     check = False
-    for arg in argv[1:]:
+    root = None
+    i = 1
+    while i < len(argv):
+        arg = argv[i]
         if arg == "--check":
             check = True
+            i += 1
+        elif arg == "--root":
+            i += 1
+            if i >= len(argv):
+                print(f"error: --root requires an argument", file=sys.stderr)
+                return 1
+            root = Path(argv[i]).resolve()
+            i += 1
         else:
-            print(f"usage: {argv[0]} [--check]", file=sys.stderr)
+            print(f"usage: {argv[0]} [--check] [--root DIR]", file=sys.stderr)
             return 1
+
+    # Override REPO_ROOT when --root is given (backward compatible: no flag
+    # keeps the original behaviour).
+    global REPO_ROOT
+    if root is not None:
+        REPO_ROOT = root
+
+    # Load project config (.marco/config.json) – may be None for legacy
+    # projects, in which case we fall back to current behaviour.
+    config = load_project_config(REPO_ROOT)
 
     try:
         rules = load_rules()
@@ -309,7 +453,7 @@ def main(argv: list[str]) -> int:
         for filename in paths["agent_files"]:
             if filename in excluded:
                 continue
-            built.append(build_agent(filename, rules))
+            built.append(build_agent(filename, rules, config=config))
         for filename in paths["command_files"]:
             built.append(build_command(filename, rules))
     except GeneratorError as exc:
@@ -317,9 +461,15 @@ def main(argv: list[str]) -> int:
         return 2
 
     # DRIFT-LINT phase: scan every built output before writing anything.
+    agents_dir = paths["output_agents_dir"]
     all_drift: list[str] = []
     for output_relpath, output_text in built:
         all_drift.extend(drift_lint(output_text, output_relpath, rules["drift_patterns"]))
+
+    # Config-drift check: if config is present, verify on-disk agent
+    # model lines match the config.
+    if config is not None:
+        all_drift.extend(config_drift_lint(built, config, agents_dir, REPO_ROOT))
 
     if all_drift:
         for msg in all_drift:

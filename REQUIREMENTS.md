@@ -14,7 +14,8 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 | **git** | 2.40+ | Version control | `brew install git` |
 | **engram** | 1.18+ | Persistent memory MCP server (required: `.mcp.json`'s `engram` server invokes this binary directly) | `brew install gentleman-programming/tap/engram` |
 | **gentle-ai** (recommended) | 1.43+ | SDD workflow orchestration, skill registry, model-assignment dispatch for `/sdd-*` commands | `brew install gentleman-programming/tap/gentle-ai` |
-| **OpenCode** (optional) | — | Secondary runtime for `.opencode/agents/` + `.opencode/commands/propuesta.md` (generated from `.claude/` via `scripts/gen-opencode.py`, stdlib-only, no new Python deps); interactive session required — gates don't work under `opencode run` headless | see [opencode.ai](https://opencode.ai) |
+| **OpenCode** (optional) | — | Secondary runtime for `.opencode/` (generated from `.claude/` via `scripts/gen-opencode.py`); interactive session required — gates don't work under `opencode run` headless | see [opencode.ai](https://opencode.ai) |
+| **pi** (optional) | 0.80+ | Secondary runtime for `.pi/prompts` + role references (generated via `scripts/gen-pi.py`); trust project to load `.pi/`; interactive session for gates; no nested Task subagents | see [pi.dev](https://pi.dev) / `pi --help` |
 
 ## 2. Python packages (`requirements.txt`)
 
@@ -120,19 +121,17 @@ Graphify is a Claude Code skill file + the `graphifyy` Python package (in `requi
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
 ├── logos/                    # Repo/README branding logos (LabIA, UNAL, GCPDS)
-├── scripts/                  # Repo tooling (NOT proposal-run-specific): gen-opencode.py +
-│                              #   gen-opencode.rules.json — Claude Code → OpenCode agent-portability generator
+├── scripts/                  # Repo tooling: gen-opencode.py, gen-pi.py + rules JSON
 ├── .claude/                  # CANONICAL runtime — single source of truth, hand-edited
-│   ├── agents/                # 10 files: 9 dispatchable subagents (investigador, redactor,
-│   │                           #   insumos-observador, bibliografo-propuesta, presupuestador,
-│   │                           #   revisor, disenador-tikz, revisor-figuras, tikz-optimizer)
-│   │                           #   + coordinador-propuesta (canonical pipeline reference,
-│   │                           #   never dispatched — Claude Code subagents can't invoke subagents)
+│   ├── agents/                # 10 agent markdown files
+│   └── commands/              # /propuesta-* dispatchers + _propuesta-steps.md
+├── .opencode/                 # Secondary — GENERATED (gen-opencode.py), never hand-edited
+│   ├── agents/
 │   └── commands/
-│       └── propuesta.md      # Comando /propuesta — dispatcher real del pipeline
-├── .opencode/                 # Secondary runtime — GENERATED from .claude/, never hand-edited
-│   ├── agents/                 # 9 ported subagents (1:1 with .claude/agents/, no coordinador)
-│   └── commands/propuesta.md   # Ported /propuesta command
+├── .pi/                       # Secondary — GENERATED (gen-pi.py), never hand-edited
+│   ├── prompts/               # Slash templates /propuesta-*
+│   ├── references/agents/     # Role cards for primary agent
+│   └── skills/marco-propuestas/
 ├── info_data/                # User inputs (PDFs, DOCX) — vacío hasta la próxima corrida
 ├── vault/                     # Navigable Obsidian/Markdown mirror — visual layer only, NEVER
 │   │                           #   the source of truth (that's proposal/*.tex, LaTeX)

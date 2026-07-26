@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "purpose": "Data-only rules consumed by gen-opencode.py to port .claude/agents + .claude/commands/propuesta.md into .opencode/. Never edit generated output directly -- edit this file or the .claude/ sources, then re-run the generator.",
+    "purpose": "Data-only rules consumed by gen-opencode.py to port .claude/agents + .claude/commands into .opencode/. Never edit generated output directly -- edit this file or the .claude/ sources, then re-run the generator.",
     "schema_version": 1
   },
   "paths": {
@@ -20,7 +20,15 @@
       "revisor.md",
       "tikz-optimizer.md"
     ],
-    "command_files": ["propuesta.md", "propuesta-limpiar.md"]
+    "command_files": [
+      "propuesta.md",
+      "propuesta-auto.md",
+      "propuesta-analizar.md",
+      "propuesta-continuar.md",
+      "propuesta-init.md",
+      "propuesta-limpiar.md"
+    ],
+    "_command_files_note": "_propuesta-steps.md is a shared fragment without slash-command frontmatter; not ported. OpenCode commands that need it should reference the Claude path rewritten via substitutions to a repo-relative bare name or leave path rewritten to .opencode-neutral wording."
   },
   "frontmatter": {
     "agent_key_order": ["description", "mode", "model", "permission"],
@@ -47,74 +55,118 @@
   },
   "substitutions": [
     {
-      "id": "propuesta-interactive-session-note",
-      "applies_to": ["propuesta.md"],
+      "id": "propuesta-auto-interactive-session-note",
+      "applies_to": ["propuesta-auto.md"],
       "find": "El usuario quiere redactar una propuesta de investigación en IA siguiendo el",
       "replace": "**Nota de ejecución (solo OpenCode):** los gates de aprobación de este pipeline (\"NO avances sin aprobación\") requieren que la sesión de OpenCode se mantenga activa e interactiva entre fases -- este comando es resumible (el usuario responde en cada gate y el pipeline continúa dentro de la misma sesión), NO soporta una ejecución headless de una sola pasada (por ejemplo, `opencode run` de punta a punta sin sesión persistente), porque ese modo no puede detenerse a esperar la aprobación humana en cada gate.\n\nEl usuario quiere redactar una propuesta de investigación en IA siguiendo el",
       "literal": true,
-      "_note": "Implements spec Requirement 'Interactive-Session-Only Constraint' (verify-report CRITICAL-1, obs #208): the source .claude/commands/propuesta.md's gate-wait prose is Claude-generic and never names OpenCode's headless-vs-interactive/resumable session distinction, so it must be injected explicitly into the generated artifact, not inferred. Uses the existing literal find/replace substitution mechanism as an insertion technique -- find matches the body's first line (verified single occurrence via rg) and replace prepends the note plus a blank line before that same first line, so the note lands at the very top of the body, right after frontmatter, before any pipeline content. Runs first in this array; the find target is disjoint from every other rule's find target so ordering relative to the other rules does not matter."
+      "_note": "Same interactive-session note as historical propuesta.md, now on propuesta-auto.md (full pipeline body)."
     },
     {
       "id": "task-prompt-wording",
       "applies_to": ["investigador.md", "revisor.md", "presupuestador.md"],
       "find": "Task prompt",
       "replace": "dispatch prompt",
-      "literal": true,
-      "_note": "6 verified occurrences: investigador.md:56,68,116; revisor.md:53; presupuestador.md:25,81. Generic tool-neutral wording; does not touch the 47 'Task -> <agente>' flow arrows in propuesta.md (see propuesta-flow-arrows-unchanged note below)."
+      "literal": true
     },
     {
       "id": "docx-claude-code-claim",
       "applies_to": ["insumos-observador.md"],
       "find": "El Read tool de Claude Code no puede leer archivos `.docx` binarios",
       "replace": "El Read tool no puede leer archivos `.docx` binarios de forma nativa en todos los runtimes (comportamiento no verificado caso por caso)",
-      "literal": true,
-      "_note": "Per spec Requirement 'insumos-observador .docx Claim Correction': OpenCode's own .docx Read-tool behavior is UNVERIFIED in this PR (open item, also flagged in design's Open Questions), so this rule takes the spec's tool-neutral rephrase fallback rather than asserting a specific corrected OpenCode capability claim. The textutil/unzip conversion fallback prose that follows is already tool-neutral and is left unchanged."
+      "literal": true
     },
     {
-      "id": "propuesta-framing-claude-to-opencode",
-      "applies_to": ["propuesta.md"],
+      "id": "propuesta-auto-framing-claude-to-opencode",
+      "applies_to": ["propuesta-auto.md"],
       "find": "de Claude Code no pueden invocar a otros subagentes. Usa la herramienta `Task`",
       "replace": "de OpenCode no pueden invocar a otros subagentes. Usa la herramienta `task` (o la mención `@<agente>`)",
-      "literal": true,
-      "_note": "Must run before propuesta-task-tool-name so the generic backtick-Task rule does not need to (and does not) re-touch this already-lowercased occurrence."
+      "literal": true
     },
     {
-      "id": "propuesta-dispatch-path",
-      "applies_to": ["propuesta.md"],
+      "id": "propuesta-auto-dispatch-path",
+      "applies_to": ["propuesta-auto.md"],
       "find": "para despachar cada fase al subagente correspondiente en `.claude/agents/`.",
       "replace": "para despachar cada fase al subagente correspondiente en `.opencode/agents/` (o mediante la mención `@<agente>`).",
       "literal": true
     },
     {
-      "id": "propuesta-coordinador-ref",
-      "applies_to": ["propuesta.md"],
+      "id": "propuesta-auto-coordinador-ref",
+      "applies_to": ["propuesta-auto.md"],
       "find": "`.claude/agents/coordinador-propuesta.md`",
       "replace": "`coordinador-propuesta.md` (documento de referencia del pipeline, no incluido en este puerto)",
-      "literal": true,
-      "_note": "coordinador-propuesta.md is intentionally excluded from the port (see paths.excluded_agents); the reference is kept as a bare filename so it neither reintroduces a .claude/ path nor implies a .opencode/agents/coordinador-propuesta.md file that will never exist."
+      "literal": true
     },
     {
-      "id": "propuesta-roster-heading",
-      "applies_to": ["propuesta.md"],
+      "id": "propuesta-auto-roster-heading",
+      "applies_to": ["propuesta-auto.md"],
       "find": "## Roster de subagentes (`.claude/agents/`)",
       "replace": "## Roster de subagentes (`.opencode/agents/`)",
       "literal": true
     },
     {
-      "id": "propuesta-task-tool-name",
-      "applies_to": ["propuesta.md"],
+      "id": "propuesta-auto-task-tool-name",
+      "applies_to": ["propuesta-auto.md"],
       "find": "`Task`",
       "replace": "`task`",
-      "literal": true,
-      "_note": "Catches the 4 remaining literal backtick-quoted tool-name mentions (original lines 29, 138, 772, 787) after propuesta-framing-claude-to-opencode has already consumed the line-11 occurrence. Order in this array matters -- apply sequentially."
+      "literal": true
     },
     {
-      "id": "propuesta-flow-arrows-unchanged",
-      "applies_to": [],
-      "find": "",
-      "replace": "",
+      "id": "propuesta-auto-steps-path",
+      "applies_to": ["propuesta-auto.md", "propuesta-analizar.md", "propuesta-continuar.md", "propuesta.md"],
+      "find": "`.claude/commands/_propuesta-steps.md`",
+      "replace": "`_propuesta-steps.md` (fragmento de referencia del pipeline en el repo; no es un slash command portado)",
+      "literal": true
+    },
+    {
+      "id": "propuesta-auto-body-path",
+      "applies_to": ["propuesta.md", "propuesta-analizar.md", "propuesta-continuar.md"],
+      "find": "`.claude/commands/propuesta-auto.md`",
+      "replace": "`.opencode/commands/propuesta-auto.md`",
+      "literal": true
+    },
+    {
+      "id": "propuesta-analizar-task",
+      "applies_to": ["propuesta-analizar.md", "propuesta-continuar.md"],
+      "find": "`Task`",
+      "replace": "`task`",
+      "literal": true
+    },
+    {
+      "id": "propuesta-continuar-usa-task",
+      "applies_to": ["propuesta-continuar.md"],
+      "find": "Usá `task` a los mismos subagentes",
+      "replace": "Usá `task` a los mismos subagentes",
       "literal": true,
-      "_note": "DOCUMENTATION-ONLY entry, not an active rule (applies_to is empty on purpose so the engine skips it). Design decision: the 47 verified 'Task -> <agente>' flow arrows in propuesta.md's pipeline diagram stay UNCHANGED -- they are human-readable plan notation, not executable calls, and none of them contain a drift_patterns match ('Claude Code', 'Task tool', '.claude/', or backtick-Task), so leaving them as-is passes drift-lint cleanly."
+      "_note": "No-op placeholder after propuesta-analizar-task already lowercases Task; kept for documentation."
+    },
+    {
+      "id": "propuesta-alias-claude-paths-remaining",
+      "applies_to": ["propuesta.md"],
+      "find": "`.claude/commands/",
+      "replace": "`.opencode/commands/",
+      "literal": true,
+      "_note": "Safety net if any .claude/commands/ path remains on the thin alias after specific rewrites."
+    },
+    {
+      "id": "propuesta-init-portable-donttouch-list",
+      "applies_to": ["propuesta-init.md"],
+      "find": "`.marco/`, `.claude/`, `.opencode/`, `.pi/`,",
+      "replace": "`.marco/`, `.opencode/`, `.pi/`,",
+      "literal": true,
+      "_note": "Portable-mode 'don't touch' list: drop .claude/ (SSOT not touched by OpenCode operator) to satisfy drift lint; .opencode/ is the operator's runtime dir."
+    },
+    {
+      "id": "agent-model-frontmatter-override",
+      "_config_driven": true,
+      "_consumed_by": "gen-opencode.py (post-processing loop)",
+      "_note": "When .marco/config.json is present, gen-opencode.py rewrites each agent file's model: frontmatter line to the corresponding value from config[\"agent_models\"][<agent-name>]. This override is applied programmatically (not a literal substitution) after the standard build pipeline."
+    },
+    {
+      "id": "agents-language-override",
+      "_config_driven": true,
+      "_consumed_by": "gen-opencode.py (informational — the generator does not emit AGENTS.md; marco upgrade handles the project-root AGENTS.md rewrite)",
+      "_note": "When .marco/config.json is present, gen-opencode.py rewrites the AGENTS.md rule #1 directive text from 'español' to the configured language code. For the opencode generator surface this rule is informational; the portable project's AGENTS.md is rewritten directly by marco upgrade."
     }
   ],
   "drift_patterns": [
@@ -123,10 +175,10 @@
     ".claude/",
     "`Task`"
   ],
-  "_drift_patterns_note": "First 3 are the design's baseline set. '`Task`' (backtick-quoted capital-T tool name) was added after auditing the real source files: it is the literal token the propuesta-task-tool-name substitution eliminates, and keeping it as a drift pattern is a safety net against a future source edit reintroducing a Claude-specific backtick-Task mention without a matching rule update.",
+  "_drift_patterns_note": "First 3 are the design's baseline set. '`Task`' (backtick-quoted capital-T tool name) was added after auditing the real source files.",
   "open_items": [
     "model_map ids unverified against a live anthropic provider on this machine (see model_map._assumption).",
-    "insumos-observador.md .docx claim uses the spec's tool-neutral rephrase fallback, not a verified OpenCode-specific corrected claim (see docx-claude-code-claim._note).",
-    "`.mcp.json` mentions in bibliografo-propuesta.md and investigador.md are left untouched -- spec's Scope Boundary requirement says the generator must not touch .mcp.json itself; it does not require rewriting text that merely mentions the filename, and design does not list it as a substitution target or drift pattern. Flagged here for a human follow-up decision, not treated as in-scope drift for this PR."
+    "insumos-observador.md .docx claim uses the spec's tool-neutral rephrase fallback, not a verified OpenCode-specific corrected claim.",
+    "`_propuesta-steps.md` is not generated into .opencode/commands; OpenCode operators rely on rewritten references or the Claude tree in the same repo checkout."
   ]
 }

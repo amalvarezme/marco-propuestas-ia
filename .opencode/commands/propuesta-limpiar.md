@@ -5,11 +5,11 @@ description: Archiva la corrida activa de /propuesta (si existe) y deja proposal
 # /propuesta-limpiar — Archivar y resetear la corrida activa
 
 Ejecuta, de forma standalone, el mismo procedimiento de archivado que
-`propuesta.md` (Fase 0, bloque "GUARDIA DE COLISIÓN" / "ARCHIVADO-Y-REINICIO")
-ya dispara automáticamente cuando detecta una corrida sin terminar — pero
-invocable directamente, sin necesidad de arrancar una corrida nueva primero.
-Fuente de verdad del procedimiento de archivado: ese bloque en `propuesta.md`.
-Este comando no lo duplica; lo ejecuta.
+`propuesta-auto.md` (Fase 0, bloque "GUARDIA DE COLISIÓN" /
+"ARCHIVADO-Y-REINICIO") ya dispara automáticamente cuando detecta una corrida
+sin terminar — pero invocable directamente, sin necesidad de arrancar una
+corrida nueva primero. Fuente de verdad del procedimiento de archivado: ese
+bloque en `propuesta-auto.md`. Este comando no lo duplica; lo ejecuta.
 
 ## Qué hacés vos (el asistente primario) al recibir este comando
 
@@ -31,8 +31,8 @@ Este comando no lo duplica; lo ejecuta.
    eso requiere confirmación previa.
 
 3. **Tras la confirmación**, releé el bloque "ARCHIVADO-Y-REINICIO" completo
-   de `propuesta.md` (Fase 0) y ejecutá sus 6 pasos exactamente como están
-   escritos ahí: (1) leer el `run_id` previo; (2) copiar el contenido de
+   de `propuesta-auto.md` (Fase 0) y ejecutá sus 6 pasos exactamente como
+   están escritos ahí: (1) leer el `run_id` previo; (2) copiar el contenido de
    `proposal/` y `vault/` a `proposals/<run-id-previo>/proposal/` y
    `proposals/<run-id-previo>/vault/` — **solo local**, `proposals/*/` está
    en `.gitignore`, ese contenido nunca se sincroniza con GitHub; (3)
@@ -49,17 +49,20 @@ Este comando no lo duplica; lo ejecuta.
    cerrada (main.pdf/.docx/.tex y build de LaTeX, `guia_ajustada_TDR.md`,
    `pixelshot-out/`, snapshots de grafo, `__pycache__/`), aunque ya estén
    gitignored — es limpieza de disco, no de git; ver la lista exacta en el
-   paso 5 de `propuesta.md`. El paso (6) del bloque original ("continuar con
-   el nuevo run-id") no aplica acá: este comando termina en el paso (5) — el
-   nuevo run-id se resuelve recién cuando el usuario arranque `/propuesta`
-   de nuevo.
+   paso 5 de `propuesta-auto.md`. El paso (6) del bloque original ("continuar
+   con el nuevo run-id") no aplica acá: este comando termina en el paso (5)
+   — el nuevo run-id se resuelve recién cuando el usuario arranque
+   `/propuesta-analizar` o `/propuesta-auto` de nuevo.
 
 4. **Al terminar**, confirmá al usuario: la ruta local donde quedó
    archivada la corrida (`proposals/<run_id>/`, solo en disco, no en
    GitHub), que el commit de `proposals/registry.md` se hizo (mostrale el
    hash), y que el árbol activo (`proposal/`, `vault/`) quedó vacío —sin
-   residuos de build ni cachés— y listo. Sugerile correr `/propuesta` cuando
-   quiera arrancar la corrida nueva.
+   residuos de build ni cachés— y listo (incluido el bloque de control de
+   ejecución / `next_step`, porque `estado_propuesta.md` queda vacío).
+   Sugerile el flujo stepped: `/propuesta-init` (si hace falta) →
+   `/propuesta-analizar` → `/propuesta-continuar`, o el full session
+   `/propuesta-auto` (alias `/propuesta`).
 
 ## Qué nunca hace este comando
 

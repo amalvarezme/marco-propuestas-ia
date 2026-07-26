@@ -12,11 +12,11 @@ los agentes mantienen un mirror Markdown/Obsidian navegable en `vault/`
 (`vault/secciones/`, `vault/insumos/`) — capa visual para explorar la
 propuesta como grafo de ideas; **nunca** es fuente de verdad, ese rol lo
 conserva `proposal/`. **Runtime canónico: Claude Code** (`.claude/agents/` +
-`.claude/commands/propuesta.md`, la única fuente editada a mano). **OpenCode**
-es un runtime secundario soportado: `.opencode/agents/` +
-`.opencode/commands/propuesta.md` se generan de forma determinista y
-zero-LLM desde las fuentes de Claude Code (`python3 scripts/gen-opencode.py`
-— ver `AGENTS.md` para el detalle y el setup manual pendiente en OpenCode).
+`.claude/commands/`, la única fuente editada a mano). **OpenCode** y **pi**
+son runtimes secundarios generados: `python3 scripts/gen-opencode.py` →
+`.opencode/`; `python3 scripts/gen-pi.py` → `.pi/prompts` + role cards
+(`.pi/references/agents/`) + skill `marco-propuestas`. No editar `.opencode/`
+ni `.pi/` a mano. **Codex** no está soportado.
 El asistente primario despacha 9 subagentes de dominio — `investigador`,
 `redactor`, `revisor`, `bibliografo-propuesta`, `presupuestador`,
 `insumos-observador`, `disenador-tikz`, `tikz-optimizer`, `revisor-figuras` —
@@ -65,16 +65,17 @@ agota — nunca reintentan sin límite.
 ├── .mcp.json                        # Config de MCP servers
 ├── info_data/                       # Insumos del usuario (vacío entre corridas)
 ├── logos/                           # Logos institucionales (branding del repo/README)
-├── scripts/                         # Tooling del REPO (no de la propuesta): gen-opencode.py
-│                                     #   + gen-opencode.rules.json — generador Claude Code → OpenCode
+├── scripts/                         # gen-opencode.py, gen-pi.py + rules JSON
 ├── .claude/                         # Runtime canónico — única fuente editada a mano
 │   ├── agents/                      # 10 archivos: 9 subagentes + coordinador-propuesta
+│   └── commands/                    # /propuesta-* + _propuesta-steps.md
+├── .opencode/                       # GENERADO (gen-opencode.py) — no editar a mano
+│   ├── agents/
 │   └── commands/
-│       ├── propuesta.md             # Comando /propuesta
-│       └── propuesta-limpiar.md     # Comando /propuesta-limpiar (archiva + resetea, standalone)
-├── .opencode/                       # Runtime secundario — GENERADO desde .claude/, no se edita a mano
-│   ├── agents/                      # 9 subagentes portados (1:1 con .claude/agents/, sin coordinador)
-│   └── commands/                    # propuesta.md + propuesta-limpiar.md portados
+├── .pi/                             # GENERADO (gen-pi.py) — no editar a mano
+│   ├── prompts/                     # /propuesta-* (slash templates)
+│   ├── references/agents/           # Role cards (primary ejecuta el rol)
+│   └── skills/marco-propuestas/
 ├── vault/                           # Mirror Obsidian navegable (Markdown) — capa visual, no versión de verdad
 │   ├── secciones/                   # Espejo de proposal/sections/*.tex por sección
 │   └── insumos/                     # Espejo de proposal/insumos.md
@@ -116,22 +117,75 @@ no depende de una corrida de `/propuesta`); el segundo es específico del
 build LaTeX/DOCX de una corrida (compilación de diagramas TikZ, export a
 Word) y solo tiene sentido una vez `proposal/sections/` existe.
 
+## Inicio rápido: proyecto portable
+
+El entrypoint recomendado para corridas reales es `marco init`, que crea
+una carpeta de proyecto autocontenida y copiable:
+
+```bash
+marco init ~/propuestas/mi-proyecto --title "Título del proyecto"
+```
+
+**Cheat-sheet de comandos:**
+
+```bash
+marco init <dir> --title "Título de la propuesta"
+marco status <dir>
+marco upgrade <dir>
+marco --help
+```
+
+Para el detalle completo de flags, entorno, manifest y flujo, ver
+[`docs/marco-cli.md`](docs/marco-cli.md).
+
+> El flujo de trabajar en la raíz del monorepo queda como **demo / dev kit
+> workspace**; para corridas reales usá `marco init`.
+
 ## Uso
 
-Ejecuta el comando `/propuesta <idea>` en Claude Code. El asistente primario
-despacha la Fase 0 (`insumos-observador` ingiere insumos) y avanza fase por
-fase, deteniéndose en cada gate para aprobación del usuario. El mismo
-comando también está disponible en OpenCode (`.opencode/commands/propuesta.md`,
-generado desde las fuentes de Claude Code) — requiere sesión interactiva:
-las compuertas de aprobación no funcionan en `opencode run` headless.
+**Flujo stepped (recomendado):**
 
-`/propuesta-limpiar` archiva la corrida activa (si existe) a
-`proposals/<run-id>/` en disco local y deja `proposal/` y `vault/` en
-scaffolding limpio para una corrida nueva, sin tener que arrancar
-`/propuesta` primero. Ejecuta el mismo procedimiento de archivado que
-`/propuesta` dispara automáticamente al detectar una corrida sin terminar
-(Fase 0, bloque ARCHIVADO-Y-REINICIO), pero de forma standalone y con
-confirmación explícita del usuario antes de vaciar el árbol activo.
+```text
+/propuesta-init                  # drop zones: tdr draft background doc-secciones ideas
+# completá ideas/idea.md (opcional si pasás la idea en el comando)
+/propuesta-analizar [idea]       # intake; idea desde args o ideas/; para antes de scoping
+/propuesta-continuar             # una unidad por vez; imprime el siguiente comando
+```
+
+**Flujo auto (una sesión):** `/propuesta-auto [idea]` o alias `/propuesta [idea]`
+— pipeline completo con gates en la misma sesión interactiva. La idea también
+puede venir de `ideas/idea.md` si omitís args.
+
+Los mismos comandos se generan para OpenCode (`.opencode/commands/`) y pi
+(`.pi/prompts/` → `/propuesta-*`). Regenerar tras editar Claude:
+
+```bash
+python3 scripts/gen-opencode.py && python3 scripts/gen-pi.py
+```
+
+Requieren sesión **interactiva** (gates). **No** hay run unattended sin gates
+ni soporte Codex. En pi: confiá el proyecto para cargar `.pi/`; los roles son
+archivos de referencia (sin subagentes anidados).
+
+| Comando | Rol |
+|---------|-----|
+| `/propuesta-init` | Zonas `tdr/` `draft/` `background/` `doc-secciones/` `ideas/` |
+| `/propuesta-analizar` | Intake + clasificación (idea: args o `ideas/`) |
+| `/propuesta-continuar` | Siguiente unidad del pipeline |
+| `/propuesta-auto` / `/propuesta` | Pipeline completo |
+| `/propuesta-limpiar` | Archivar y resetear workspace |
+
+**Guía de operador:** [`docs/usage-modes.md`](docs/usage-modes.md) (modos TDR /
+borrador, stepped vs auto, shell CLIs). “Continuar” un **borrador** (draft-base)
+= semilla + reescritura completa — no reanudar `proposal/sections/` a medias.
+`/propuesta-continuar` es el **siguiente paso del pipeline**, no mid-run resume
+arbitrario.
+
+`/propuesta-limpiar` archiva la corrida activa a `proposals/<run-id>/` (disco
+local) y deja `proposal/` + `vault/` limpios (incluye estado `next_step`).
+
+**No hay un CLI de producto** que reemplace los slash commands. Compilación
+PDF/DOCX: `proposal/build.sh` (guía §3).
 
 ## Flujo del pipeline
 
@@ -143,19 +197,14 @@ lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
 
 ## Dependencias
 
-- **Claude Code** — runtime canónico del pipeline (`.claude/agents/`, `.claude/commands/propuesta.md`).
-- **OpenCode** (opcional) — runtime secundario soportado. `.opencode/agents/` +
-  `.opencode/commands/propuesta.md` se regeneran con
-  `python3 scripts/gen-opencode.py` (stdlib puro, sin dependencias nuevas);
-  requiere además allow-listar los 9 subagentes portados bajo
-  `permission.task` en tu `opencode.json` de usuario (setup manual, ver
-  docstring de `scripts/gen-opencode.py`). Los 9 agentes generados quedan por
-  defecto con `model: openai/gpt-5.4` (`model_map` en
-  `scripts/gen-opencode.rules.json`) — es solo el default elegido para este
-  repo, no un requisito del generador. Si tu `opencode.json`/`auth login` usa
-  otro proveedor (Anthropic, otro modelo OpenAI, etc.), editá `model_map` en
-  `gen-opencode.rules.json` y volvé a correr `python3 scripts/gen-opencode.py`
-  para regenerar los 9 archivos con el modelo que corresponda.
+- **Claude Code** — runtime canónico (`.claude/agents/`, `.claude/commands/`).
+- **OpenCode** (opcional) — `python3 scripts/gen-opencode.py` → `.opencode/`;
+  allow-list `permission.task` en tu `opencode.json` (ver docstring del
+  generador). Sesión interactiva para gates.
+- **pi** (opcional) — `python3 scripts/gen-pi.py` → `.pi/prompts` + role cards
+  + skill; confiá el proyecto en pi para cargar `.pi/`. Sesión interactiva
+  para gates; sin subagentes anidados (el primario lee
+  `.pi/references/agents/`).
 - **engram** (`brew install gentleman-programming/tap/engram`) — memoria persistente; requerido porque el servidor MCP `engram` de `.mcp.json` invoca este binario directamente.
 - **gentle-ai** (recomendado, `brew install gentleman-programming/tap/gentle-ai`) — orquestación del workflow SDD (`/sdd-*`), registro de skills y asignación de modelos por fase.
 - LaTeX (pdflatex + bibtex, estilo `natbib`/`apalike`) para compilar `proposal/main.tex`.

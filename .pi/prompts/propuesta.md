@@ -1,6 +1,9 @@
 ---
 description: Redactar propuesta de investigación en IA (alias de /propuesta-auto).
+argument-hint: [idea o contexto inicial]
 ---
+**Nota de ejecución (pi):** sos el agente primario de pi (no hay subagentes anidados tipo Task). Cuando el pipeline diga despachar un rol, leé `.pi/references/agents/<rol>.md` y ejecutá ese rol vos mismo con las herramientas de pi (read/bash/edit/write). Los gates de aprobación requieren sesión **interactiva** de pi — no uses `pi -p` de punta a punta sin gates. Tabla de unidades: `.pi/references/_propuesta-steps.md`.
+
 
 # /propuesta — Modo automático
 
@@ -15,7 +18,7 @@ description: Redactar propuesta de investigación en IA (alias de /propuesta-aut
 | `/propuesta` | Este alias → mismo que auto |
 | `/propuesta-limpiar` | Archivar corrida activa y resetear workspace |
 
-Tabla de unidades: `_propuesta-steps.md` (fragmento de referencia del pipeline en el repo; no es un slash command portado).  
+Tabla de unidades: `.pi/references/_propuesta-steps.md`.  
 Guía de operador: `docs/usage-modes.md`.
 
 Entrada del usuario:

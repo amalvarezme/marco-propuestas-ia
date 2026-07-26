@@ -1,0 +1,61 @@
+{
+  "_comment": "Kit manifest for marco portable project CLI. JSON format chosen over YAML to keep marco_cli.py stdlib-only (zero external deps). Version is the kit version, bumped independently of the proposal framework. Kit files are listed individually (not whole dirs) so the manifest is the authoritative kit list — unlisted files MUST NOT be installed (spec: marco-portable-project, 'Kit manifest is the upgrade source of truth').",
+  "version": "0.1.0",
+  "kit_paths": [
+    ".claude/agents/bibliografo-propuesta.md",
+    ".claude/agents/coordinador-propuesta.md",
+    ".claude/agents/disenador-tikz.md",
+    ".claude/agents/insumos-observador.md",
+    ".claude/agents/investigador.md",
+    ".claude/agents/presupuestador.md",
+    ".claude/agents/redactor.md",
+    ".claude/agents/revisor-figuras.md",
+    ".claude/agents/revisor.md",
+    ".claude/agents/tikz-optimizer.md",
+    ".claude/commands/propuesta-analizar.md",
+    ".claude/commands/propuesta-auto.md",
+    ".claude/commands/propuesta-continuar.md",
+    ".claude/commands/propuesta-init.md",
+    ".claude/commands/propuesta-limpiar.md",
+    ".claude/commands/propuesta.md",
+    ".claude/commands/_propuesta-steps.md",
+    "AGENTS.md",
+    "guiaProyectosIA_Agente.md",
+    "proposal/build.sh",
+    "proposal/scripts/compile_tikz.py",
+    "proposal/scripts/prep_docx.py",
+    "proposal/logos/logogcpds.png",
+    "proposal/logos/logo_labIA.png",
+    "proposal/logos/logo_unal.png",
+    "proposal/templates/README.md",
+    "proposal/templates/reference.docx",
+    "requirements.txt",
+    ".gitignore",
+    ".graphifyignore",
+    ".mcp.json"
+  ],
+  "preserve_paths": [
+    "info_data/**",
+    "proposal/sections/**",
+    "proposal/main.tex",
+    "proposal/refs.bib",
+    "proposal/pipeline/**",
+    "proposal/scoping/**",
+    "proposal/estado_*.md",
+    "vault/**",
+    "DECISIONS.md",
+    "journal/**",
+    ".marco/config.json"
+  ],
+  "drop_zones": [
+    "tdr",
+    "draft",
+    "background",
+    "doc-secciones",
+    "ideas"
+  ],
+  "vault_subdirs": [
+    "insumos",
+    "secciones"
+  ]
+}

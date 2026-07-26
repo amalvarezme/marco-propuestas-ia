@@ -13,9 +13,13 @@ other agents can build on.
 ## What you do
 
 1. Read every PDF, paper, image, or linked resource the user provides. Source
-   files are stored in `info_data/` (PDFs, papers, prior proposals, reference
-   documents, images). Read them from there; if the folder is empty, ask the
-   Orchestrator to request the insumos from the user.
+   files are stored under `info_data/` (PDFs, papers, prior proposals, reference
+   documents, images), including **nested drop zones** created by
+   `/propuesta-init` (`tdr/`, `draft/`, `background/`, `doc-secciones/`,
+   `ideas/`, optionally under `info_data/<slug>/`). Discover files
+   **recursively** under `info_data/` (see "Descubrimiento recursivo" below).
+   If no source files are found, ask the Orchestrator to request the insumos
+   from the user.
 2. Extract: topic/domain, stated problem, relevant data/datasets, prior art
    mentioned, methods/models referenced, target sector, TRL hints, convocatoria
    / terms-of-reference details, ODS alignment, and any figures/diagrams.
@@ -33,8 +37,8 @@ English source text where relevant.
 Antes de clasificar o extraer contenido de cualquier archivo en `info_data/`,
 verifica si ya existe una extracción cacheada en Engram para ese archivo.
 Este caché es un acelerador puro: nunca debe bloquear ni degradar la
-corrida. Aplica a los cuatro tipos de archivo (`TDR`, `draft-base`,
-`background`, `doc-secciones`) — no solo a TDR.
+corrida. Aplica a los cinco tipos de archivo (`TDR`, `draft-base`,
+`background`, `doc-secciones`, `idea-seed`) — no solo a TDR.
 
 ### Mecánica (una vez por corrida, luego por archivo)
 
@@ -58,12 +62,12 @@ corrida. Aplica a los cuatro tipos de archivo (`TDR`, `draft-base`,
    project: "marco-propuestas-ia")`. Si hay resultado, `mem_get_observation(id)`
    para obtener el payload completo.
 3. **Hit de caché** → evalúa en este orden:
-   - **Fingerprint gate**: si el `label` cacheado es `TDR`, `draft-base` o
-     `doc-secciones` (dependen del mapeo §-de-guía) Y
-     `payload.guide_fingerprint` ≠ el fingerprint calculado en el paso 0 →
-     trátalo como MISS (el mapeo §-guía puede estar obsoleto). Si
-     `label = background`, el fingerprint no aplica (no depende del mapeo
-     §-guía).
+    - **Fingerprint gate**: si el `label` cacheado es `TDR`, `draft-base` o
+      `doc-secciones` (dependen del mapeo §-de-guía) Y
+      `payload.guide_fingerprint` ≠ el fingerprint calculado en el paso 0 →
+      trátalo como MISS (el mapeo §-guía puede estar obsoleto). Si
+      `label = background` o `label = idea-seed`, el fingerprint no aplica
+      (no dependen del mapeo §-guía).
    - **Ambiguity gate (obligatorio, nunca lo omitas)**: si `payload.ambigua =
      true` Y `payload.confirmado_por = pendiente` → esto NO es un hit
      utilizable todavía. Reporta este archivo al dispatcher como AMBIGUA
@@ -101,7 +105,7 @@ false`:
 file_hash: <sha256>
 file_name: <nombre original en info_data/>
 guide_fingerprint: <primeros 12 hex del sha256 de la guía base>
-label: TDR|draft-base|background|doc-secciones
+label: TDR|draft-base|background|doc-secciones|idea-seed
 confianza: alta|media|baja
 senales: <señales de clasificación que motivaron el label>
 ambigua: true|false
@@ -129,28 +133,77 @@ archivo (cacheado o recién extraído); los `tdr_extraction_blocks` se agregan
 una sola vez por archivo TDR, en su sección correspondiente — nunca dupliques
 encabezados de tabla al concatenar.
 
+## Descubrimiento recursivo bajo `info_data/`
+
+Before classification, enumerate **all** candidate source files under
+`info_data/` **recursively** (not only the top level).
+
+**Include:** common document/media types (e.g. `.pdf`, `.docx`, `.doc`,
+`.md`, `.txt`, images used as insumos).
+
+**Skip:** hidden paths (any path segment starting with `.`), `__pycache__/`,
+`node_modules/`, `.git/`, `README.md` / `COMO-USAR.md` written by
+`/propuesta-init` at the drop-zone root (do **not** skip `ideas/idea.md`),
+and empty `.gitkeep` placeholders.
+
+**Flat root still valid:** files placed directly in `info_data/` (no
+subfolders) MUST be classified with the same content heuristics as before.
+Drop zones are optional convenience, not required.
+
+Record each file’s path **relative to `info_data/`** in the digest (e.g.
+`tdr/TDR-2026.pdf` or `mi-slug/draft/propuesta.pdf`) so the dispatcher can
+confirm identities unambiguously.
+
 ## Clasificación de insumos (Fase 0)
 
-Before extracting content, classify every source file in `info_data/` into
-one of four labels: **TDR**, **draft-base**, **background**, or
-**doc-secciones**.
+Before extracting content, classify every discovered source file under
+`info_data/` into one of five labels: **TDR**, **draft-base**,
+**background**, **doc-secciones**, or **idea-seed**.
+
+### Path-segment priors (drop zones)
+
+If the file path under `info_data/` contains a directory segment named
+exactly (case-insensitive) one of the following, treat it as a **strong
+prior** for that label:
+
+| Path segment | Prior label |
+|--------------|-------------|
+| `tdr` | TDR |
+| `draft` | draft-base |
+| `background` | background |
+| `doc-secciones` | doc-secciones |
+| `ideas` | idea-seed |
+
+Priors **boost** confidence when content is consistent with the label. They
+**MUST NOT** override the mandatory AMBIGUA rule: if content strongly
+conflicts with the prior, or TDR/draft-base confidence is still 0 or >1
+after combining prior + content, flag **AMBIGUA** and surface to the
+dispatcher for user confirmation. Never self-resolve AMBIGUA from path alone
+when content is contradictory or dual-confident.
 
 ### Heuristic signals per label
 
 - **TDR** (términos de referencia / convocatoria): mentions of "términos de
   referencia", "convocatoria", "TDR", "bases", "anexo técnico"; presence of a
   scoring/evaluation-criteria table (points per criterion); explicit
-  deadlines; eligibility rules.
+  deadlines; eligibility rules; path prior `tdr/`.
 - **draft-base** (borrador previo reutilizable): mentions of "propuesta",
   "anexo"; a prior full-proposal structure resembling §1-§16 of the guide;
   objectives or subproblemas already stated as a finished artifact (not a
-  requirement to satisfy).
+  requirement to satisfy); path prior `draft/`.
 - **background**: everything else (reference papers, prior art, images,
-  supporting data) — does not compete for TDR or draft-base classification.
+  supporting data) — does not compete for TDR or draft-base classification;
+  path prior `background/`.
 - **doc-secciones**: documento cuyo contenido principal es un esquema/lista de
   secciones obligatorias de la propuesta (títulos numerados, poca o nula
   prosa). NO compite con TDR/draft-base en el cómputo AMBIGUA (mismo estatus
-  no-competidor que background).
+  no-competidor que background); path prior `doc-secciones/`.
+- **idea-seed** (notas de idea/concepto del operador): freeform research or
+  grant concept notes (problem, approach, beneficiaries, open questions);
+  typically short markdown under `ideas/`; path prior `ideas/`. NO compite
+  con TDR/draft-base en AMBIGUA (mismo estatus no-competidor que background).
+  Prefer this label over background when the path prior is `ideas/` even if
+  the text mentions "propuesta" or "convocatoria" in passing.
 
 ### Mandatory ambiguity rule
 
@@ -162,9 +215,34 @@ flag it **AMBIGUA** for that label. On AMBIGUA:
 - The agent MUST surface the ambiguity to the dispatcher (Orchestrator) so
   it can ask the user to confirm/correct before Fase 0 concludes.
 
-If there are no TDR/draft-base candidates at all (every file is
-background-only), no user confirmation is needed — this is the normal,
-unambiguous case.
+**idea-seed**, **background**, and **doc-secciones** never enter the
+TDR/draft-base AMBIGUA competition. If there are no TDR/draft-base candidates
+at all (every file is background / doc-secciones / idea-seed only), no user
+confirmation is needed for classification — this is the normal unambiguous
+case.
+
+### Idea-seed extraction (digest)
+
+When one or more files are labeled **idea-seed**, add to `proposal/insumos.md`
+a section:
+
+```markdown
+## Idea del operador (idea-seed)
+
+**Fuentes:** <paths relative to info_data/>
+
+<structured summary in Spanish: problema, enfoque, beneficiarios,
+restricciones mencionadas, preguntas abiertas — quote key phrases; do not
+invent facts not in the files>
+
+**Usable as run idea:** sí | no
+(no = file is empty, only init template placeholders, or headings with no
+operator prose)
+```
+
+Prefer `ideas/idea.md` as the primary source when present; other files under
+`ideas/` are supplementary. Mark `Usable as run idea: no` when content is
+only the stock template headings/placeholders from `/propuesta-init`.
 
 ## Extracción del TDR
 
@@ -348,10 +426,12 @@ empty (or omit the wikilink) and let the agent that later cites the paper
 
 Write `proposal/insumos.md` with the structured digest, plus a classification
 table: `Archivo | Tipo | Confianza | Señales | Confirmado por`, where
-`Tipo ∈ {TDR, draft-base, background, doc-secciones}`, `Confianza ∈ {alta,
-media, baja}`, and `Confirmado por ∈ {auto, usuario}`. Return a short summary
-to the Orchestrator: domain, 3 candidate subproblems (tentative), candidate
-research-question direction, notable references found in the insumos, and the
+`Tipo ∈ {TDR, draft-base, background, doc-secciones, idea-seed}`,
+`Confianza ∈ {alta, media, baja}`, and `Confirmado por ∈ {auto, usuario}`.
+Include the **Idea del operador (idea-seed)** section when applicable.
+Return a short summary to the Orchestrator: domain, 3 candidate subproblems
+(tentative), candidate research-question direction, notable references found
+in the insumos, idea-seed usability (yes/no + path), and the
 classification/ambiguity result (which files, if any, need user confirmation).
 
 ## Rules

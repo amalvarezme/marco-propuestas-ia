@@ -1,6 +1,8 @@
 ---
 description: Archiva la corrida activa de /propuesta (si existe) y deja proposal/ y vault/ limpios para una corrida nueva, sin tener que arrancar /propuesta primero.
 ---
+**Nota de ejecución (pi):** sos el agente primario de pi (no hay subagentes anidados tipo Task). Cuando el pipeline diga despachar un rol, leé `.pi/references/agents/<rol>.md` y ejecutá ese rol vos mismo con las herramientas de pi (read/bash/edit/write). Los gates de aprobación requieren sesión **interactiva** de pi — no uses `pi -p` de punta a punta sin gates. Tabla de unidades: `.pi/references/_propuesta-steps.md`.
+
 
 # /propuesta-limpiar — Archivar y resetear la corrida activa
 

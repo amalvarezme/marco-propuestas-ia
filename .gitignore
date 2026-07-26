@@ -11,9 +11,11 @@
 # Knowledge-graph scratch (from /graphify runs)
 graphify-out/
 
-# Python bytecode cache
+# Python bytecode cache / local virtualenv / build residue
 __pycache__/
 *.pyc
+*.egg-info/
+.venv/
 
 # LaTeX build artifacts
 **/*.aux

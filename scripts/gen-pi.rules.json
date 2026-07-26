@@ -1,0 +1,205 @@
+{
+  "_meta": {
+    "purpose": "Rules for gen-pi.py: port .claude/ agents+commands into .pi/ prompts, role references, and a thin skill. Never hand-edit generated .pi/ output.",
+    "schema_version": 1
+  },
+  "paths": {
+    "source_agents_dir": ".claude/agents",
+    "source_commands_dir": ".claude/commands",
+    "output_prompts_dir": ".pi/prompts",
+    "output_references_agents_dir": ".pi/references/agents",
+    "output_references_dir": ".pi/references",
+    "output_skills_dir": ".pi/skills",
+    "steps_source": ".claude/commands/_propuesta-steps.md",
+    "steps_output": ".pi/references/_propuesta-steps.md",
+    "agent_files": [
+      "bibliografo-propuesta.md",
+      "coordinador-propuesta.md",
+      "disenador-tikz.md",
+      "insumos-observador.md",
+      "investigador.md",
+      "presupuestador.md",
+      "redactor.md",
+      "revisor-figuras.md",
+      "revisor.md",
+      "tikz-optimizer.md"
+    ],
+    "command_files": [
+      "propuesta.md",
+      "propuesta-auto.md",
+      "propuesta-analizar.md",
+      "propuesta-continuar.md",
+      "propuesta-init.md",
+      "propuesta-limpiar.md"
+    ]
+  },
+  "prompt_preamble": "**Nota de ejecución (pi):** sos el agente primario de pi (no hay subagentes anidados tipo Task). Cuando el pipeline diga despachar un rol, leé `.pi/references/agents/<rol>.md` y ejecutá ese rol vos mismo con las herramientas de pi (read/bash/edit/write). Los gates de aprobación requieren sesión **interactiva** de pi — no uses `pi -p` de punta a punta sin gates. Tabla de unidades: `.pi/references/_propuesta-steps.md`.\n\n",
+  "substitutions_all": [
+    {
+      "id": "claude-code-to-pi",
+      "find": "Claude Code",
+      "replace": "pi"
+    },
+    {
+      "id": "task-tool-backtick",
+      "find": "`Task`",
+      "replace": "rol (leer `.pi/references/agents/`)"
+    },
+    {
+      "id": "task-arrow",
+      "find": "Task →",
+      "replace": "Rol →"
+    },
+    {
+      "id": "task-despacha",
+      "find": "despacha con `Task`",
+      "replace": "ejecutá el rol leyendo `.pi/references/agents/`"
+    },
+    {
+      "id": "task-despachar",
+      "find": "Despachá `Task`",
+      "replace": "Ejecutá el rol (Read `.pi/references/agents/`)"
+    },
+    {
+      "id": "task-word-tool",
+      "find": "herramienta `Task`",
+      "replace": "lectura del rol en `.pi/references/agents/`"
+    },
+    {
+      "id": "task-bare-dispatch",
+      "find": "con `Task` al",
+      "replace": "como rol (Read `.pi/references/agents/`) al"
+    },
+    {
+      "id": "path-claude-agents",
+      "find": "`.claude/agents/",
+      "replace": "`.pi/references/agents/"
+    },
+    {
+      "id": "path-claude-agents-close",
+      "find": ".claude/agents/",
+      "replace": ".pi/references/agents/"
+    },
+    {
+      "id": "path-claude-commands",
+      "find": "`.claude/commands/",
+      "replace": "`.pi/prompts/"
+    },
+    {
+      "id": "path-claude-commands-bare",
+      "find": ".claude/commands/",
+      "replace": ".pi/prompts/"
+    },
+    {
+      "id": "steps-path",
+      "find": "`_propuesta-steps.md` (fragmento de referencia del pipeline en el repo; no es un slash command portado)",
+      "replace": "`.pi/references/_propuesta-steps.md`"
+    },
+    {
+      "id": "steps-path-claude-full",
+      "find": "`.pi/prompts/_propuesta-steps.md`",
+      "replace": "`.pi/references/_propuesta-steps.md`"
+    },
+    {
+      "id": "propuesta-auto-path-from-opencode-style",
+      "find": "`.opencode/commands/propuesta-auto.md`",
+      "replace": "`.pi/prompts/propuesta-auto.md`"
+    },
+    {
+      "id": "task-tool-phrase",
+      "find": "Task tool",
+      "replace": "role-card workflow"
+    },
+    {
+      "id": "usa-task",
+      "find": "Usá `Task`",
+      "replace": "Leé el rol y ejecutalo"
+    },
+    {
+      "id": "vuelve-task",
+      "find": "vuelve a despachar con `Task`",
+      "replace": "vuelve a ejecutar el rol (Read `.pi/references/agents/`)"
+    },
+    {
+      "id": "delegated-task",
+      "find": "delegated `Task`",
+      "replace": "delegated role pass"
+    },
+    {
+      "id": "each-task",
+      "find": "each delegated `Task`",
+      "replace": "each delegated role pass"
+    },
+    {
+      "id": "prompt-de-una-task",
+      "find": "prompt de una `Task`",
+      "replace": "prompt de un rol"
+    },
+    {
+      "id": "dispatch-con-task",
+      "find": "dispatch con `Task`",
+      "replace": "dispatch por roles (references/agents)"
+    },
+    {
+      "id": "Pipeline-dispatch-task",
+      "find": "Pipeline (dispatch con `Task` fase por fase)",
+      "replace": "Pipeline (dispatch por roles, fase por fase)"
+    },
+    {
+      "id": "remaining-backtick-Task",
+      "find": "una `Task`",
+      "replace": "un rol"
+    },
+    {
+      "id": "remaining-Task-period",
+      "find": "`Task`.",
+      "replace": "rol."
+    },
+    {
+      "id": "remaining-Task-comma",
+      "find": "`Task`,",
+      "replace": "rol,"
+    },
+    {
+      "id": "remaining-Task-space",
+      "find": " `Task` ",
+      "replace": " rol "
+    },
+    {
+      "id": "Task-arrow-ascii",
+      "find": "Task ->",
+      "replace": "Rol ->"
+    },
+    {
+      "id": "propuesta-init-portable-donttouch-list",
+      "applies_to": ["propuesta-init.md"],
+      "find": "`.marco/`, `.claude/`, `.opencode/`, `.pi/`,",
+      "replace": "`.marco/`, `.pi/`,",
+      "literal": true,
+      "_note": "Portable-mode 'don't touch' list: drop .claude/ and .opencode/ (pi operator's runtime is .pi/; .claude/ and .opencode/ are not pi-relevant) to satisfy drift lint."
+    },
+    {
+      "id": "agent-model-frontmatter-override",
+      "_config_driven": true,
+      "_consumed_by": "gen-pi.py (post-processing loop + role card header)",
+      "_note": "When .marco/config.json is present, gen-pi.py adds a **Model:** line to each .pi/references/agents/<name>.md role card header, sourced from config[\"agent_models\"][<agent-name>]. This is applied programmatically in build_role_reference when agent_model is provided."
+    },
+    {
+      "id": "agents-language-override",
+      "_config_driven": true,
+      "_consumed_by": "gen-pi.py (informational — the generator does not emit AGENTS.md; marco upgrade handles the project-root AGENTS.md rewrite)",
+      "_note": "When .marco/config.json is present, gen-pi.py rewrites the AGENTS.md rule #1 directive text from 'español' to the configured language code. For the pi generator surface this rule is informational; the portable project's AGENTS.md is rewritten directly by marco upgrade."
+    }
+  ],
+  "drift_patterns": [
+    "Claude Code",
+    "Task tool",
+    ".claude/",
+    "`Task`"
+  ],
+  "skill": {
+    "dir": "marco-propuestas",
+    "name": "marco-propuestas",
+    "description": "Multi-agent research proposal pipeline for AI grants (LabIA/UNAL style). Use when writing or improving a convocatoria proposal: init drop zones, analyze TDR/draft/ideas, step through sections, or run full interactive pipeline."
+  }
+}
