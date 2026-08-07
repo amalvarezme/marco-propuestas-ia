@@ -15,7 +15,6 @@ cada fase al subagente correspondiente definido en `.claude/agents/`.
 | `/propuesta-analizar` | Intake (Fase 0 + G0.5); idea desde args o `ideas/`; para antes de scoping |
 | `/propuesta-continuar` | Una unidad del pipeline (`next_step`); imprime el siguiente comando |
 | `/propuesta-auto` | Pipeline completo en una sesión (gates) |
-| `/propuesta` | Alias de `/propuesta-auto` |
 | `/propuesta-limpiar` | Archivar corrida y resetear workspace |
 
 Cuerpo del pipeline: `.claude/commands/propuesta-auto.md`. Tabla de unidades y

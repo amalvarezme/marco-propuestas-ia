@@ -14,7 +14,6 @@ helpers).
 | `/propuesta-analizar` | Intake + clasificación; para **antes** de scoping |
 | `/propuesta-continuar` | **Una** unidad del pipeline; imprime el siguiente comando |
 | `/propuesta-auto` | Pipeline completo en una sesión (gates en la misma sesión) |
-| `/propuesta` | Alias de `/propuesta-auto` (compat) |
 | `/propuesta-limpiar` | Archiva corrida activa y resetea workspace |
 
 **No hay** un binario CLI que reemplace esas slash commands ni un run
@@ -22,8 +21,9 @@ helpers).
 `/opsx-continue` (OpenSpec en otro workflow).
 
 Runtimes soportados: **Claude Code** (canónico, `.claude/`), **OpenCode**
-(secundario generado, `.opencode/`), y **pi** (secundario generado, `.pi/`
-vía `python3 scripts/gen-pi.py`). **Codex** no está soportado.
+(secundario generado, `.opencode/`), **pi** (secundario generado, `.pi/`
+vía `python3 scripts/gen-pi.py`), y **Google Antigravity** (secundario generado,
+`.agent/` vía `python3 scripts/gen-antigravity.py`). **Codex** no está soportado.
 
 Diagrama de fases: [`pipeline-flow.md`](./pipeline-flow.md).
 
@@ -42,7 +42,7 @@ cd proposal && ./build.sh
 Tras cada unidad, el dispatcher imprime el **siguiente** slash command
 (normalmente otra vez `/propuesta-continuar`).
 
-**Alternativa (una sesión):** `/propuesta-auto <idea>` o `/propuesta <idea>` —
+**Alternativa (una sesión):** `/propuesta-auto <idea>` —
 mismo pipeline, se detiene solo en gates de aprobación (no en cada frontera
 de unidad).
 
@@ -149,8 +149,6 @@ Abre Claude Code, OpenCode o pi en la raíz de `marco-propuestas-ia` (sesión
 
 ```text
 /propuesta-auto <idea de investigación en español>
-# o alias:
-/propuesta <idea>
 ```
 
 Argumentos opcionales de run-id (analizar / auto):
@@ -206,7 +204,7 @@ Labels canónicos: `TDR`, `draft-base`, `background`, `doc-secciones`
 ### 2.6 Camino A — Scratch (desde idea, opcional TDR)
 
 1. Pon en `info_data/` el TDR (si existe) y papers de apoyo.
-2. Ejecuta `/propuesta <idea>`.
+2. Ejecuta `/propuesta-auto <idea>` (o `/propuesta-analizar` en flujo stepped).
 3. Confirma clasificación del TDR si el agente marca AMBIGUA.
 4. En G0.5 (solo con TDR): decide si generar guía ajustada al TDR.
    - Si el TDR **no** lista secciones obligatorias y no hay `doc-secciones`,
@@ -222,7 +220,7 @@ MODE=base si no hay marco presupuestal en TDR.
 
 1. Pon el borrador (PDF o DOCX) en `info_data/`.
 2. Opcional: TDR + papers en el mismo directorio.
-3. Ejecuta `/propuesta <idea>` (la idea puede refinar o reafirmar el borrador).
+3. Ejecuta `/propuesta-auto <idea>` (o `/propuesta-analizar` en flujo stepped).
 4. Confirma `draft-base` si hace falta; si no hay candidato, responde a
    “¿existe un borrador previo?” nombrando el archivo.
 5. El `investigador` usa el draft como **semilla primaria** de subproblemas /
@@ -283,7 +281,7 @@ de figuras. El pipeline multi-agente se lanza solo con **slash commands**.
 | `/propuesta-init` | Slash | Drop zones en `info_data/` |
 | `/propuesta-analizar` | Slash | Intake only; imprime siguiente comando |
 | `/propuesta-continuar` | Slash | Una unidad del pipeline (stepped) |
-| `/propuesta-auto` / `/propuesta` | Slash | Pipeline completo en una sesión |
+| `/propuesta-auto` | Slash | Pipeline completo en una sesión |
 | `/propuesta-limpiar` | Slash | Archivar corrida activa y resetear workspace |
 | `proposal/build.sh` | Bash CLI | Compilar PDF / exportar DOCX / watch / clean |
 | `python3 scripts/gen-opencode.py` | Python CLI | Regenerar `.opencode/` desde `.claude/` |
@@ -484,12 +482,11 @@ Para el detalle completo de flags, entorno, manifest y flujo del CLI, ver
 ## 5. Referencias
 
 - Auto (cuerpo del pipeline): `.claude/commands/propuesta-auto.md`
-- Alias: `.claude/commands/propuesta.md`
 - Stepped: `propuesta-init.md`, `propuesta-analizar.md`, `propuesta-continuar.md`
 - Tabla de unidades: `.claude/commands/_propuesta-steps.md`
 - Limpieza: `.claude/commands/propuesta-limpiar.md`
-- Espejo OpenCode (generado): `.opencode/commands/` — regenerar con
-  `python3 scripts/gen-opencode.py`
+- Espejos generados: `.opencode/commands/`, `.pi/prompts/`, `.agent/workflows/` — regenerar con
+  `python3 scripts/gen-opencode.py`, `python3 scripts/gen-pi.py`, `python3 scripts/gen-antigravity.py`
 - Clasificación de insumos: `.claude/agents/insumos-observador.md`
 - Bibliografía: `.claude/agents/bibliografo-propuesta.md`, `revisor.md`
 - Playbook: `AGENTS.md`

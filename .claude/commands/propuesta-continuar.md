@@ -94,6 +94,12 @@ next"):
 
 ### Siguiente comando
 /propuesta-continuar
+
+## 🎯 NEXT STEPS
+- **Fase Completada**: <id>
+- **Archivos Actualizados**: `proposal/sections/...`, `vault/secciones/...`
+- **Acción requerida**: Revisar contenido generado o gate de aprobación
+- **Próximo comando**: `/propuesta-continuar` (o `cd proposal && ./build.sh` si next_step es done)
 ```
 
 ## Qué nunca hace este comando

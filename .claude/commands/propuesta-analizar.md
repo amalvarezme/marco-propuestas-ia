@@ -20,11 +20,25 @@ $ARGUMENTS
 
 ## Qué hacés vos (asistente primario)
 
-### 1. Run-id y guardia de colisión
+### 1. Run-id y guardia de colisión (fase-aware e idempotente)
 
 Seguí **exactamente** "RESOLUCIÓN DE RUN-ID", "GUARDIA DE COLISIÓN" y
-"ARCHIVADO-Y-REINICIO" de `propuesta-auto.md` Fase 0. Escribí identidad de
-corrida en `proposal/estado_propuesta.md` y fila en `proposals/registry.md`.
+"ARCHIVADO-Y-REINICIO" de `propuesta-auto.md` Fase 0:
+
+- **Post-intake, pre-redacción (`last_completed` es `fase0`, `g0.5` o `g0.5-omitida`)**:
+  Si `proposal/estado_propuesta.md` ya existe con `intake_complete: true` y aún
+  no se han redactado secciones (`fase1a` no iniciada), **no** muestres advertencia
+  de colisión ni pidas archivar. Ejecutá un **refresco idempotente** de intake
+  (re-evaluá `info_data/`, actualizá `insumos.md` y `estado_propuesta.md`) y
+  continuá normalmente indicando que el intake está al día.
+- **Redacción activa (`last_completed` es `fase1a` o posterior)**:
+  **Nunca** ofrezcas ejecutar `fase1a` ni reanudar redacción desde dentro de
+  `/propuesta-analizar` (este comando tiene estrictamente prohibido redactar
+  secciones). Informá que la redacción está en curso y dirigí al usuario a
+  `/propuesta-continuar` (para continuar) o `/propuesta-limpiar` (para archivar
+  y reiniciar).
+- Escribí la identidad de corrida en `proposal/estado_propuesta.md` y la fila
+  en `proposals/registry.md`.
 
 ### 2. Fingerprint de guía + insumos-observador
 
@@ -113,11 +127,17 @@ Solo si aún no avanzaste unidades post-intake:
 
 ### Compilar al final (cuando next_step sea done)
 cd proposal && ./build.sh
+
+## 🎯 NEXT STEPS
+- **Fase Completada**: /propuesta-analizar (Fase 0 Intake & Clasificación)
+- **Archivos Actualizados**: `proposal/insumos.md`, `proposal/estado_propuesta.md`
+- **Acción requerida**: Revisar clasificación e insumos
+- **Próximo comando**: `/propuesta-continuar`
 ```
 
 ## Qué nunca hace este comando
 
-- No ejecuta unidades `fase1a`…`fase7`.
+- No ofrece ni ejecuta unidades `fase1a`…`fase7` (tampoco como opción de fallback o reanudación en guardias de colisión).
 - No auto-resuelve AMBIGUA.
 - No inventa identidades de equipo (§9).
 - No es un CLI headless ni un run sin gates posteriores (los gates viven en

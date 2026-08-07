@@ -1,6 +1,6 @@
 {
   "_comment": "Kit manifest for marco portable project CLI. JSON format chosen over YAML to keep marco_cli.py stdlib-only (zero external deps). Version is the kit version, bumped independently of the proposal framework. Kit files are listed individually (not whole dirs) so the manifest is the authoritative kit list — unlisted files MUST NOT be installed (spec: marco-portable-project, 'Kit manifest is the upgrade source of truth').",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "kit_paths": [
     ".claude/agents/bibliografo-propuesta.md",
     ".claude/agents/coordinador-propuesta.md",
@@ -17,7 +17,6 @@
     ".claude/commands/propuesta-continuar.md",
     ".claude/commands/propuesta-init.md",
     ".claude/commands/propuesta-limpiar.md",
-    ".claude/commands/propuesta.md",
     ".claude/commands/_propuesta-steps.md",
     "AGENTS.md",
     "guiaProyectosIA_Agente.md",
@@ -32,7 +31,11 @@
     "requirements.txt",
     ".gitignore",
     ".graphifyignore",
-    ".mcp.json"
+    ".mcp.json",
+    "scripts/gen-antigravity.py",
+    "scripts/gen-antigravity.rules.json",
+    "scripts/marco_cli.py",
+    "scripts/apa.csl"
   ],
   "preserve_paths": [
     "info_data/**",

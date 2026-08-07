@@ -12,15 +12,15 @@ los agentes mantienen un mirror Markdown/Obsidian navegable en `vault/`
 (`vault/secciones/`, `vault/insumos/`) — capa visual para explorar la
 propuesta como grafo de ideas; **nunca** es fuente de verdad, ese rol lo
 conserva `proposal/`. **Runtime canónico: Claude Code** (`.claude/agents/` +
-`.claude/commands/`, la única fuente editada a mano). **OpenCode** y **pi**
-son runtimes secundarios generados: `python3 scripts/gen-opencode.py` →
-`.opencode/`; `python3 scripts/gen-pi.py` → `.pi/prompts` + role cards
-(`.pi/references/agents/`) + skill `marco-propuestas`. No editar `.opencode/`
+`.claude/commands/`, la única fuente editada a mano). **Google Antigravity**, **OpenCode** y **pi**
+son runtimes secundarios generados: `python3 scripts/gen-antigravity.py` → `.agent/`;
+`python3 scripts/gen-opencode.py` → `.opencode/`; `python3 scripts/gen-pi.py` → `.pi/prompts` + role cards
+(`.pi/references/agents/`) + skill `marco-propuestas`. No editar `.agent/`, `.opencode/`
 ni `.pi/` a mano. **Codex** no está soportado.
 El asistente primario despacha 9 subagentes de dominio — `investigador`,
 `redactor`, `revisor`, `bibliografo-propuesta`, `presupuestador`,
 `insumos-observador`, `disenador-tikz`, `tikz-optimizer`, `revisor-figuras` —
-usando el comando `/propuesta` (`.claude/commands/propuesta.md`), siguiendo la
+usando los comandos `/propuesta-auto` o `/propuesta-continuar` (`.claude/commands/`), siguiendo la
 referencia canónica del pipeline en `.claude/agents/coordinador-propuesta.md`
 (el 10º archivo de `.claude/agents/`, no se despacha como subagente sino que
 documenta el pipeline), avanzando por fases con puertas de revisión (gates).
@@ -130,6 +130,7 @@ marco init ~/propuestas/mi-proyecto --title "Título del proyecto"
 
 ```bash
 marco init <dir> --title "Título de la propuesta"
+marco guide <dir>
 marco status <dir>
 marco upgrade <dir>
 marco --help
@@ -152,15 +153,15 @@ Para el detalle completo de flags, entorno, manifest y flujo, ver
 /propuesta-continuar             # una unidad por vez; imprime el siguiente comando
 ```
 
-**Flujo auto (una sesión):** `/propuesta-auto [idea]` o alias `/propuesta [idea]`
+**Flujo auto (una sesión):** `/propuesta-auto [idea]`
 — pipeline completo con gates en la misma sesión interactiva. La idea también
 puede venir de `ideas/idea.md` si omitís args.
 
-Los mismos comandos se generan para OpenCode (`.opencode/commands/`) y pi
-(`.pi/prompts/` → `/propuesta-*`). Regenerar tras editar Claude:
+Los mismos comandos se generan para OpenCode (`.opencode/commands/`), pi
+(`.pi/prompts/` → `/propuesta-*`), y Google Antigravity (`.agent/workflows/` + skills). Regenerar tras editar Claude:
 
 ```bash
-python3 scripts/gen-opencode.py && python3 scripts/gen-pi.py
+python3 scripts/gen-opencode.py && python3 scripts/gen-pi.py && python3 scripts/gen-antigravity.py
 ```
 
 Requieren sesión **interactiva** (gates). **No** hay run unattended sin gates
@@ -172,7 +173,7 @@ archivos de referencia (sin subagentes anidados).
 | `/propuesta-init` | Zonas `tdr/` `draft/` `background/` `doc-secciones/` `ideas/` |
 | `/propuesta-analizar` | Intake + clasificación (idea: args o `ideas/`) |
 | `/propuesta-continuar` | Siguiente unidad del pipeline |
-| `/propuesta-auto` / `/propuesta` | Pipeline completo |
+| `/propuesta-auto` | Pipeline completo |
 | `/propuesta-limpiar` | Archivar y resetear workspace |
 
 **Guía de operador:** [`docs/usage-modes.md`](docs/usage-modes.md) (modos TDR /
@@ -185,7 +186,7 @@ arbitrario.
 local) y deja `proposal/` + `vault/` limpios (incluye estado `next_step`).
 
 **No hay un CLI de producto** que reemplace los slash commands. Compilación
-PDF/DOCX: `proposal/build.sh` (guía §3).
+PDF/DOCX: `proposal/build.sh` (guía §3) y conversión directa a Word: `python3 scripts/convert_to_word.py`.
 
 ## Flujo del pipeline
 
@@ -221,5 +222,14 @@ lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
 ```bash
 cd proposal
 ./build.sh           # o: ./build.sh --manual (pdflatex→bibtex→pdflatex×2)
-./build.sh --docx    # exporta a Word vía pandoc
+./build.sh --docx    # exporta a Word vía pandoc (acepta opcionalmente --csl <estilo.csl>)
 ```
+
+## Pruebas del framework (e2e)
+
+Para verificar la integridad del manifest, comandos del CLI `marco`, generadores de runtime y flags de compilación:
+
+```bash
+python3 -m unittest discover -s tests -p "test_*.py"
+```
+

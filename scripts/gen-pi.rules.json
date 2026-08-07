@@ -7,6 +7,7 @@
     "source_agents_dir": ".claude/agents",
     "source_commands_dir": ".claude/commands",
     "output_prompts_dir": ".pi/prompts",
+    "output_commands_dir": ".pi/commands",
     "output_references_agents_dir": ".pi/references/agents",
     "output_references_dir": ".pi/references",
     "output_skills_dir": ".pi/skills",
@@ -25,11 +26,10 @@
       "tikz-optimizer.md"
     ],
     "command_files": [
-      "propuesta.md",
-      "propuesta-auto.md",
+      "propuesta-init.md",
       "propuesta-analizar.md",
       "propuesta-continuar.md",
-      "propuesta-init.md",
+      "propuesta-auto.md",
       "propuesta-limpiar.md"
     ]
   },
@@ -173,10 +173,9 @@
     {
       "id": "propuesta-init-portable-donttouch-list",
       "applies_to": ["propuesta-init.md"],
-      "find": "`.marco/`, `.claude/`, `.opencode/`, `.pi/`,",
-      "replace": "`.marco/`, `.pi/`,",
-      "literal": true,
-      "_note": "Portable-mode 'don't touch' list: drop .claude/ and .opencode/ (pi operator's runtime is .pi/; .claude/ and .opencode/ are not pi-relevant) to satisfy drift lint."
+      "find": "`.marco/`, `.claude/`, `.opencode/`, `.pi/`, `.agent/`,",
+      "replace": "`.marco/`, `.pi/`, `.agent/`,",
+      "literal": true
     },
     {
       "id": "agent-model-frontmatter-override",

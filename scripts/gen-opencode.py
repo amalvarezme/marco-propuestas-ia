@@ -391,6 +391,11 @@ def build_command(filename: str, rules: dict) -> tuple[str, str]:
         raise GeneratorError(f"source command missing: {source_path}")
 
     text = source_path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        out_body = apply_substitutions(text, filename, rules)
+        output_relpath = f"{paths['output_commands_dir']}/{filename}"
+        return output_relpath, out_body
+
     fm, body = split_frontmatter(text, source_path)
     out_fm = map_command_frontmatter(fm, source_path, rules)
     out_body = apply_substitutions(body, filename, rules)

@@ -78,14 +78,14 @@ def apply_all_substitutions(body: str, rules: dict) -> str:
 def render_prompt_frontmatter(fm: dict[str, str]) -> str:
     lines = ["---"]
     if "description" in fm:
-        lines.append(f"description: {fm['description']}")
+        lines.append(f"description: {json.dumps(fm['description'], ensure_ascii=False)}")
     if "argument-hint" in fm:
-        lines.append(f"argument-hint: {fm['argument-hint']}")
+        lines.append(f"argument-hint: {json.dumps(fm['argument-hint'], ensure_ascii=False)}")
     lines.append("---")
     return "\n".join(lines) + "\n"
 
 
-def build_prompt(filename: str, rules: dict) -> tuple[str, str]:
+def build_prompt(filename: str, rules: dict, target_dir: str | None = None) -> tuple[str, str]:
     paths = rules["paths"]
     source_path = REPO_ROOT / paths["source_commands_dir"] / filename
     if not source_path.is_file():
@@ -99,8 +99,10 @@ def build_prompt(filename: str, rules: dict) -> tuple[str, str]:
     # Avoid double preamble if source already starts with pi note
     if preamble and not body.lstrip().startswith("**Nota de ejecución (pi):**"):
         body = preamble + body
-    out_rel = f"{paths['output_prompts_dir']}/{filename}"
+    out_dir = target_dir if target_dir else paths["output_prompts_dir"]
+    out_rel = f"{out_dir}/{filename}"
     return out_rel, render_prompt_frontmatter(fm) + body
+
 
 
 def build_role_reference(filename: str, rules: dict, agent_model: str | None = None) -> tuple[str, str]:
@@ -306,7 +308,9 @@ def main(argv: list[str]) -> int:
     built: list[tuple[str, str]] = []
     try:
         for filename in paths["command_files"]:
-            built.append(build_prompt(filename, rules))
+            built.append(build_prompt(filename, rules, target_dir=paths["output_prompts_dir"]))
+            if "output_commands_dir" in paths:
+                built.append(build_prompt(filename, rules, target_dir=paths["output_commands_dir"]))
         for filename in paths["agent_files"]:
             agent_name = filename.removesuffix(".md")
             agent_model = agent_models.get(agent_name)

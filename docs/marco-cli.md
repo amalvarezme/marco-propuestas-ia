@@ -1,7 +1,7 @@
 # Referencia del CLI `marco`
 
 CLI de proyecto portable para el framework `marco-propuestas-ia`.
-Comandos: `init`, `upgrade`, `status`.
+Comandos: `init`, `guide`, `status`, `upgrade`.
 
 ---
 
@@ -57,7 +57,7 @@ y la configuración de idioma y modelo.
 |------|-------------------|-------------|
 | `<dir>` | (obligatorio) | Ruta del directorio destino (se crea si no existe) |
 | `--title` | `None` | Título opcional de la propuesta; se escribe en el `README.md` del proyecto |
-| `--tools` | `claude,opencode,pi` | Lista separada por comas de los runtimes a instalar (ver §5) |
+| `--tools` | `claude,opencode,pi,antigravity` | Lista separada por comas de los runtimes a instalar (ver §5) |
 | `--lang` | `es` (o prompt interactivo) | Código BCP-47 del idioma de la propuesta. En TTY sin flag, muestra un menú interactivo |
 | `--model-preset` | `claude` (o prompt interactivo) | Nombre del preset de modelos. En TTY sin flag, muestra un menú interactivo. Presets válidos: `claude`, `gpt`, `opencode-go` |
 
@@ -116,41 +116,43 @@ marco init /tmp/p5 --lang en --model-preset opencode-go --tools claude
 
 ---
 
-### 2.2 `marco upgrade` — Refrescar el kit
+### 2.2 `marco upgrade` — Refrescar el kit y reconfigurar herramientas
 
 ```
-marco upgrade <dir>
+marco upgrade [<dir>] [--tools TOOLS]
 ```
 
-Refresca solo los archivos del kit en un proyecto portable existente.
+Refresca los archivos del kit en un proyecto portable existente y permite actualizar opcionalmente la lista de herramientas/runtimes instalados.
 Nunca toca el contenido del operador.
+
+| Flag | Valor por defecto | Descripción |
+|------|-------------------|-------------|
+| `<dir>` | `.` (directorio actual) | Ruta del directorio del proyecto portable |
+| `--tools` | `None` (conserva configuradas) | Lista separada por comas de runtimes a habilitar (`claude`, `opencode`, `pi`, `antigravity`) |
 
 **Comportamiento:**
 
-1. Verifica que `<dir>/proposal/estado_propuesta.md` exista (proyecto iniciado).
+1. Verifica la existencia del proyecto leyendo `.marco/manifest.json` en `<dir>` (sale con error si no es un proyecto válido).
 2. Lee `kit-manifest.json` de la fuente del kit.
-3. Para cada ruta en `kit_paths`, si **no** coincide con algún patrón de
-   `preserve_paths`, copia el archivo desde la fuente al proyecto.
-4. Si el proyecto contiene `.opencode/`, regenera ejecutando
-   `gen-opencode.py --root <dir>`.
-5. Si el proyecto contiene `.pi/`, regenera ejecutando
-   `gen-pi.py --root <dir>`.
-6. Actualiza `.marco/version` y `.marco/manifest.json` con los nuevos
-   checksums y la versión anterior.
+3. Para cada ruta en `kit_paths`, si **no** coincide con algún patrón de `preserve_paths`, copia el archivo desde la fuente al proyecto.
+4. Si se especifica `--tools`, actualiza la lista de herramientas en `.marco/config.json`.
+5. Re-ejecuta los generadores para todas las herramientas activas configuradas (`gen-opencode.py`, `gen-pi.py`, `gen-antigravity.py`).
+6. Actualiza `.marco/version` y `.marco/manifest.json` con los nuevos checksums y la versión anterior.
 
 **Preserve-list** (nunca se modifican): `info_data/**`,
 `proposal/sections/**`, `proposal/main.tex`, `proposal/refs.bib`,
 `proposal/pipeline/**`, `proposal/scoping/**`, `proposal/estado_*.md`,
-`vault/**`, `DECISIONS.md`, `journal/**`, `.marco/config.json`.
+`vault/**`, `DECISIONS.md`, `journal/**`.
 
 **Idempotente:** ejecutar `upgrade` dos veces seguidas sin cambios en el
-kit deja el árbol exactamente igual y termina con código 0.
+kit deja el árbol exactamente igual y termina com código 0.
 
 **Ejemplos:**
 
 ```bash
+marco upgrade
 marco upgrade ~/propuestas/mi-propuesta
-marco upgrade .
+marco upgrade --tools claude,antigravity,opencode
 ```
 
 **Códigos de salida:**
@@ -165,7 +167,7 @@ marco upgrade .
 ### 2.3 `marco status` — Estado del proyecto
 
 ```
-marco status <dir>
+marco status [<dir>]
 ```
 
 Imprime un resumen del estado actual de un proyecto portable.
@@ -200,6 +202,39 @@ warning: /tmp/no-marco is not a portable marco project (no .marco/version)
 |--------|-------------|
 | 0 | Estado leído correctamente |
 | 1 | El directorio no es un proyecto portable (sin `.marco/version`) |
+
+---
+
+### 2.4 `marco guide` — Guía interactiva de onboarding
+
+```
+marco guide [<dir>]
+```
+
+Muestra una guía interactiva y el estado paso a paso del proyecto, junto con la recomendación del próximo comando a ejecutar según `proposal/estado_propuesta.md`.
+
+**Comportamiento:**
+
+1. Verifica la existencia de `.marco/version` en `<dir>`.
+2. Muestra un resumen del estado del proyecto (`estado_propuesta.md`, las últimas entradas de `DECISIONS.md` y `journal/`).
+3. Recomienda explícitamente la acción o slash command a ejecutar a continuación (`/propuesta-analizar`, `/propuesta-continuar`, etc.).
+
+**Ejemplos:**
+
+```bash
+marco guide ~/propuestas/mi-propuesta
+marco guide .
+```
+
+---
+
+### 2.5 `marco --list-presets` — Listar presets de modelos
+
+```
+marco --list-presets
+```
+
+Lista en consola todos los presets de modelos incorporados (`claude`, `gpt`, `opencode-go`) y su alineación de modelos por cada uno de los 10 agentes.
 
 ---
 
@@ -259,6 +294,10 @@ warning: /tmp/no-marco is not a portable marco project (no .marco/version)
 `proposal/sections/*.tex` — esos los genera el pipeline `/propuesta-*`
 durante la corrida.
 
+> **Nota sobre estructura y desambiguación:**
+> - **`proposal/` vs `proposals/`**: `proposal/` es el espacio activo de trabajo de la corrida actual (fuente LaTeX en `proposal/sections/` y estado en `proposal/estado_propuesta.md`). `proposals/` contiene el registro e índice local de corridas archivadas (`proposals/registry.md`).
+> - **`scripts/` vs `proposal/scripts/`**: `scripts/` (en la raíz) contiene el tooling del repositorio/CLI (`marco_cli.py`, generadores de runtime `gen-opencode.py` y `gen-pi.py`); `proposal/scripts/` contiene scripts exclusivos de compilación y post-procesamiento LaTeX/TikZ/DOCX (`compile_tikz.py`, `prep_docx.py`).
+
 ---
 
 ## 4. Manifest y contrato de instalación
@@ -271,8 +310,8 @@ dependencias externas.
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `version` | string | Versión del kit (actual: `0.1.0`). Se incrementa independientemente del framework de propuestas. |
-| `kit_paths` | string[] | Lista **plana de 31 archivos** (no directorios completos) que constituyen el kit. Cada entrada es una ruta relativa desde la raíz de la fuente del kit. |
+| `version` | string | Versión del kit (actual: `0.2.0`). Se incrementa independientemente del framework de propuestas. |
+| `kit_paths` | string[] | Lista plana de archivos que constituyen el kit (incluye scripts del CLI `scripts/marco_cli.py` y estilo CSL APA `scripts/apa.csl`). Cada entrada es una ruta relativa desde la raíz de la fuente del kit. |
 | `preserve_paths` | string[] | 10 patrones glob que `marco upgrade` NUNCA debe tocar. |
 | `drop_zones` | string[] | 5 subdirectorios que se crean bajo `info_data/`: `tdr`, `draft`, `background`, `doc-secciones`, `ideas`. |
 | `vault_subdirs` | string[] | 2 subdirectorios que se crean bajo `vault/`: `insumos`, `secciones`. |
@@ -307,20 +346,22 @@ instalar en el proyecto portable.
 | `claude` | El directorio `.claude/` (agentes + comandos) **siempre se copia**, pues es la fuente de verdad (SSOT). No ejecuta ningún generador. |
 | `opencode` | Además de `.claude/`, ejecuta `python3 scripts/gen-opencode.py --root <dir>` para generar `.opencode/`. |
 | `pi` | Además de `.claude/`, ejecuta `python3 scripts/gen-pi.py --root <dir>` para generar `.pi/`. |
+| `antigravity` | Además de `.claude/`, ejecuta `python3 scripts/gen-antigravity.py --root <dir>` para generar `.agent/`. |
 
-**Valor por defecto (al momento de esta escritura):** `claude,opencode,pi`.
+**Valor por defecto (al momento de esta escritura):** `claude,opencode,pi,antigravity`.
 
 **Cómo omitir un runtime:**
 
 ```bash
 marco init /tmp/p1 --tools claude              # solo kit, sin generated runtimes
-marco init /tmp/p2 --tools claude,opencode     # skip pi
-marco init /tmp/p3 --tools claude,pi           # skip opencode
+marco init /tmp/p2 --tools claude,opencode     # skip pi y antigravity
+marco init /tmp/p3 --tools claude,pi           # skip opencode y antigravity
+marco init /tmp/p4 --tools claude,antigravity  # solo claude y antigravity
 ```
 
 `marco upgrade` detecta automáticamente qué runtimes están presentes en el
-proyecto (por la existencia de `.opencode/` y `.pi/`) y solo regenera los
-que existen — no usa `--tools` en `upgrade`.
+proyecto (por la existencia de `.opencode/`, `.pi/` y `.agent/`) y regenera los
+que existen — no requiere `--tools` en `upgrade` salvo que se deseen habilitar nuevos runtimes.
 
 ---
 
@@ -403,7 +444,7 @@ marco upgrade ~/propuestas/mi-propuesta
 
 ## 8. Generadores
 
-Los generadores `gen-opencode.py` y `gen-pi.py` transforman la fuente de
+Los generadores `gen-opencode.py`, `gen-pi.py` y `gen-antigravity.py` transforman la fuente de
 verdad (`.claude/`) en los runtimes secundarios.
 
 ### Uso manual (para mantenedores del kit)
@@ -417,12 +458,16 @@ python3 scripts/gen-opencode.py --root <dir> # genera en un directorio distinto
 python3 scripts/gen-pi.py                    # escribe .pi/
 python3 scripts/gen-pi.py --check            # drift lint, no escribe
 python3 scripts/gen-pi.py --root <dir>       # genera en un directorio distinto
+
+python3 scripts/gen-antigravity.py           # escribe .agent/ (workflows + skills)
+python3 scripts/gen-antigravity.py --check   # drift lint, no escribe
+python3 scripts/gen-antigravity.py --root <dir> # genera en un directorio distinto
 ```
 
 ### Flag `--root`
 
 El flag `--root <dir>` indica al generador que use `<dir>` como raíz
-(tanto para leer `.claude/` como para escribir `.opencode/` o `.pi/`).
+(tanto para leer `.claude/` como para escribir `.opencode/`, `.pi/` o `.agent/`).
 Es **retrocompatible**: sin `--root`, el generador usa
 `Path(__file__).resolve().parent.parent` (comportamiento histórico).
 
@@ -597,3 +642,42 @@ Si `.marco/config.json` no existe, `upgrade` se comporta como antes
 | `warning: ... is not a portable marco project (no .marco/version)` | `marco status` se ejecutó en un directorio que no es un proyecto portable | Ejecutar primero `marco init <dir>` para crear el proyecto. |
 | `error: unknown model preset '<name>'` | El preset indicado en `--model-preset` no es válido | Usar uno de: `claude`, `gpt`, `opencode-go`. Ver `marco --list-presets`. |
 | `DRIFT: ... unmapped pattern ".claude/"` en generadores | Un archivo de comando contiene una referencia a `.claude/` que no está cubierta por las reglas de sustitución | Agregar una regla en `gen-opencode.rules.json` / `gen-pi.rules.json` con `applies_to: [<archivo>.md]`. |
+
+---
+
+## 13. Pruebas Automatizadas
+
+El framework incluye una suite de pruebas end-to-end (`tests/test_e2e_framework.py`) escrita con `unittest`. Verifica la integridad del manifest, la creación y actualización de proyectos portables, el funcionamiento de los generadores y las opciones de compilación del `build.sh`:
+
+---
+
+## 14. Herramientas de Compilación y Conversión a Word
+
+El framework incluye scripts dedicados para la compilación LaTeX/DOCX y conversión de formato:
+
+### `proposal/build.sh`
+
+Script principal de compilación del documento PDF / DOCX de la propuesta.
+
+```bash
+cd proposal
+./build.sh [pdf|docx|all]
+```
+
+### `proposal/scripts/compile_tikz.py`
+
+Compila autónomamente los diagramas TikZ a PDF/PNG y realiza detección determinista de desbordamiento horizontal (`Overfull \hbox`), reportando el conteo exacto de ocurrencias para el optimizador visual.
+
+### `proposal/scripts/prep_docx.py`
+
+Prepara las secciones LaTeX para conversión a Microsoft Word mediante Pandoc, aplicando transformaciones de citas, tablas e imágenes.
+
+### `scripts/convert_to_word.py`
+
+Script CLI independiente para convertir directamente la propuesta LaTeX completa a formato DOCX.
+
+```bash
+python3 scripts/convert_to_word.py [--root <dir>] [--output <file.docx>]
+```
+
+

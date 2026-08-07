@@ -1,0 +1,26 @@
+{
+  "paths": {
+    "source_agents_dir": ".claude/agents",
+    "source_commands_dir": ".claude/commands",
+    "target_skills_dir": ".agent/skills",
+    "target_workflows_dir": ".agent/workflows"
+  },
+  "substitutions_all": [
+    {
+      "find": ".claude/agents/",
+      "replace": ".agent/skills/"
+    },
+    {
+      "find": ".claude/commands/",
+      "replace": ".agent/workflows/"
+    }
+  ],
+  "command_files": [
+    "propuesta-init.md",
+    "propuesta-analizar.md",
+    "propuesta-continuar.md",
+    "propuesta-auto.md",
+    "propuesta-limpiar.md",
+    "_propuesta-steps.md"
+  ]
+}

@@ -21,7 +21,7 @@ Si el directorio actual contiene `.marco/version`, el proyecto fue creado con
 `marco init` y `/propuesta-init` opera en **modo portable**:
 
 - Solo asegura que existan las drop zones bajo `info_data/` (pasos 1–5).
-- **No** toca: `.marco/`, `.opencode/`, `.pi/`, `AGENTS.md`,
+- **No** toca: `.marco/`, `.opencode/`, `.pi/`, `.agent/`, `AGENTS.md`,
   `guiaProyectosIA_Agente.md`, `DECISIONS.md`, `journal/`,
   `proposal/build.sh`, `proposal/templates/**`.
 - **No** asigna run-id, **no** despacha `insumos-observador`, **no** modifica
@@ -120,6 +120,16 @@ clasificador sigue funcionando.
 Mostrá la ruta del objetivo, listá las **cinco** carpetas, indicá si se creó
 o se conservó `ideas/idea.md`, y recordá que **no** se inició ninguna corrida.
 Sugerí completar ideas + TDR y luego `/propuesta-analizar`.
+
+Cerrá siempre el reporte de respuesta con la sección estandarizada:
+
+```markdown
+## 🎯 NEXT STEPS
+- **Fase Completada**: /propuesta-init (Zonas de depósito preparadas)
+- **Archivos/Carpetas**: `info_data/{tdr,draft,background,doc-secciones,ideas}/`
+- **Acción requerida**: Colocar insumos y/o editar `info_data/ideas/idea.md`
+- **Próximo comando**: `/propuesta-analizar`
+```
 
 ## Qué nunca hace este comando
 

@@ -1,8 +1,8 @@
-# Flujo del pipeline `/propuesta`
+# Flujo del pipeline `/propuesta-*`
 
 Diagrama tipo BPMN (fases, compuertas de aprobación, bucles de corrección y los
 tres grafos de conocimiento transversales) del pipeline multi-agente descrito
-en `.claude/commands/propuesta.md` y `.claude/agents/coordinador-propuesta.md`,
+en `.claude/commands/propuesta-auto.md` y `.claude/agents/coordinador-propuesta.md`,
 alineado a las 16 secciones de `guiaProyectosIA_Agente.md`.
 
 - **Casillas amarillas**: compuertas de decisión/aprobación (usuario o `revisor`).
@@ -201,7 +201,7 @@ flowchart TD
 - Fase 0.5, 1a y 1b son condicionales: 0.5 solo corre si hay TDR; 1b solo si
   1a cerró aprobada.
 - El nodo `Archive[Archivado y reinicio]` de la Fase 0 también es invocable
-  standalone vía `/propuesta-limpiar`, sin necesidad de arrancar `/propuesta`
+  standalone vía `/propuesta-limpiar`, sin necesidad de arrancar `/propuesta-auto`
   primero — mismo procedimiento, mismo bloque ARCHIVADO-Y-REINICIO. En
   ambos casos el archivado es **solo local** (`proposals/<run-id>/` está
   gitignored): GitHub nunca recibe el contenido de una propuesta, activa o

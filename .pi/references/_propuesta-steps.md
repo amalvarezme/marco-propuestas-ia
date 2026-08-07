@@ -79,3 +79,17 @@ stepped mode after the unit finishes, so the operator always re-invokes
 For each unit id, execute the matching **Fase …** block in
 `.pi/prompts/propuesta-auto.md` (same content as the historical
 `propuesta.md` pipeline). Do not invent alternate Task graphs.
+
+## Standardized Next Steps Output Banner (`## 🎯 NEXT STEPS`)
+
+Every proposal command and agent execution phase MUST append a standardized `## 🎯 NEXT STEPS` block at the end of its response report.
+
+Format:
+```markdown
+## 🎯 NEXT STEPS
+- **Phase Completed**: [Phase / Step Name]
+- **Files Modified**: `proposal/...`, `vault/...`
+- **Action Required**: Review changes or provide gate approval
+- **Next Command**: `/propuesta-continuar` (or compilation instructions if done)
+```
+

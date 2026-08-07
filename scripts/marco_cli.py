@@ -250,6 +250,8 @@ def _project_readme(
         lines.append(".opencode/           # Generated OpenCode surface")
     if "pi" in tools:
         lines.append(".pi/                 # Generated pi surface")
+    if "antigravity" in tools:
+        lines.append(".agent/              # Generated Google Antigravity skills & workflows")
     lines.extend([
         "info_data/           # Drop zones: tdr/ draft/ background/ doc-secciones/ ideas/",
         "proposal/            # LaTeX output: build.sh, sections/, main.tex, refs.bib",
@@ -423,16 +425,19 @@ def _prompt_if_tty(prompt: str, options: list[str], default: str) -> str:
     return _prompt_if_tty("Invalid selection.", options, default)
 
 
-def _build_config_json(lang: str, preset_name: str) -> dict:
+def _build_config_json(lang: str, preset_name: str, tools: list[str] | set[str] | None = None) -> dict:
     """Return the config dict for .marco/config.json."""
     now = datetime.now(timezone.utc).isoformat()
-    return {
+    cfg = {
         "language": lang,
         "model_preset": preset_name,
         "agent_models": dict(_MODEL_PRESETS[preset_name]),
         "created_at": now,
         "updated_at": now,
     }
+    if tools is not None:
+        cfg["tools"] = sorted(list(tools))
+    return cfg
 
 
 def _load_project_config(project_dir: Path) -> dict | None:
@@ -500,7 +505,7 @@ def cmd_init(args: argparse.Namespace) -> None:
     vault_subdirs: list[str] = manifest["vault_subdirs"]
     kit_paths: list[str] = manifest["kit_paths"]
 
-    tools = set(args.tools.split(",")) if args.tools else {"claude", "opencode", "pi"}
+    tools = set(args.tools.split(",")) if args.tools else {"claude", "opencode", "pi", "antigravity"}
 
     # --- Resolve language ---
     if args.lang is not None:
@@ -557,7 +562,7 @@ def cmd_init(args: argparse.Namespace) -> None:
     )
 
     # --- .marco/config.json ---
-    config = _build_config_json(lang, preset_name)
+    config = _build_config_json(lang, preset_name, tools=tools)
     (marco_dir / "config.json").write_text(
         json.dumps(config, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
@@ -613,6 +618,9 @@ def cmd_init(args: argparse.Namespace) -> None:
     if "pi" in tools:
         print("  Generating .pi/ ...")
         _run_generator(kit_root, target, "gen-pi.py")
+    if "antigravity" in tools:
+        print("  Generating .agent/ ...")
+        _run_generator(kit_root, target, "gen-antigravity.py")
 
     # --- Summary ---
     installed_count = len(all_installed)
@@ -629,7 +637,7 @@ def cmd_init(args: argparse.Namespace) -> None:
 
 
 def cmd_upgrade(args: argparse.Namespace) -> None:
-    """``marco upgrade <dir>``"""
+    """``marco upgrade <dir> [--tools TOOLS]``"""
     target = Path(args.dir).resolve()
     kit_root = get_kit_root()
     manifest = load_kit_manifest()
@@ -653,6 +661,33 @@ def cmd_upgrade(args: argparse.Namespace) -> None:
 
     # --- Re-apply config if present (backward compat) ---
     config = _load_project_config(target)
+
+    # Resolve active tools
+    if getattr(args, "tools", None):
+        tools_set = set(args.tools.split(","))
+        if config is None:
+            config = _build_config_json("es", "claude", tools=tools_set)
+        else:
+            config["tools"] = sorted(list(tools_set))
+            config["updated_at"] = datetime.now(timezone.utc).isoformat()
+        marco_dir = target / ".marco"
+        marco_dir.mkdir(parents=True, exist_ok=True)
+        (marco_dir / "config.json").write_text(
+            json.dumps(config, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        active_tools = tools_set
+    elif config is not None and "tools" in config:
+        active_tools = set(config["tools"])
+    else:
+        active_tools = {"claude"}
+        if (target / ".opencode").is_dir():
+            active_tools.add("opencode")
+        if (target / ".pi").is_dir():
+            active_tools.add("pi")
+        if (target / ".agent").is_dir():
+            active_tools.add("antigravity")
+
     if config is not None:
         # Backfill missing agents
         agent_models = config.get("agent_models", {})
@@ -676,13 +711,16 @@ def cmd_upgrade(args: argparse.Namespace) -> None:
         # Apply config to .claude/ copies
         _apply_config_to_claude_copies(target, config)
 
-    # Re-run generators
-    if (target / ".opencode").is_dir():
-        print("  Regenerating .opencode/ ...")
+    # Re-run generators for active tools
+    if "opencode" in active_tools:
+        print("  Generating .opencode/ ...")
         _run_generator(kit_root, target, "gen-opencode.py")
-    if (target / ".pi").is_dir():
-        print("  Regenerating .pi/ ...")
+    if "pi" in active_tools:
+        print("  Generating .pi/ ...")
         _run_generator(kit_root, target, "gen-pi.py")
+    if "antigravity" in active_tools:
+        print("  Generating .agent/ ...")
+        _run_generator(kit_root, target, "gen-antigravity.py")
 
     # Rewrite .marco/version
     (target / ".marco" / "version").write_text(kit_version + "\n", encoding="utf-8")
@@ -703,6 +741,7 @@ def cmd_upgrade(args: argparse.Namespace) -> None:
     print(f"\nmarco upgrade: {target}")
     print(f"  Version: {old_version} -> {kit_version}")
     print(f"  Files updated: {len(updated)}")
+    print(f"  Tools: {', '.join(sorted(active_tools))}")
     if config is not None:
         print(f"  Language: {config.get('language', 'es')}")
         print(f"  Model preset: {config.get('model_preset', 'claude')}")
@@ -778,6 +817,65 @@ def cmd_status(args: argparse.Namespace) -> None:
     else:
         print("\n  (no journal/ directory)")
 
+    # --- Recommended Next Action ---
+    print("\n" + "=" * 60)
+    print(" 🎯 RECOMENDACIÓN DE PRÓXIMO PASO")
+    print("=" * 60)
+    if estado_path.is_file():
+        text = estado_path.read_text(encoding="utf-8")
+        ctrl = _parse_control_block(text)
+        if ctrl and ctrl.get("next_step"):
+            ns = ctrl.get("next_step")
+            cmd = ctrl.get("next_command", "/propuesta-continuar")
+            print(f"  Paso actual pendiente: {ns}")
+            print(f"  Ejecuta en tu agente:  👉 {cmd}")
+        else:
+            print("  Ingreso finalizado o listo para iniciar. Ejecuta `/propuesta-analizar` en tu agente.")
+    else:
+        print("  Sin corrida activa. Completa `info_data/ideas/idea.md` y ejecuta `/propuesta-analizar` en tu agente.")
+    print("=" * 60)
+
+
+def cmd_guide(args: argparse.Namespace) -> None:
+    """``marco guide [dir]`` — Interactive onboarding wizard for proposal creation."""
+    target = Path(args.dir if args.dir else ".").resolve()
+    version_file = target / ".marco" / "version"
+    if not version_file.is_file():
+        print(f"warning: {target} is not a portable marco project (no .marco/version)", file=sys.stderr)
+        print("Tip: Run `marco init <dir>` first to create a portable project.", file=sys.stderr)
+        sys.exit(1)
+
+    print("\n" + "=" * 60)
+    print(" 🚀 MARCO DE PROPUESTAS DE IA — GUÍA DE INICIO Y FLUJO")
+    print("=" * 60)
+    print(f"\nProyecto activo: {target}")
+
+    idea_file = target / "info_data" / "ideas" / "idea.md"
+    tdr_dir = target / "info_data" / "tdr"
+    draft_dir = target / "info_data" / "draft"
+
+    tdr_files = [f for f in tdr_dir.glob("*") if f.name != ".gitkeep"] if tdr_dir.is_dir() else []
+    draft_files = [f for f in draft_dir.glob("*") if f.name != ".gitkeep"] if draft_dir.is_dir() else []
+
+    has_idea = idea_file.is_file() and len(idea_file.read_text(encoding="utf-8").strip()) > 100
+
+    print("\n1. Estado de Insumos (Drop Zones):")
+    print(f"   - Idea de Investigación: {'✅ Lista (info_data/ideas/idea.md)' if has_idea else '⚠️  Pendiente (editar info_data/ideas/idea.md)'}")
+    print(f"   - Convocatoria / TDR:    {'✅ ' + str(len(tdr_files)) + ' archivo(s) en info_data/tdr/' if tdr_files else 'ℹ️  Opcional (info_data/tdr/)'}")
+    print(f"   - Borrador previo:       {'✅ ' + str(len(draft_files)) + ' archivo(s) en info_data/draft/' if draft_files else 'ℹ️  Opcional (info_data/draft/)'}")
+
+    print("\n2. Pasos recomendados para iniciar la propuesta:")
+    print("   a) Abre tu agente de IA (Claude Code, Google Antigravity, OpenCode, o pi) en esta carpeta.")
+    if not has_idea:
+        print("   b) Edita `info_data/ideas/idea.md` con tu problema y enfoque de solución.")
+    print("   c) Ejecuta el comando de inicio en tu agente:")
+    print("      👉 `/propuesta-analizar` (inicia el análisis de insumos e idea)")
+    print("   d) Avanza paso a paso ejecutando:")
+    print("      👉 `/propuesta-continuar` (ejecuta la siguiente fase del pipeline)")
+    print("   e) O ejecuta la sesión completa en un solo comando:")
+    print("      👉 `/propuesta-auto` (pipeline interactivo completo)")
+    print("\n" + "=" * 60)
+
 
 def _parse_control_block(text: str) -> dict | None:
     """Best-effort parse YAML-ish frontmatter from estado_propuesta.md.
@@ -821,8 +919,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_init.add_argument("--title", default=None, help="Optional proposal title")
     p_init.add_argument(
         "--tools",
-        default="claude,opencode,pi",
-        help="Comma-separated list of runtimes to scaffold (default: claude,opencode,pi)",
+        default="claude,opencode,pi,antigravity",
+        help="Comma-separated list of runtimes to scaffold (default: claude,opencode,pi,antigravity)",
     )
     p_init.add_argument(
         "--lang",
@@ -840,11 +938,20 @@ def build_parser() -> argparse.ArgumentParser:
 
     # upgrade
     p_upg = sub.add_parser("upgrade", help="Refresh kit files in an existing project")
-    p_upg.add_argument("dir", help="Portable project directory")
+    p_upg.add_argument("dir", nargs="?", default=".", help="Portable project directory (default: current directory)")
+    p_upg.add_argument(
+        "--tools",
+        default=None,
+        help="Comma-separated list of tools/runtimes to enable or update (claude, opencode, pi, antigravity)",
+    )
 
     # status
     p_st = sub.add_parser("status", help="Print project state snapshot")
-    p_st.add_argument("dir", help="Portable project directory")
+    p_st.add_argument("dir", nargs="?", default=".", help="Portable project directory (default: current directory)")
+
+    # guide
+    p_gd = sub.add_parser("guide", help="Interactive onboarding guide and walkthrough")
+    p_gd.add_argument("dir", nargs="?", default=".", help="Portable project directory (default: current directory)")
 
     return parser
 
@@ -864,7 +971,61 @@ def _print_presets() -> None:
             print(f"    {agent}: {lineup.get(agent, '?')}")
 
 
+def _handle_agent_command_misuse(cmd_str: str) -> None:
+    """Print a clear explanation when an operator tries to run an agent slash command
+    (e.g., /propuesta-analizar or propuesta-analizar) directly in the terminal shell.
+    """
+    clean_cmd = "/" + cmd_str.lstrip("/")
+    target = Path(".").resolve()
+    print("\n" + "=" * 65)
+    print(f" ℹ️  '{cmd_str}' ES UN COMANDO DE AGENTE DE IA (SLASH COMMAND)")
+    print("=" * 65)
+    print(f"\nEl comando '{clean_cmd}' no es una suborden de terminal para la herramienta 'marco'.")
+    print("Es un slash command diseñado para ejecutarse DENTRO del chat de tu agente de IA.")
+    print("\nCómo ejecutarlo correctamente:")
+    print(f"  1. Abrí la terminal en el directorio de tu propuesta:\n     cd {target}")
+    print("  2. Inicia la sesión de tu agente de IA:")
+    print("     • pi:          pi .")
+    print("     • Claude Code: claude")
+    print("     • OpenCode:    opencode .")
+    print("     • Antigravity: ag init / antigravity")
+    print("  3. Escribí el comando dentro de la ventana de chat del agente:")
+    print(f"     👉 {clean_cmd}")
+
+    cmd_basename = clean_cmd.lstrip('/')
+    prompts_found = []
+    pi_c = target / ".pi" / "commands" / f"{cmd_basename}.md"
+    pi_p = target / ".pi" / "prompts" / f"{cmd_basename}.md"
+    claude_c = target / ".claude" / "commands" / f"{cmd_basename}.md"
+    opencode_c = target / ".opencode" / "commands" / f"{cmd_basename}.md"
+    antigravity_w = target / ".agent" / "workflows" / f"{cmd_basename}.md"
+
+    if pi_c.is_file():
+        prompts_found.append(f"  • pi:          .pi/commands/{cmd_basename}.md")
+    elif pi_p.is_file():
+        prompts_found.append(f"  • pi:          .pi/prompts/{cmd_basename}.md")
+    if claude_c.is_file():
+        prompts_found.append(f"  • Claude Code: .claude/commands/{cmd_basename}.md")
+    if opencode_c.is_file():
+        prompts_found.append(f"  • OpenCode:    .opencode/commands/{cmd_basename}.md")
+    if antigravity_w.is_file():
+        prompts_found.append(f"  • Antigravity: .agent/workflows/{cmd_basename}.md")
+
+    if prompts_found:
+        print("\nArchivos de definición del comando encontrados en este proyecto:")
+        for pf in prompts_found:
+            print(pf)
+    print("=" * 65 + "\n")
+
+
 def main(argv: list[str] | None = None) -> None:
+    raw_args = sys.argv[1:] if argv is None else argv
+    if raw_args:
+        first = raw_args[0].lstrip("/")
+        if first.startswith("propuesta") or first == "propuesta":
+            _handle_agent_command_misuse(raw_args[0])
+            return
+
     parser = build_parser()
     args = parser.parse_args(argv)
 
@@ -878,7 +1039,10 @@ def main(argv: list[str] | None = None) -> None:
         cmd_upgrade(args)
     elif args.command == "status":
         cmd_status(args)
+    elif args.command == "guide":
+        cmd_guide(args)
 
 
 if __name__ == "__main__":
     main()
+

@@ -21,14 +21,13 @@
       "tikz-optimizer.md"
     ],
     "command_files": [
-      "propuesta.md",
-      "propuesta-auto.md",
+      "propuesta-init.md",
       "propuesta-analizar.md",
       "propuesta-continuar.md",
-      "propuesta-init.md",
-      "propuesta-limpiar.md"
-    ],
-    "_command_files_note": "_propuesta-steps.md is a shared fragment without slash-command frontmatter; not ported. OpenCode commands that need it should reference the Claude path rewritten via substitutions to a repo-relative bare name or leave path rewritten to .opencode-neutral wording."
+      "propuesta-auto.md",
+      "propuesta-limpiar.md",
+      "_propuesta-steps.md"
+    ]
   },
   "frontmatter": {
     "agent_key_order": ["description", "mode", "model", "permission"],
@@ -113,9 +112,23 @@
     },
     {
       "id": "propuesta-auto-steps-path",
-      "applies_to": ["propuesta-auto.md", "propuesta-analizar.md", "propuesta-continuar.md", "propuesta.md"],
+      "applies_to": ["propuesta-auto.md", "propuesta-analizar.md", "propuesta-continuar.md", "_propuesta-steps.md"],
       "find": "`.claude/commands/_propuesta-steps.md`",
-      "replace": "`_propuesta-steps.md` (fragmento de referencia del pipeline en el repo; no es un slash command portado)",
+      "replace": "`.opencode/commands/_propuesta-steps.md`",
+      "literal": true
+    },
+    {
+      "id": "propuesta-steps-claude-refs",
+      "applies_to": ["_propuesta-steps.md"],
+      "find": ".claude/commands/",
+      "replace": ".opencode/commands/",
+      "literal": true
+    },
+    {
+      "id": "propuesta-steps-claude-agents",
+      "applies_to": ["_propuesta-steps.md"],
+      "find": ".claude/agents/",
+      "replace": ".opencode/agents/",
       "literal": true
     },
     {
@@ -151,10 +164,9 @@
     {
       "id": "propuesta-init-portable-donttouch-list",
       "applies_to": ["propuesta-init.md"],
-      "find": "`.marco/`, `.claude/`, `.opencode/`, `.pi/`,",
-      "replace": "`.marco/`, `.opencode/`, `.pi/`,",
-      "literal": true,
-      "_note": "Portable-mode 'don't touch' list: drop .claude/ (SSOT not touched by OpenCode operator) to satisfy drift lint; .opencode/ is the operator's runtime dir."
+      "find": "`.marco/`, `.claude/`, `.opencode/`, `.pi/`, `.agent/`,",
+      "replace": "`.marco/`, `.opencode/`, `.pi/`, `.agent/`,",
+      "literal": true
     },
     {
       "id": "agent-model-frontmatter-override",

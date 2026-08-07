@@ -353,14 +353,28 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
         `proposals/registry.md` (crea el archivo con su tabla de encabezado
         si no existe: `| run-id | creada | cerrada | estado | idea (breve) |
         archivo | commit |`).
-        ──→ GUARDIA DE COLISIÓN (corrida sin terminar): si
+        ──→ GUARDIA DE COLISIÓN (fase-aware e idempotente): si
         `proposal/estado_propuesta.md` ya existe con `estado: activa` en su
         bloque "Identidad de la corrida" y no todas las compuertas están
-        cerradas, DETENTE y exige confirmación explícita: "Existe una
-        corrida SIN terminar (`<run-id>`, última compuerta `<Gx>`).
-        ¿Archivarla y empezar una nueva? (sí/no)". Solo "sí" continúa con
-        ARCHIVADO-Y-REINICIO (abajo); "no" ofrece reanudar la corrida
-        existente en vez de iniciar una nueva.
+        cerradas:
+        - **En `/propuesta-analizar` (intake-only)**:
+          - Si no se han iniciado unidades de redacción (`last_completed` es `fase0`,
+            `g0.5` o `g0.5-omitida`): NO te detengas ni pidas archivar. Ejecutá un
+            refresco idempotente de intake (re-evaluá `info_data/`, actualizá
+            `estado_propuesta.md`) e indicá al usuario que el intake está listo y que
+            el siguiente comando para redactar es `/propuesta-continuar`.
+          - Si ya se inició la redacción de secciones (`last_completed` es `fase1a` o
+            posterior): NO ofrezcas reanudar `fase1a` desde dentro de este comando.
+            Informa que la redacción está en curso e instruye usar `/propuesta-continuar`
+            para proseguir o `/propuesta-limpiar` para archivar y reiniciar.
+        - **En `/propuesta-auto` (o `/propuesta`)**:
+          - Si `last_completed` es `fase0` o `g0.5`, continúa el pipeline automáticamente
+            desde `fase1a`.
+          - Si ya había avanzado a fases de redacción posteriores y se interrumpió, DETENTE y
+            exige confirmación explícita: "Existe una corrida SIN terminar (`<run-id>`,
+            última compuerta `<Gx>`). ¿Archivarla y empezar una nueva? (sí/no)". Solo
+            "sí" continúa con ARCHIVADO-Y-REINICIO (abajo); "no" reanuda la corrida
+            existente desde la fase pendiente.
         ──→ ARCHIVADO-Y-REINICIO (solo corridas futuras, tras "sí" arriba):
           1. Lee el `run_id` previo de `estado_propuesta.md`.
           2. `mkdir -p proposals/<run-id-previo>/`; copia el contenido de la

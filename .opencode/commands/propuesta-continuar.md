@@ -5,7 +5,7 @@ description: Avanza exactamente una unidad del pipeline según next_step en esta
 # /propuesta-continuar — Una unidad del pipeline
 
 Ejecutá **exactamente una** fila de la tabla de unidades en
-`_propuesta-steps.md` (fragmento de referencia del pipeline en el repo; no es un slash command portado), según `next_step` en
+`.opencode/commands/_propuesta-steps.md`, según `next_step` en
 `proposal/estado_propuesta.md`. Tras el gate (o fin de unidad sin gate),
 actualizá el control de ejecución e imprimí la tarjeta del siguiente comando.
 
@@ -93,6 +93,12 @@ next"):
 
 ### Siguiente comando
 /propuesta-continuar
+
+## 🎯 NEXT STEPS
+- **Fase Completada**: <id>
+- **Archivos Actualizados**: `proposal/sections/...`, `vault/secciones/...`
+- **Acción requerida**: Revisar contenido generado o gate de aprobación
+- **Próximo comando**: `/propuesta-continuar` (o `cd proposal && ./build.sh` si next_step es done)
 ```
 
 ## Qué nunca hace este comando
