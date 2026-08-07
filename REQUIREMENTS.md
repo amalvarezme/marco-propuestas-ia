@@ -33,8 +33,8 @@ Core:
 - `tree-sitter` + 16 language grammars — AST extraction for code files
 
 Optional extras (used in this project):
-- `pypdf` + `markdownify` — PDF parsing (convocatoria, papers)
-- `python-docx` — DOCX parsing (Anexo 2 proposal)
+- `pymupdf4llm` + `markdownify` — PDF layout & text conversion to Markdown (convocatoria, papers)
+- `markitdown` + `python-docx` — Office document parsing (DOCX, PPTX, XLSX proposals)
 - `graspologic` — Leiden community detection
 - `matplotlib` — SVG graph export
 - `faster-whisper` + `yt-dlp` — video/audio transcription

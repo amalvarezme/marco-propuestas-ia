@@ -125,8 +125,8 @@ Template vacío o solo placeholders de init **no** cuenta como idea. Con TDR +
 idea: la idea se alinea a la convocatoria; no se ignora el TDR.
 
 **Cómo el agente “lee” PDF/DOCX:** no hay un CLI de conversión obligatorio.
-`insumos-observador` extrae texto con **pypdf/markdownify** (PDF),
-**textutil/unzip** (DOCX), y opcionalmente **pixelshot** + visión para tablas
+`insumos-observador` extrae texto con **pymupdf4llm/markdownify** (PDF),
+**markitdown** (DOCX, PPTX, XLSX; con fallback a `textutil`/`unzip`), y opcionalmente **pixelshot** + visión para tablas
 malformadas; el resultado estructurado queda en `proposal/insumos.md`.
 
 ### 2.3 Arrancar el pipeline (slash commands)

@@ -363,26 +363,22 @@ Si "Declara secciones propias: No" y ningún archivo fue clasificado como
 vacía — el dispatcher usará esto para el bloqueo duro de la Fase 0.5 (ver
 `propuesta.md`, Fase 0.5). No autoresuelvas ni inventes una lista.
 
-### Lectura de insumos .docx
+### Lectura y conversión de insumos PDF y Office (.docx, .pptx, .xlsx)
 
-El Read tool no puede leer archivos `.docx` binarios de forma nativa en todos los runtimes (comportamiento no verificado caso por caso)
-directamente ("cannot read binary files"). Antes de ingerir cualquier insumo
-`.docx`, conviértelo primero a texto plano:
+Para convertir insumos binarios a Markdown amigable para LLMs antes de su clasificación y extracción:
 
-```bash
-textutil -convert txt "<archivo>.docx" -output "<ruta-temporal>.txt"
-```
+1. **Documentos Office (`.docx`, `.pptx`, `.xlsx`)**: Usa Microsoft `markitdown`:
+   ```bash
+   markitdown "<archivo>" > "<ruta-temporal>.md"
+   ```
+   *Fallback para `.docx` en macOS si `markitdown` no estuviera disponible:* `textutil -convert txt "<archivo>.docx" -output "<ruta-temporal>.txt"`, o `unzip -p "<archivo>.docx" word/document.xml`.
 
-(nativo de macOS, siempre disponible en darwin). Si `textutil` no está
-disponible, usa como fallback:
+2. **Documentos PDF (`.pdf`)**: Usa `pymupdf4llm` para extracción con preservación de tablas y estructura:
+   ```bash
+   python -c "import pymupdf4llm; print(pymupdf4llm.to_markdown('<archivo>.pdf'))" > "<ruta-temporal>.md"
+   ```
 
-```bash
-unzip -p "<archivo>.docx" word/document.xml
-```
-
-Luego lee el `.txt` (o el XML extraído) con el Read tool normalmente. Esta
-conversión es un prerrequisito obligatorio antes de clasificar o extraer
-contenido de cualquier insumo `.docx`.
+Luego lee el `.md` resultante para clasificar y estructurar el contenido.
 
 ## Vault mirror (Fase 0)
 
