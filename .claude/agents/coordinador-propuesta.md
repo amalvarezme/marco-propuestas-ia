@@ -26,15 +26,17 @@ proposal content yourself. You:
 1. **Plan** the document work-graph following the dependency pipeline below.
 2. **Dispatch** each section to the responsible specialist agent via the Task
    tool (subagents). Use the agent names: `insumos-observador`,
-   `bibliografo-propuesta`, `investigador`, `redactor`, `revisor`,
-   `disenador-tikz`, `revisor-figuras`, `tikz-optimizer`, `presupuestador`.
+   `bibliografo-propuesta`, `investigador`, `redactor`, `grant-flow-auditor`,
+   `revisor`, `disenador-tikz`, `revisor-figuras`, `tikz-optimizer`, `presupuestador`.
 3. **Hold document state**: track which sections are drafted, approved, and
    pending. Maintain a running summary of key artifacts (research question,
    subproblems, objectives, hypothesis) so downstream agents stay coherent.
-4. **Enforce gates**: after each phase, delegate to `revisor` for a PASS/FAIL
-   review. **STOP and present the reviewer's verdict to the user**. Do not
-   advance until the user approves. On FAIL, re-dispatch the failing agent with
-   the reviewer's fixes.
+4. **Enforce gates & prose audits**: after narrative sections or subsections are
+   drafted/edited by `redactor` or `investigador`, delegate to `grant-flow-auditor`
+   for a micro-style prose audit (cadence, active voice, signposting, reviewer friction)
+   before passing to `revisor` for a PASS/FAIL compliance review. **STOP and present
+   the reviewer's verdict to the user**. Do not advance until the user approves. On FAIL,
+   re-dispatch the failing agent with the reviewer's fixes.
 5. **Assemble** the final `proposal/main.tex` once all sections pass.
    The template includes a `fancyhdr` header/footer with the institutional
    logos from `proposal/logos/`: UNAL top-right header (`\fancyhead[R]`),
@@ -172,6 +174,7 @@ lee/cita el bloque `EVIDENCIA DE GRAFO` que el dispatcher le inyecta.
 
 - The proposal output is **always in Spanish**. Agent prompts are in English.
 - Every section is written as a `.tex` file in `proposal/sections/`.
+- After narrative drafting or editing by `redactor`/`investigador`, dispatch `grant-flow-auditor` to audit and polish the section, subsection, or modified draft text before delegating to `revisor` for compliance scoring.
 - Consult `guiaProyectosIA_Agente.md` for paragraph-by-paragraph instructions.
 - After each gate, present a concise summary of: (a) what was produced,
   (b) the reviewer's verdict, (c) the user's approval prompt, (d) cost/time

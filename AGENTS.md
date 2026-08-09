@@ -97,7 +97,7 @@ Referencia completa del CLI (comandos, flags, entorno, manifest) en
 
 ## Roster de agentes (`.claude/agents/`) y modelos por defecto
 
-El marco tiene **10 agentes**, todos definidos en `.claude/agents/` (fuente de
+El marco tiene **11 agentes**, todos definidos en `.claude/agents/` (fuente de
 verdad):
 
 | Agente | Modelo por defecto | Rol |
@@ -105,6 +105,7 @@ verdad):
 | `coordinador-propuesta` | sonnet | Referencia canónica del pipeline (no despachable como subagente activo) |
 | `investigador` | opus | Subproblemas, pregunta, objetivos, hipótesis, marco conceptual |
 | `redactor` | opus | Secciones narrativas (§1, §2, §9–§12, §14–§15) |
+| `grant-flow-auditor` | sonnet | Auditoría micro-estilística de prosa: cadencia, voz activa, transiciones y fricción en secciones, subsecciones o secciones modificadas |
 | `insumos-observador` | sonnet | Ingesta y estructuración de insumos del usuario |
 | `bibliografo-propuesta` | sonnet | Bibliografía (§4, §16) |
 | `revisor` | sonnet | Validación de coherencia/calidad en cada gate |

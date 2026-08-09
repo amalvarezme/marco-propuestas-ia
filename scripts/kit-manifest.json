@@ -5,6 +5,7 @@
     ".claude/agents/bibliografo-propuesta.md",
     ".claude/agents/coordinador-propuesta.md",
     ".claude/agents/disenador-tikz.md",
+    ".claude/agents/grant-flow-auditor.md",
     ".claude/agents/insumos-observador.md",
     ".claude/agents/investigador.md",
     ".claude/agents/presupuestador.md",
