@@ -1,0 +1,332 @@
+#!/usr/bin/env python3
+"""Deterministic, zero-LLM-call generator that ports the dispatched
+.claude/agents/*.md subagents and .claude/commands/*.md commands into
+.pi/agents/*.md and .pi/prompts/*.md (Pi's project-level subagent and
+prompt-template directories).
+
+Read-only with respect to everything under .claude/. All the actual
+mapping/substitution/drift-detection data lives in
+scripts/gen-pi.rules.json -- this script is pure logic, no project-specific
+data. Extend the port by editing the rules file, not this file.
+
+Usage (from repo root, or anywhere -- the repo root is resolved via
+__file__):
+
+    python3 scripts/gen-pi.py            # write .pi/
+    python3 scripts/gen-pi.py --check    # dry-run, no writes; non-zero exit
+                                         #   if output would change or drift
+                                         #   is found
+
+Exit codes: 0 ok; 1 usage; 2 source missing; 3 drift found.
+
+Why these output paths (verified against the installed Pi docs and the
+gentle-pi subagent loader on this machine):
+  * `.pi/agents/*.md` is a project-level subagent root, so `subagent_run`
+    discovers the ported agents with no extra setup.
+  * `.pi/prompts/*.md` is Pi's project prompt-template directory, so each
+    command file becomes a `/<filename>` slash command.
+  * Both load only after project trust is granted (`pi --approve`, or the
+    interactive trust prompt). Approval gates need an interactive or resumed
+    session; `pi -p` cannot stop to wait for a human at a gate.
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+RULES_PATH = Path(__file__).resolve().parent / "gen-pi.rules.json"
+
+
+class GeneratorError(Exception):
+    """Fatal error that should abort the run with a clear message."""
+
+
+# --------------------------------------------------------------------------
+# Rules loading
+# --------------------------------------------------------------------------
+
+
+def load_rules() -> dict:
+    if not RULES_PATH.is_file():
+        raise GeneratorError(f"rules file not found: {RULES_PATH}")
+    with RULES_PATH.open("r", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+# --------------------------------------------------------------------------
+# Frontmatter / body split
+# --------------------------------------------------------------------------
+
+
+def split_frontmatter(text: str, source_path: Path) -> tuple[dict, str]:
+    """Split a Claude markdown file into (frontmatter dict, body str).
+
+    Frontmatter is a flat `key: value` block between two `---` lines -- no
+    PyYAML needed, no nesting in any of the source files.
+    """
+    if not text.startswith("---\n"):
+        raise GeneratorError(f"{source_path}: missing frontmatter opening '---'")
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        raise GeneratorError(f"{source_path}: missing frontmatter closing '---'")
+    fm_block = text[4:end]
+    body = text[end + 5 :]
+
+    frontmatter: dict[str, str] = {}
+    for line in fm_block.splitlines():
+        if not line.strip():
+            continue
+        if ":" not in line:
+            raise GeneratorError(f"{source_path}: malformed frontmatter line: {line!r}")
+        key, _, value = line.partition(":")
+        frontmatter[key.strip()] = value.strip()
+    return frontmatter, body
+
+
+# --------------------------------------------------------------------------
+# Frontmatter mapping
+# --------------------------------------------------------------------------
+
+
+def map_agent_frontmatter(fm: dict, source_path: Path, rules: dict) -> dict:
+    out: dict = {}
+
+    if "name" not in fm:
+        raise GeneratorError(f"{source_path}: agent frontmatter missing 'name'")
+    if "description" not in fm:
+        raise GeneratorError(f"{source_path}: agent frontmatter missing 'description'")
+    # Pi keeps `name`: it is the subagent id `subagent_run` dispatches by.
+    out["name"] = fm["name"]
+    out["description"] = fm["description"]
+
+    claude_model = fm.get("model")
+    if not claude_model:
+        raise GeneratorError(f"{source_path}: agent frontmatter missing 'model'")
+    model_map = rules["model_map"]
+    thinking_map = rules["thinking_map"]
+    if claude_model not in model_map:
+        raise GeneratorError(
+            f"{source_path}: model '{claude_model}' has no entry in rules.json model_map"
+        )
+    if claude_model not in thinking_map:
+        raise GeneratorError(
+            f"{source_path}: model '{claude_model}' has no entry in rules.json thinking_map"
+        )
+    out["model"] = model_map[claude_model]
+    out["thinking"] = thinking_map[claude_model]
+
+    tools_map = rules["tools_map"]
+    claude_tools = fm.get("tools")
+    lookup_key = claude_tools if claude_tools else "__no_tools_field__"
+    if lookup_key not in tools_map:
+        raise GeneratorError(
+            f"{source_path}: tools value {claude_tools!r} has no entry in "
+            "rules.json tools_map -- refusing to guess a tool set (never "
+            "narrow beyond the Claude original)"
+        )
+    tools = tools_map[lookup_key]
+    if tools is not None:
+        out["tools"] = tools
+    # tools is None => omit the key entirely, so the ported agent keeps Pi's
+    # default tool set, mirroring a Claude agent with no `tools:` field.
+    return out
+
+
+def map_command_frontmatter(fm: dict, source_path: Path, rules: dict) -> dict:
+    out: dict = {}
+    if "description" not in fm:
+        raise GeneratorError(f"{source_path}: command frontmatter missing 'description'")
+    out["description"] = fm["description"]
+    # Pi supports argument-hint on prompt templates, so it is preserved when
+    # the source declares one.
+    if "argument-hint" in fm:
+        out["argument-hint"] = fm["argument-hint"]
+    return out
+
+
+def render_frontmatter(fm: dict, key_order: list[str]) -> str:
+    lines = ["---"]
+    for key in key_order:
+        if key not in fm:
+            continue
+        lines.append(f"{key}: {fm[key]}")
+    lines.append("---")
+    return "\n".join(lines) + "\n"
+
+
+# --------------------------------------------------------------------------
+# Body substitution
+# --------------------------------------------------------------------------
+
+
+def apply_substitutions(body: str, filename: str, rules: dict) -> str:
+    for rule in rules["substitutions"]:
+        applies_to = rule.get("applies_to") or []
+        if filename not in applies_to:
+            continue
+        if not rule.get("literal", True):
+            raise GeneratorError(
+                f"substitution rule {rule.get('id')!r}: non-literal rules are "
+                "not supported by this generator"
+            )
+        find = rule["find"]
+        if not find:
+            continue
+        body = body.replace(find, rule["replace"])
+    return body
+
+
+# --------------------------------------------------------------------------
+# Drift lint
+# --------------------------------------------------------------------------
+
+
+def drift_lint(text: str, rel_output_path: str, patterns: list[str]) -> list[str]:
+    messages = []
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        for pattern in patterns:
+            if pattern in line:
+                messages.append(
+                    f'DRIFT: {rel_output_path}:{lineno}: unmapped pattern "{pattern}" '
+                    "-- add a rule to gen-pi.rules.json or fix source."
+                )
+    return messages
+
+
+# --------------------------------------------------------------------------
+# Non-mutating write helper
+# --------------------------------------------------------------------------
+
+
+def write_output(
+    relpath: str, text: str, output_roots: tuple[str, ...], check: bool
+) -> bool:
+    """Write `text` to `<repo_root>/relpath`, hard-asserting relpath is under
+    one of `output_roots`. Returns True when the file content changed.
+
+    In --check mode, does not write; only reports whether it would change.
+    """
+    if not any(relpath.startswith(root) for root in output_roots):
+        raise GeneratorError(
+            f"refusing to write outside allowed output roots {output_roots}: {relpath}"
+        )
+    if relpath.startswith(".claude/") or "/.claude/" in relpath:
+        raise GeneratorError(f"refusing to write under .claude/: {relpath}")
+
+    dest = REPO_ROOT / relpath
+    previous = dest.read_text(encoding="utf-8") if dest.is_file() else None
+    changed = previous != text
+
+    if not check and changed:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(text, encoding="utf-8")
+
+    return changed
+
+
+# --------------------------------------------------------------------------
+# Per-file pipeline (BUILD phase -- pure, no filesystem writes)
+# --------------------------------------------------------------------------
+
+
+def build_agent(filename: str, rules: dict) -> tuple[str, str]:
+    """Return (output_relpath, output_text) for one agent. No writes."""
+    paths = rules["paths"]
+    source_path = REPO_ROOT / paths["source_agents_dir"] / filename
+    if not source_path.is_file():
+        raise GeneratorError(f"source agent missing: {source_path}")
+
+    text = source_path.read_text(encoding="utf-8")
+    fm, body = split_frontmatter(text, source_path)
+    out_fm = map_agent_frontmatter(fm, source_path, rules)
+    out_body = apply_substitutions(body, filename, rules)
+
+    rendered_fm = render_frontmatter(out_fm, rules["frontmatter"]["agent_key_order"])
+    return f"{paths['output_agents_dir']}/{filename}", rendered_fm + out_body
+
+
+def build_command(filename: str, rules: dict) -> tuple[str, str]:
+    """Return (output_relpath, output_text) for one command. No writes."""
+    paths = rules["paths"]
+    source_path = REPO_ROOT / paths["source_commands_dir"] / filename
+    if not source_path.is_file():
+        raise GeneratorError(f"source command missing: {source_path}")
+
+    text = source_path.read_text(encoding="utf-8")
+    fm, body = split_frontmatter(text, source_path)
+    out_fm = map_command_frontmatter(fm, source_path, rules)
+    out_body = apply_substitutions(body, filename, rules)
+
+    rendered_fm = render_frontmatter(out_fm, rules["frontmatter"]["command_key_order"])
+    return f"{paths['output_commands_dir']}/{filename}", rendered_fm + out_body
+
+
+# --------------------------------------------------------------------------
+# Entry point
+# --------------------------------------------------------------------------
+
+
+def main(argv: list[str]) -> int:
+    check = False
+    for arg in argv[1:]:
+        if arg == "--check":
+            check = True
+        else:
+            print(f"usage: {argv[0]} [--check]", file=sys.stderr)
+            return 1
+
+    try:
+        rules = load_rules()
+    except GeneratorError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    paths = rules["paths"]
+    excluded = set(paths.get("excluded_agents", []))
+
+    # BUILD phase: compute every output file's text in memory first. No writes
+    # happen here, so a drift hit on file N never leaves files 1..N-1 written
+    # to disk -- drift-lint covers the WHOLE output set before any write.
+    built: list[tuple[str, str]] = []
+    try:
+        for filename in paths["agent_files"]:
+            if filename in excluded:
+                continue
+            built.append(build_agent(filename, rules))
+        for filename in paths["command_files"]:
+            built.append(build_command(filename, rules))
+    except GeneratorError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    # DRIFT-LINT phase: scan every built output before writing anything.
+    all_drift: list[str] = []
+    for output_relpath, output_text in built:
+        all_drift.extend(drift_lint(output_text, output_relpath, rules["drift_patterns"]))
+
+    if all_drift:
+        for msg in all_drift:
+            print(msg, file=sys.stderr)
+        return 3
+
+    # WRITE phase: only reached when the entire output set is drift-free.
+    allowed_roots = (paths["output_agents_dir"], paths["output_commands_dir"])
+    try:
+        for output_relpath, output_text in built:
+            changed = write_output(output_relpath, output_text, allowed_roots, check)
+            verb = "would write" if check and changed else ("wrote" if changed else "unchanged")
+            print(f"{verb}: {output_relpath}")
+    except GeneratorError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    if check:
+        print("--check: no drift, no writes performed.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))

@@ -20,7 +20,7 @@
       "revisor.md",
       "tikz-optimizer.md"
     ],
-    "command_files": ["propuesta.md", "propuesta-limpiar.md"]
+    "command_files": ["propuesta.md", "propuesta-init.md", "propuesta-limpiar.md"]
   },
   "frontmatter": {
     "agent_key_order": ["description", "mode", "model", "permission"],
@@ -101,8 +101,16 @@
       "literal": true
     },
     {
-      "id": "propuesta-task-tool-name",
+      "id": "run-root-framework-paths",
       "applies_to": ["propuesta.md"],
+      "find": "relativas a la raíz son las del framework: `.claude/`, `scripts/`,",
+      "replace": "relativas a la raíz son las del framework: `.opencode/`, `scripts/`,",
+      "literal": true,
+      "_note": "The RUN_ROOT block lists the framework-relative paths; in this port the runtime directory is .opencode/, not .claude/."
+    },
+    {
+      "id": "propuesta-task-tool-name",
+      "applies_to": ["propuesta.md", "propuesta-init.md", "propuesta-limpiar.md"],
       "find": "`Task`",
       "replace": "`task`",
       "literal": true,

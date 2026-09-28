@@ -1,15 +1,16 @@
 ---
 description: Inicia el pipeline multi-agente de redacción de una propuesta de investigación en IA a partir de la idea del usuario y sus insumos.
+argument-hint: [idea o contexto inicial de la propuesta]
 ---
-**Nota de ejecución (solo OpenCode):** los gates de aprobación de este pipeline ("NO avances sin aprobación") requieren que la sesión de OpenCode se mantenga activa e interactiva entre fases -- este comando es resumible (el usuario responde en cada gate y el pipeline continúa dentro de la misma sesión), NO soporta una ejecución headless de una sola pasada (por ejemplo, `opencode run` de punta a punta sin sesión persistente), porque ese modo no puede detenerse a esperar la aprobación humana en cada gate.
+**Nota de ejecución (solo Pi):** los gates de aprobación de este pipeline ("NO avances sin aprobación") requieren una sesión interactiva de Pi que se mantenga viva entre fases -- el usuario responde en cada gate y el pipeline continúa en la misma sesión (`pi`, o `pi -c` para retomarla). El modo no interactivo (`pi -p`) NO sirve para este comando: no puede detenerse a esperar la aprobación humana en cada gate.
 
 El usuario quiere redactar una propuesta de investigación en IA siguiendo el
 marco multi-agente descrito en `AGENTS.md` y en la referencia canónica del
 pipeline, `coordinador-propuesta.md` (documento de referencia del pipeline, no incluido en este puerto). **Tú, el asistente
 primario, eres el dispatcher real** de este pipeline: `coordinador-propuesta`
 es documentación de referencia, no un subagente activo, porque los subagentes
-de OpenCode no pueden invocar a otros subagentes. Usa la herramienta `task` (o la mención `@<agente>`)
-para despachar cada fase al subagente correspondiente en `.opencode/agents/` (o mediante la mención `@<agente>`).
+de Pi no pueden invocar a otros subagentes. Usa la herramienta `subagent_run`
+para despachar cada fase al subagente correspondiente en `.pi/agents/`.
 
 Entrada del usuario:
 
@@ -22,7 +23,7 @@ Todos los artefactos de una corrida viven en **una sola subcarpeta**,
 `proposal/` o `vault/` (p. ej. `proposal/sections/03_*.tex`,
 `proposal/estado_propuesta.md`, `vault/secciones/`) se resuelve **dentro de
 `RUN_ROOT`**, no en la raíz del repo. Las únicas rutas que son literalmente
-relativas a la raíz son las del framework: `.opencode/`, `scripts/`,
+relativas a la raíz son las del framework: `.pi/`, `scripts/`,
 `guiaProyectosIA_Agente.md`, `AGENTS.md`, `proposals/registry.md` y
 `proposals/.current-run`.
 
@@ -44,7 +45,7 @@ Cuando una llamada MCP de `codebase-memory` pide un `repo_path` absoluto,
 `/ruta/al/repo/proposals/2026-09-siun-alianzas`). Los nombres de índice se
 derivan del mismo run-id: `<run-id>-papers` y `<run-id>-vault`.
 
-## Roster de subagentes (`.opencode/agents/`)
+## Roster de subagentes (`.pi/agents/`)
 
 `insumos-observador`, `investigador`, `redactor`, `bibliografo-propuesta`,
 `disenador-tikz`, `tikz-optimizer`, `revisor-figuras`, `revisor`,
@@ -63,7 +64,7 @@ es una señal de que estás inventando un flujo que no existe: detente y usa
 las herramientas MCP de abajo.
 
 Herramientas que usa el DISPATCHER (nunca un subagente: `revisor` solo tiene
-Read/Grep/Glob, sin acceso MCP):
+read/grep/find, sin acceso MCP):
 
 | Herramienta | Para qué |
 |---|---|
@@ -138,7 +139,7 @@ Cada vez que una fase de abajo dice "aplica el procedimiento de Refresh del
 
 1. Si no hay insumos (PDFs/papers/enlaces) en el mensaje ni en `info_data/`,
    pídelos al usuario antes de avanzar. Los archivos fuente se guardan en
-   `info_data/`. Si los hay, despacha con `task` al subagente
+   `info_data/`. Si los hay, despacha con `subagent_run` al subagente
    `insumos-observador` (Fase 0) para clasificar (TDR / draft-base /
    background), extraer el TDR si aplica, y estructurar el contexto en
    `proposal/insumos.md`. Ver el bloque "Fase 0" del pipeline abajo para el
@@ -185,7 +186,7 @@ cada fase, abajo). Este índice es DISTINTO del de la Fase 1a/1b (que indexa
 de esta sección es el proyecto `<run-id>-vault`, cubre el mirror Obsidian
 (`vault/secciones/` + `vault/insumos/`) y reporta en
 `proposal/pipeline/vault-graph-report.md`. Nunca lo indexa `revisor` (solo
-tiene Read/Grep/Glob, sin acceso MCP) — siempre lo dispara el dispatcher, con
+tiene read/grep/find, sin acceso MCP) — siempre lo dispara el dispatcher, con
 el procedimiento "Refresh del índice del vault" definido arriba.
 
 Formato exacto del bloque que el dispatcher inyecta inline en el prompt de
@@ -273,7 +274,7 @@ fase/compuerta. Mecánica: el DISPATCHER únicamente escribe/actualiza el
 archivo de evento `.md` y `proposal/pipeline/_estado.md` — `proposal/pipeline/`
 NO se indexa con `codebase-memory` (no aporta valor consumido; el overhead se
 descarta). Nunca lo hace
-`revisor` (solo Read/Grep/Glob) — siempre lo hace el dispatcher.
+`revisor` (solo read/grep/find) — siempre lo hace el dispatcher.
 
 ## Telemetría de uso por fase
 
@@ -371,7 +372,7 @@ PRE-CARGA DE FRAGMENTOS DE GUÍA (inicio de la Fase 1a, más abajo) reutiliza
 este mismo valor cuando corresponde, en vez de recalcularlo; ver ese bloque
 para las condiciones exactas de reuso vs. recálculo.
 
-## Pipeline (dispatch con `task` fase por fase)
+## Pipeline (dispatch con `subagent_run` fase por fase)
 
 ```
 Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): si
@@ -662,7 +663,7 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         corrida.
         ──→ FORMATO EXACTO DE INYECCIÓN (`## FRAGMENTO DE GUÍA`): a partir de
         acá, cuando una fase indica "inyecta el fragmento de §N" en el
-        prompt de una `task`, el bloque tiene esta forma exacta (mismo
+        prompt de una `subagent_run`, el bloque tiene esta forma exacta (mismo
         estilo que `ASESOR-GRAFO`/`guide_fingerprint` arriba):
 
         ```
@@ -1450,14 +1451,14 @@ estado del arte, diagrama metodológico):
 - Tras cada gate, presenta el veredicto PASS/FAIL del revisor correspondiente
   y espera aprobación explícita del usuario antes de despachar la siguiente
   fase. **Tras cada gate, NO avances sin aprobación.**
-- En FAIL, vuelve a despachar con `task` al agente responsable de la sección
+- En FAIL, vuelve a despachar con `subagent_run` al agente responsable de la sección
   con las correcciones exactas del revisor, y repite el gate.
 - No reescribas contenido de sección tú mismo; ese trabajo es de los
   subagentes especialistas.
 - Tras el veredicto PASS de cada gate, actualiza tú (el dispatcher) el campo
   `gate_status` de `pending` a `pass` en el frontmatter de la(s) nota(s)
   `vault/secciones/*.md` correspondientes a esa fase — el `revisor` solo tiene
-  herramientas de lectura (Read/Grep/Glob) y no puede escribir archivos, así
+  herramientas de lectura (read/grep/find) y no puede escribir archivos, así
   que esta responsabilidad es tuya, igual que ya lo es para
   `proposal/estado_propuesta.md`. En FAIL, deja `gate_status` en `pending` (o
   cámbialo a `fail` si el re-despacho vuelve a fallar) hasta que el
@@ -1483,4 +1484,4 @@ estado del arte, diagrama metodológico):
 
 Comienza ahora confirmando la idea del usuario y listando los insumos
 detectados, luego arranca la Fase 0 despachando `insumos-observador` con
-`task`.
+`subagent_run`.
