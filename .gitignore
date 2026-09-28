@@ -8,8 +8,14 @@
 # Obsidian local app state (workspace, plugin config)
 .obsidian/
 
-# Knowledge-graph scratch (from /graphify runs)
+# Knowledge-graph scratch. The graph layer is codebase-memory (the codegraph
+# MCP server), whose index lives in .codegraph/ (ignored above). Per-run graph
+# reports live inside the run folder and are covered by the rules below.
+# graphify-out/ is legacy leftover from the retired graphify tooling.
 graphify-out/
+
+# Active-run pointer written by scripts/init-run.sh (local state, not content)
+proposals/.current-run
 
 # Python bytecode cache
 __pycache__/
@@ -47,7 +53,9 @@ proposal/pipeline/
 proposal/scoping/
 proposal/pixelshot-out/
 
-# Insumos y notas de vault por corrida (se conserva el placeholder de carpeta)
+# Insumos y notas de vault por corrida (se conservan el placeholder de carpeta
+# y el .cbmignore del índice de codebase-memory, que son esqueleto, no corrida)
+!vault/.cbmignore
 vault/insumos/*
 !vault/insumos/.gitkeep
 vault/secciones/*

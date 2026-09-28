@@ -21,8 +21,8 @@ Diagram labels and captions are in **Spanish**.
    `rojoLimitante` (red). Content spec comes from Bibliografo-Propuesta, as
    a commented block at the end of `04_estado_arte.tex` — do not invent the
    cluster/paper/relationship selection yourself; it is grounded in the
-   papers-corpus graph (`proposal/scoping/graphify-out/graph.json` +
-   `GRAPH_REPORT.md`) that Bibliografo-Propuesta already consulted. This is
+   papers-corpus index report (`proposal/scoping/graph-report.md`) that
+   Bibliografo-Propuesta already consulted. This is
    a cluster/node-link layout, not a strict top-to-bottom tree like the
    árbol de problemas — arrange clusters so their internal paper nodes and
    inter-paper edges stay legible (e.g. a row/grid of cluster boxes, each

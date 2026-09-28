@@ -2,7 +2,6 @@
 description: Inicia el pipeline multi-agente de redacción de una propuesta de investigación en IA a partir de la idea del usuario y sus insumos.
 argument-hint: [idea o contexto inicial de la propuesta]
 ---
-
 El usuario quiere redactar una propuesta de investigación en IA siguiendo el
 marco multi-agente descrito en `AGENTS.md` y en la referencia canónica del
 pipeline, `.claude/agents/coordinador-propuesta.md`. **Tú, el asistente
@@ -15,6 +14,35 @@ Entrada del usuario:
 
 $ARGUMENTS
 
+## Raíz de corrida (`RUN_ROOT`) — lee esto antes de escribir cualquier archivo
+
+Todos los artefactos de una corrida viven en **una sola subcarpeta**,
+`proposals/<run-id>/`. En TODO este documento, cualquier ruta que empiece por
+`proposal/` o `vault/` (p. ej. `proposal/sections/03_*.tex`,
+`proposal/estado_propuesta.md`, `vault/secciones/`) se resuelve **dentro de
+`RUN_ROOT`**, no en la raíz del repo. Las únicas rutas que son literalmente
+relativas a la raíz son las del framework: `.claude/`, `scripts/`,
+`guiaProyectosIA_Agente.md`, `AGENTS.md`, `proposals/registry.md` y
+`proposals/.current-run`.
+
+Resolución de `RUN_ROOT`, en este orden exacto:
+
+1. Si existe `proposals/.current-run`, `RUN_ROOT` = `proposals/<contenido
+   de ese archivo>/`. Es el caso normal, y lo escribe `/propuesta-init`.
+2. Si NO existe pero la raíz tiene una corrida heredada (un
+   `proposal/estado_propuesta.md` no vacío, esquema previo a las subcarpetas
+   por corrida), `RUN_ROOT` = la raíz del repo, y sigues esa corrida donde
+   está — nunca la migres a mitad de camino.
+3. Si no existe ninguno de los dos, **DETENTE** antes de escribir nada:
+   pídele al usuario que corra `/propuesta-init <idea>` (o corre tú mismo
+   `scripts/init-run.sh <run-id> "<idea>"` tras resolver el run-id como
+   describe la Fase 0) y solo después continúa con la Fase 0.
+
+Cuando una llamada MCP de `codebase-memory` pide un `repo_path` absoluto,
+`<RUN_ROOT>` es la ruta absoluta de esa carpeta (p. ej.
+`/ruta/al/repo/proposals/2026-09-siun-alianzas`). Los nombres de índice se
+derivan del mismo run-id: `<run-id>-papers` y `<run-id>-vault`.
+
 ## Roster de subagentes (`.claude/agents/`)
 
 `insumos-observador`, `investigador`, `redactor`, `bibliografo-propuesta`,
@@ -22,48 +50,88 @@ $ARGUMENTS
 `presupuestador`. (No existen `orquestador`, `observador` ni `bibliotecario`
 — usa siempre estos 9 nombres reales.)
 
-## Cómo ejecutar `graphify` (nunca requiere API key)
+## Cómo usar `codebase-memory` (MCP `codegraph`)
 
-En todo este documento, cuando una fase dice "el DISPATCHER ejecuta
-`graphify`" o muestra una invocación de CLI cruda (`graphify papers/`,
-`graphify --update .`, `graphify export html`, etc.), eso describe QUÉ
-construir/actualizar/exportar, no CÓMO invocarlo literalmente. El DISPATCHER
-**nunca** llama al binario `graphify` directamente por Bash para
-build/update/export — eso dispara el modo CLI headless de `graphify
-extract`, que sí exige una API key de pago (`GEMINI_API_KEY`, etc.) porque
-asume que no hay un agente orquestador disponible. Aquí sí lo hay: el
-DISPATCHER **es** ese agente.
+Este pipeline mantiene vistas de grafo sobre sus propios artefactos (el
+corpus de papers de scoping y el mirror Obsidian del vault) con
+**codebase-memory** — el servidor MCP `codegraph` declarado en `.mcp.json`
+(`codegraph serve --mcp`). No hay binario que invocar por Bash ni API key
+que pedir: son llamadas a herramientas MCP. Si en algún punto de esta
+corrida sientes la tentación de pedirle al usuario una API key para indexar,
+es una señal de que estás inventando un flujo que no existe: detente y usa
+las herramientas MCP de abajo.
 
-**Invoca siempre el Skill `graphify`** (`Skill` tool, `skill: "graphify"`,
-`args: "<ruta> [--update] [--export html]"`) y sigue su propio flujo interno
-(el `SKILL.md` de `graphify` instalado en esta sesión, Steps 1-9). Ese flujo
-no necesita ninguna key: la extracción estructural (código) es AST puro, y
-la extracción
-semántica (docs/papers/imágenes) la hace el propio agente orquestador
-despachando subagentes `general-purpose` cuando `GEMINI_API_KEY`/
-`GOOGLE_API_KEY` no están configuradas — nunca lee `ANTHROPIC_API_KEY`,
-`OPENAI_API_KEY` ni ninguna otra. Si en algún punto de esta corrida sientes
-la tentación de preguntarle al usuario por una API key para `graphify`, es
-una señal de que estás invocando el CLI crudo en vez del Skill: detente y
-usa el Skill.
+Herramientas que usa el DISPATCHER (nunca un subagente: `revisor` solo tiene
+Read/Grep/Glob, sin acceso MCP):
 
-Traducción de las invocaciones crudas que aparecen más abajo a argumentos
-del Skill:
-- `graphify papers/` (build inicial, Fase 1a) → `Skill(skill: "graphify",
-  args: "papers/ --export html")` — el Step 6 del skill genera el HTML por
-  defecto en la misma corrida, así que un `graphify export html` aparte casi
-  nunca hace falta; básalo solo si el propio Skill lo pide explícitamente.
-- `graphify --update papers/` (incremental, Fase 1b y refresh post-refs) →
-  `Skill(skill: "graphify", args: "papers/ --update --export html")`.
-- `graphify .` / `graphify --update .` (grafo del vault, Fase 1b en
-  adelante) → `Skill(skill: "graphify", args: ". --export html")` /
-  `Skill(skill: "graphify", args: ". --update")` (sin `--export html` salvo
-  que la fase lo pida explícitamente, ver "Vault graph HTML export limited
-  to G1b and Fase 7").
-- El `cd proposal/scoping/` / `cd vault/` previo sigue siendo obligatorio:
-  el Skill opera sobre el directorio de trabajo actual (`graphify-out/`
-  relativo al cwd), así que cambia de directorio ANTES de invocar el Skill,
-  exactamente como indica cada fase abajo.
+| Herramienta | Para qué |
+|---|---|
+| `index_repository(repo_path, name, mode)` | Construye o **actualiza** el índice de un corpus. Es incremental: volver a llamarla sobre el mismo `name` reindexa lo que cambió. No existe `--update` ni `--force`. |
+| `get_architecture(project, aspects)` | Vista agregada: `clusters` (comunidades temáticas), `hotspots` (nodos centrales), `boundaries`, `structure`, `file_tree`. |
+| `search_graph(project, ...)` / `query_graph(project, query)` | Consulta por patrón de nombre, o Cypher de solo lectura para cruces multi-salto. |
+| `index_status(project)` / `check_index_coverage(project, paths)` | Frescura del índice y huecos de cobertura. Un resultado limpio significa "sin hueco registrado", nunca "cobertura probada". |
+| `delete_project(project)` | Descarta un índice obsoleto (p. ej. cuando una iteración de G1a reemplaza los 5 papers del corpus semilla). |
+
+Reglas duras:
+
+- **Siempre `repo_path` absoluto al directorio del corpus**, nunca la raíz
+  del repo. `codebase-memory` respeta `.gitignore`, y todo el contenido de
+  una corrida está gitignoreado: indexado desde la raíz, el corpus aparece
+  como `not_indexed` con `reason: "gitignore"`. Indexado con el corpus
+  **como raíz propia** (`<RUN_ROOT>/vault`,
+  `<RUN_ROOT>/proposal/scoping/papers`), el `.gitignore` del repo padre no
+  aplica y los archivos sí entran. Las negaciones (`!ruta`) en `.cbmignore`
+  **no** revierten una regla de `.gitignore`, así que el corpus-como-raíz es
+  la única mecánica válida.
+- **Ruido excluido con `.cbmignore`** dentro del corpus (esto sí funciona):
+  `vault/.cbmignore` excluye `.obsidian/`; `proposal/scoping/.cbmignore`
+  excluye los reportes derivados.
+- **Nombres de proyecto estables por corrida**: `<run-id>-papers` para el
+  corpus de scoping y `<run-id>-vault` para el mirror Obsidian. Son dos
+  índices distintos y nunca se mezclan.
+- **No hay export HTML.** `codebase-memory` no produce un grafo navegable en
+  el navegador. Lo que se le presenta al usuario en los gates es el reporte
+  Markdown que el DISPATCHER escribe a partir de las llamadas MCP (ver
+  "Reporte de grafo" abajo).
+- **No hay edges de `[[wikilink]]`.** `codebase-memory` modela carpetas,
+  archivos y secciones (encabezados Markdown), no enlaces entre notas. Los
+  `[[wikilinks]]` rotos se detectan de forma determinista con `Grep`, no se
+  infieren del grafo.
+
+### Reporte de grafo
+
+Tras cada indexado, el DISPATCHER escribe un reporte Markdown con
+exactamente estas tres secciones, derivadas de las llamadas MCP:
+
+```markdown
+# Reporte de grafo — <corpus> (<run-id>)
+Índice: <project> · <N> nodos / <M> edges · frescura: <index_status>
+## Nodos centrales
+<hotspots y grado, de get_architecture / query_graph>
+## Comunidades temáticas
+<clusters de get_architecture, con los archivos de cada cluster>
+## Preguntas sugeridas
+<3-5 preguntas que el DISPATCHER deriva de los dos bloques anteriores>
+```
+
+Rutas fijas del reporte: `proposal/scoping/graph-report.md` (corpus de
+papers) y `proposal/pipeline/vault-graph-report.md` (mirror del vault).
+Ambos son artefactos de corrida, gitignoreados, nunca se commitean.
+
+### Refresh del índice del vault (procedimiento único)
+
+Cada vez que una fase de abajo dice "aplica el procedimiento de Refresh del
+índice del vault", el DISPATCHER hace exactamente esto:
+
+1. `index_repository(repo_path="<RUN_ROOT>/vault", name="<run-id>-vault",
+   mode="fast")` — incremental, sin borrar nada.
+2. `get_architecture(project="<run-id>-vault",
+   aspects=["clusters","hotspots","boundaries"])`.
+3. `Grep` sobre `vault/` con el patrón `\[\[([^\]]+)\]\]` y contrasta cada
+   destino contra los archivos existentes de `vault/secciones/` y
+   `vault/insumos/`: cada destino sin archivo es un `[[wikilink]]` roto.
+4. Reescribe `proposal/pipeline/vault-graph-report.md` con las tres
+   secciones del formato de arriba, más una línea por `[[wikilink]]` roto.
 
 ## Instrucciones de inicio
 
@@ -81,11 +149,12 @@ del Skill:
    `vault/secciones/` y `vault/insumos/` (créalos si faltan) — el mirror
    Obsidian de la propuesta (ver "Vault mirror" en `coordinador-propuesta.md`).
    Más adelante (a partir de G1b, ver bloque "Fase 1b" abajo), el dispatcher
-   ejecuta `graphify` sobre `vault/` y escribe su salida en
-   `vault/graphify-out/` — scratch, gitignored (cubierto por la regla
-   existente `graphify-out/` en `.gitignore`), nunca se commitea, igual que
-   `proposal/scoping/graphify-out/` de la Fase 1a/1b (son dos corridas de
-   `graphify` completamente distintas, sobre entradas y salidas distintas).
+   indexa `vault/` con `codebase-memory` bajo el nombre de proyecto
+   `<run-id>-vault` y escribe el reporte derivado en
+   `proposal/pipeline/vault-graph-report.md` — artefacto de corrida,
+   gitignoreado, nunca se commitea, igual que
+   `proposal/scoping/graph-report.md` de la Fase 1a/1b (son dos índices
+   completamente distintos, sobre corpus y reportes distintos).
 3. Avanza fase por fase según el pipeline de `coordinador-propuesta.md`
    (resumido abajo). Tras cada gate, presenta al usuario: (a) resumen de lo
    producido, (b) veredicto del `revisor` (o `revisor-figuras` en los bucles
@@ -106,26 +175,29 @@ del Skill:
 
 ## Grafo de coherencia del vault (asesor, NO bloqueante)
 
-A partir de la aprobación de G1b, el DISPATCHER mantiene un grafo de ideas
-sobre `vault/` con `graphify` y lo inyecta como evidencia asesora en cada
-`Task → revisor` de las Fases 1-5 y 7 (ver los pasos "[NUEVO]" dentro de cada
-fase, abajo). Esta corrida es DISTINTA de la de la Fase 1a/1b (que indexa
-`proposal/scoping/papers/`, el corpus de papers de scoping, y escribe en
-`proposal/scoping/graphify-out/`): la corrida de esta sección indexa el
-mirror Obsidian (`vault/secciones/` + `vault/insumos/`) y escribe en
-`vault/graphify-out/`. Nunca la ejecuta `revisor` (solo tiene Read/Grep/Glob,
-sin Bash) — siempre la dispara el dispatcher.
+A partir de la aprobación de G1b, el DISPATCHER mantiene un índice de ideas
+sobre `vault/` con `codebase-memory` y lo inyecta como evidencia asesora en
+cada `Task → revisor` de las Fases 1-5 y 7 (ver los pasos "[NUEVO]" dentro de
+cada fase, abajo). Este índice es DISTINTO del de la Fase 1a/1b (que indexa
+`proposal/scoping/papers/`, el corpus de papers de scoping, bajo el proyecto
+`<run-id>-papers`, y reporta en `proposal/scoping/graph-report.md`): el índice
+de esta sección es el proyecto `<run-id>-vault`, cubre el mirror Obsidian
+(`vault/secciones/` + `vault/insumos/`) y reporta en
+`proposal/pipeline/vault-graph-report.md`. Nunca lo indexa `revisor` (solo
+tiene Read/Grep/Glob, sin acceso MCP) — siempre lo dispara el dispatcher, con
+el procedimiento "Refresh del índice del vault" definido arriba.
 
 Formato exacto del bloque que el dispatcher inyecta inline en el prompt de
 `Task → revisor` (el mismo tag `ASESOR-GRAFO` que usa `revisor.md` en su
 HALLAZGOS debe leerse contra este bloque):
 
 ```
-EVIDENCIA DE GRAFO (asesora, NO bloqueante) — vault/graphify-out/
+EVIDENCIA DE GRAFO (asesora, NO bloqueante) — proposal/pipeline/vault-graph-report.md
 Dependencias duras (guia_ajustada_TDR "Nota de trazabilidad"): §3↔§7, §3↔§6, §5↔§6, §10↔§8.
-- Presentes: <edges hallados>
+- Presentes: <referencias cruzadas halladas entre notas del vault>
 - Ausentes/huérfanas: <p. ej. SP3 sin objetivo enlazado>
-- God nodes / conexiones sorprendentes: <extracto de GRAPH_REPORT.md>
+- Nodos centrales / comunidades temáticas: <extracto del reporte de grafo>
+- [[wikilinks]] rotos: <destinos sin archivo, del chequeo determinista con Grep>
 Es pista; tu checklist manual sigue siendo la autoridad del veredicto.
 ```
 
@@ -136,16 +208,16 @@ causa-efecto explícito) quedó absorbida en Metodología (§10), punto 1
 (Métodos, del desarrollo por objetivo), que referencia el marco conceptual
 (§8); de ahí el par `§10↔§8`.
 
-Si graphify revela un `[[wikilink]]` roto, una contradicción, o una idea
+Si el reporte de grafo revela un `[[wikilink]]` roto, una contradicción, o una idea
 huérfana frente a uno de los 4 pares de trazabilidad de arriba, el
 dispatcher además agrega una fila a `## Hallazgos de coherencia (grafo)` en
 `proposal/estado_propuesta.md` (crea la sección la primera vez que se usa),
 con fase, archivo, y tipo de problema. Este hallazgo NUNCA por sí solo hace
 que `revisor` cambie su VEREDICTO a FAIL.
 
-## Grafo de pipeline (`proposal/pipeline/`, tercer grafo, distinto de papers y vault)
+## Registro de pipeline (`proposal/pipeline/`, distinto de los índices de papers y vault)
 
-Un TERCER grafo, independiente de los otros dos, indexa la estructura del
+Un TERCER registro, independiente de los dos índices, documenta la estructura del
 pipeline mismo (fases/compuertas/agentes/artefactos), no el corpus de
 papers ni el mirror Obsidian. Corpus y CWD dedicados: `proposal/pipeline/`
 — NUNCA corre desde la raíz del repo.
@@ -197,9 +269,9 @@ Cuándo actualiza: en CADA transición de compuerta (los mismos puntos donde
 el dispatcher voltea `gate_status`, ver "Reglas de gate (obligatorias)"
 abajo) — ver el bloque `[NUEVO] DISPATCHER: pipeline-graph` dentro de cada
 fase/compuerta. Mecánica: el DISPATCHER únicamente escribe/actualiza el
-archivo de evento `.md` y `proposal/pipeline/_estado.md` — no se ejecuta
-`graphify` sobre `proposal/pipeline/` (build/update/export eliminados por
-no aportar valor consumido; overhead de token descartado). Nunca lo hace
+archivo de evento `.md` y `proposal/pipeline/_estado.md` — `proposal/pipeline/`
+NO se indexa con `codebase-memory` (no aporta valor consumido; el overhead se
+descarta). Nunca lo hace
 `revisor` (solo Read/Grep/Glob) — siempre lo hace el dispatcher.
 
 ## Telemetría de uso por fase
@@ -208,7 +280,7 @@ Tras cada llamado delegado (Task/Agent) que retorna dentro de una fase, lee
 el bloque `<usage>` al final de su resultado (`subagent_tokens: N`,
 `tool_uses: N`, `duration_ms: N`). ANTES de sumarlo al acumulador de la fase,
 agrega una fila a `## Desglose por despacho` del evento de esta fase (ver
-plantilla en "Grafo de pipeline" arriba) con el ordinal `#` del despacho, el
+plantilla en "Registro de pipeline" arriba) con el ordinal `#` del despacho, el
 nombre del agente despachado, su `MODE/Etiqueta`, y los mismos 3 campos
 numéricos ya leídos de `<usage>` — reutilizados tal cual, sin ninguna nueva
 lectura ni parseo del resultado. Recién después de escribir esa fila, súmalo
@@ -250,7 +322,8 @@ dispatcher, sin ningún despacho — a la fecha ninguna fase del pipeline cae
 en este caso, pero la regla debe cubrir cualquier fase futura que sí lo
 haga), registra los tres campos (`tokens_total`, `tool_uses`, `duration_ms`) con el
 literal `no medible directamente` — nunca un número estimado o inferido. El
-trabajo inline vía Skill/Bash (graphify, build de PDF, pixelshot, cálculo de
+trabajo inline vía MCP/Bash (indexado con `codebase-memory`, build de PDF,
+pixelshot, cálculo de
 run-id, escrituras de pipeline-graph) no está delegado y no aporta a este
 acumulador; su costo simplemente no se cuenta, nunca se estima.
 
@@ -300,8 +373,13 @@ para las condiciones exactas de reuso vs. recálculo.
 ## Pipeline (dispatch con `Task` fase por fase)
 
 ```
-Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
-        continuar, resuelve el run-id de esta corrida. Esquema
+Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): si
+        `proposals/.current-run` ya existe, el run-id YA está resuelto (lo
+        fijó `/propuesta-init`): léelo de ahí, confirma que
+        `proposals/<run-id>/_run.md` tiene `estado: activa`, y salta directo
+        al bloque siguiente sin re-derivar nada. Si no existe, resuelve el
+        run-id de esta corrida y crea su carpeta con
+        `scripts/init-run.sh <run-id> "<idea breve>"` (nunca a mano). Esquema
         `<YYYY-MM>-<slug>` (p. ej. `2026-07-siun-alianzas`). `<YYYY-MM>` sale
         de la fecha del sistema. `<slug>` = 2-4 palabras clave en
         kebab-case, en minúsculas, sin tildes/ñ (ASCII-folded), derivadas de
@@ -316,6 +394,19 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
         `proposals/registry.md` (crea el archivo con su tabla de encabezado
         si no existe: `| run-id | creada | cerrada | estado | idea (breve) |
         archivo | commit |`).
+        ──→ CUÁL VARIANTE DE ARCHIVADO APLICA: si `RUN_ROOT` es una
+        subcarpeta por corrida (`proposals/<run-id>/`, caso 1 de "Raíz de
+        corrida"), archivar una corrida previa es SOLO un cambio de estado:
+        `estado: archivada` + `cerrada: <YYYY-MM-DD>` en su `_run.md` y en su
+        fila de `proposals/registry.md`, más
+        `delete_project("<run-id-previo>-papers")` y
+        `delete_project("<run-id-previo>-vault")` para no dejar índices
+        huérfanos. NO se copia ni se borra contenido, y los pasos 2 y 5 de
+        ARCHIVADO-Y-REINICIO (copia a `proposals/<run-id>/` y reinicio del
+        árbol activo) NO aplican: cada corrida ya vive en su propia carpeta.
+        Los pasos 3 y 4 (manifiesto + commit solo del registro) sí aplican.
+        El procedimiento completo de abajo, con copia y reinicio, aplica
+        únicamente al layout heredado en la raíz (caso 2).
         ──→ GUARDIA DE COLISIÓN (corrida previa sin archivar): si
         `proposal/estado_propuesta.md` ya existe con `estado: activa` en su
         bloque "Identidad de la corrida", DETENTE y exige confirmación
@@ -374,9 +465,13 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): antes de
                `proposal/main.tex`, `proposal/main.pdf`, `proposal/main.docx`
                y todo build auxiliar de LaTeX (`main.aux/.bbl/.blg/
                .fdb_latexmk/.fls/.log/.out/.synctex.gz`); `proposal/
-               pixelshot-out/`; `proposal/scoping/graphify-out/` y cualquier
-               snapshot (`proposal/scoping/graphify-out-*-snapshot/`);
-               `vault/graphify-out/`; `proposal/scripts/__pycache__/`.
+               pixelshot-out/`; `proposal/scoping/graph-report.md` y cualquier
+               snapshot (`proposal/scoping/graph-report-*-snapshot.md`);
+               `proposal/pipeline/vault-graph-report.md`;
+               `proposal/scripts/__pycache__/`. Además, descarta los índices
+               de `codebase-memory` de la corrida anterior con
+               `delete_project("<run-id-anterior>-papers")` y
+               `delete_project("<run-id-anterior>-vault")`.
              - CONSERVA siempre: `proposal/build.sh`, `proposal/scripts/*.py`,
                `proposal/logos/`, `proposal/templates/`. Nunca toques
                `vault/.obsidian/` (estado local del editor Obsidian, no es
@@ -619,22 +714,21 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         "MODE=scope", para el contrato completo (herramientas, esquema de
         salida `proposal/scoping/papers/paper-{1..5}.md`, prohibición de
         leer cualquier borrador existente).
-        (b) El DISPATCHER (no el subagente) ejecuta `graphify`, de forma
-        aislada. Mecánica exacta:
-          1. `cd proposal/scoping/` (cambio de CWD obligatorio).
-          2. `graphify papers/` (INPUT_PATH relativo — siempre una ruta,
-             nunca una pregunta en lenguaje natural, para no disparar el
-             fast-path de graphify).
-          3. `graphify export html` (obligatorio, no opcional — genera
-             `proposal/scoping/graphify-out/graph.html`, el grafo interactivo
-             navegable en el navegador, para facilitar el análisis visual del
-             usuario más allá de las 3 secciones de texto del reporte).
-          4. La salida queda en `proposal/scoping/graphify-out/` (`graph.json`,
-             `graph.html`, `GRAPH_REPORT.md`).
-        NUNCA ejecutes `graphify` desde la raíz del repo. NUNCA uses
-        `--force`. Si `proposal/scoping/graphify-out/` ya existe de una
-        iteración previa con papers distintos, bórralo antes de reconstruir
-        (evita el shrink-guard y respuestas obsoletas del fast-path).
+        (b) El DISPATCHER (no el subagente) indexa el corpus con
+        `codebase-memory`, de forma aislada. Mecánica exacta:
+          1. `index_repository(repo_path="<RUN_ROOT>/proposal/scoping/papers",
+             name="<run-id>-papers", mode="full")` — `repo_path` absoluto al
+             directorio del corpus, NUNCA la raíz del repo (ver "Reglas
+             duras" en "Cómo usar `codebase-memory`"); `mode="full"` porque
+             la agrupación temática de la Fase 1b necesita la capa semántica.
+          2. `get_architecture(project="<run-id>-papers",
+             aspects=["clusters","hotspots","boundaries","file_tree"])`.
+          3. Escribe `proposal/scoping/graph-report.md` con las tres secciones
+             del formato de "Reporte de grafo" (Nodos centrales, Comunidades
+             temáticas, Preguntas sugeridas).
+        Si una iteración previa de G1a dejó un índice con papers distintos,
+        `delete_project("<run-id>-papers")` antes de reindexar, para que el
+        índice no mezcle papers descartados con los nuevos.
         (c) Task → investigador (rama de entrada temprana — ver
         `investigador.md`, "Entrada temprana (Fase 1a)") → 3 subproblemas
         tempranos, cada uno con (1) el gap, (2) de qué abstract(s)
@@ -648,11 +742,11 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         de aprobación:
           1. Los 5 papers + parámetros de búsqueda (query, filtro de
              cuartil, rango de años, hits por herramienta).
-          2. El grafo: la ruta del HTML interactivo
-             `proposal/scoping/graphify-out/graph.html` (indícale al usuario
-             que puede abrirlo en el navegador para explorar visualmente
-             nodos/comunidades) + las 3 secciones del `GRAPH_REPORT.md`: God
-             Nodes, Surprising Connections, Suggested Questions.
+          2. El grafo: la ruta del reporte
+             `proposal/scoping/graph-report.md` (indícale al usuario que puede
+             abrirlo para revisar comunidades y nodos centrales; no hay HTML
+             navegable — `codebase-memory` no exporta uno) + sus 3 secciones:
+             Nodos centrales, Comunidades temáticas, Preguntas sugeridas.
           3. Los 3 subproblemas tempranos, cada uno con su gap y su
              `paper-N` de origen.
         Reglas de iteración por componente (NO es un rechazo en bloque):
@@ -660,8 +754,9 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
             solicitado → regenera los 5 abstracts → RECONSTRUYE el grafo
             (repite el paso (b)) → re-ejecuta la entrada temprana del
             investigador (repite el paso (c)) → vuelve a presentar G1a.
-          - Cambio solo al GRAFO (reetiquetar/reagrupar) → re-ejecuta
-            únicamente el clustering/reporte de `graphify`; los papers y los
+          - Cambio solo al GRAFO (reetiquetar/reagrupar) → re-deriva
+            únicamente `get_architecture` + el reporte, sin reindexar ni
+            cambiar el corpus (el índice no cambia); los papers y los
             subproblemas quedan intactos; vuelve a presentar G1a. El
             auto-cascade a los subproblemas es explícitamente NO, salvo que
             el usuario lo pida (default adoptado).
@@ -706,29 +801,25 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         `bibliografo-propuesta.md`, "MODE=sota" → sub-paso "corpus", para el
         contrato completo (herramientas, esquema de salida, Regla de
         faltante).
-        (b) El DISPATCHER (no el subagente) actualiza el grafo sobre el
-        corpus ampliado, de forma incremental (NUNCA reconstruye desde
-        cero, a diferencia del paso (b) de la Fase 1a). Mecánica exacta:
-          1. `cp -R proposal/scoping/graphify-out/ proposal/scoping/graphify-out-g1a-snapshot/`
-             (snapshot plano del grafo de G1a — 34 nodos/57 edges/5
-             comunidades — antes de tocar nada; esta copia queda fija para
-             siempre, NUNCA se reconstruye, sirve de referencia/diff frente
-             al grafo ampliado).
-          2. NO borres `proposal/scoping/graphify-out/` ni la caché anidada
-             `proposal/scoping/papers/graphify-out/cache/` — déjala intacta
-             para que `graphify --update` la reutilice en `paper-1..5.md` y
-             solo compute embeddings nuevos para `paper-6..N.md`.
-          3. `cd proposal/scoping/` (cambio de CWD obligatorio, igual que en
-             Fase 1a).
-          4. `graphify --update papers/` (incremental — NUNCA `graphify
-             papers/` desde cero en esta fase).
-          5. `graphify export html` (obligatorio, regenera
-             `proposal/scoping/graphify-out/graph.html` sobre el corpus
-             ampliado).
-        NUNCA uses `--force`. La salida sigue en
-        `proposal/scoping/graphify-out/` (ahora refleja el corpus ampliado);
-        `proposal/scoping/graphify-out-g1a-snapshot/` queda fijo como la
-        foto de G1a.
+        (b) El DISPATCHER (no el subagente) actualiza el índice sobre el
+        corpus ampliado, de forma incremental (NUNCA `delete_project` en esta
+        fase, a diferencia de la re-iteración del paso (b) de la Fase 1a).
+        Mecánica exacta:
+          1. `cp proposal/scoping/graph-report.md proposal/scoping/graph-report-g1a-snapshot.md`
+             (snapshot del reporte de G1a sobre el corpus semilla, antes de
+             tocar nada; esta copia queda fija para siempre, NUNCA se
+             regenera, sirve de referencia/diff frente al corpus ampliado).
+          2. `index_repository(repo_path="<RUN_ROOT>/proposal/scoping/papers",
+             name="<run-id>-papers", mode="full")` — mismo `name` que en la
+             Fase 1a, así que reindexa incrementalmente: `paper-1..5.md` no
+             cambiaron y solo entra el trabajo nuevo de `paper-6..N.md`.
+          3. `get_architecture(project="<run-id>-papers",
+             aspects=["clusters","hotspots","boundaries","file_tree"])` y
+             reescribe `proposal/scoping/graph-report.md` sobre el corpus
+             ampliado.
+        El reporte vigente sigue en `proposal/scoping/graph-report.md` (ahora
+        refleja el corpus ampliado); `graph-report-g1a-snapshot.md` queda fijo
+        como la foto de G1a.
         (c) Task → bibliografo-propuesta MODE=sota, sub-paso **grouping**
         (solo después de que el paso (b) complete) → propone 3-5
         subsecciones SOTA como tabla de mapeo paper → subsección →
@@ -738,23 +829,23 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
           1. El corpus ampliado: conteo final de papers y parámetros de
              búsqueda (query, filtro de cuartil, rango de años, hits por
              herramienta) del sub-paso corpus.
-          2. El grafo actualizado: la ruta del HTML interactivo
-             `proposal/scoping/graphify-out/graph.html` + las 3 secciones
-             del `GRAPH_REPORT.md` actualizado (God Nodes, Surprising
-             Connections, Suggested Questions) sobre el corpus ampliado.
+          2. El grafo actualizado: la ruta del reporte
+             `proposal/scoping/graph-report.md` + sus 3 secciones (Nodos
+             centrales, Comunidades temáticas, Preguntas sugeridas) sobre el
+             corpus ampliado.
           3. La tabla de mapeo de 3-5 subsecciones SOTA (paper → subsección
              → SP1/SP2/SP3).
         Reglas de iteración por componente (NO es un rechazo en bloque):
           - Cambio solo al CORPUS → re-despacha el sub-paso corpus con el
             ajuste solicitado (repite el paso (a)) → re-ejecuta la
-            actualización incremental del grafo (repite el paso (b)) →
+            actualización incremental del índice (repite el paso (b)) →
             re-deriva la tabla de subsecciones (repite el paso (c) — el
             sub-paso grouping SIEMPRE se re-ejecuta cuando cambia el
             corpus, no es opcional ni un caso de scope creep) → vuelve a
             presentar G1b.
           - Cambio solo a la AGRUPACIÓN (subsecciones) → re-ejecuta
             únicamente el sub-paso grouping (paso (c)) con el feedback
-            exacto del usuario; el corpus y el grafo quedan intactos;
+            exacto del usuario; el corpus y el índice quedan intactos;
             vuelve a presentar G1b.
         Regla de faltante G1b: si el bibliógrafo reporta menos de 30 papers
         Q1/Q2 dentro de la ventana de recencia aplicable, el dispatcher NO
@@ -779,36 +870,36 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         ──→ [NUEVO] DISPATCHER: papers-graph refresh (post-WRITE-REFS):
         guardia — ejecuta este bloque solo si `proposal/refs.bib` cambió en
         este sub-paso (WRITE-REFS lo acaba de escribir). Mecánica:
-        `cd proposal/scoping/ && graphify --update papers/ && graphify
-        export html`. NUNCA `--force`. La salida sigue en
-        `proposal/scoping/graphify-out/`.
+        `index_repository(repo_path="<RUN_ROOT>/proposal/scoping/papers",
+        name="<run-id>-papers", mode="full")` (incremental, mismo `name`) y
+        reescribe `proposal/scoping/graph-report.md`.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/11-fase1b.md` (evento de esta compuerta) y
         actualiza `proposal/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
-        ──→ [NUEVO] Grafo de ideas del vault — build completo (primera vez):
+        ──→ [NUEVO] Índice de ideas del vault — baseline (primera vez):
         inmediatamente después de lo anterior, en esta misma transición de
         aprobación final de G1b (NO en cada iteración del bucle de G1b), el
-        DISPATCHER ejecuta una construcción completa de `graphify` sobre
-        `vault/`. Esta corrida es DISTINTA de la del paso (b) de esta misma
-        Fase 1b (que actualiza el grafo del corpus de papers de scoping en
-        `proposal/scoping/graphify-out/`): esta nueva corrida indexa el
-        mirror Obsidian (`vault/secciones/` + `vault/insumos/`), no el
-        corpus de papers, y escribe en una raíz de salida distinta. Ver
-        "Grafo de coherencia del vault" arriba para el detalle completo del
-        mecanismo asesor. Mecánica exacta:
-          1. `cd vault/` (cambio de CWD obligatorio — distinto del `cd
-             proposal/scoping/` de la corrida del corpus SOTA; ningún grafo
-             corre desde la raíz del repo).
-          2. `graphify .` (build completo — baseline: en este punto
-             `vault/insumos/` ya tiene notas de insumos de la Fase 0;
-             `vault/secciones/` aún no tiene notas de sección, porque las
-             Fases 1-7 no han corrido todavía).
-          3. `graphify export html` → `vault/graphify-out/graph.html`.
-          4. La salida (`graph.json`, `graph.html`, `GRAPH_REPORT.md`) queda
-             en `vault/graphify-out/` — gitignored, scratch, nunca se
-             commitea.
-        NUNCA uses `--force`.
+        DISPATCHER construye el índice baseline del vault. Este índice es
+        DISTINTO del del paso (b) de esta misma Fase 1b (que actualiza el
+        índice del corpus de papers de scoping, `<run-id>-papers`): este cubre
+        el mirror Obsidian (`vault/secciones/` + `vault/insumos/`), no el
+        corpus de papers, y es un proyecto aparte. Ver "Grafo de coherencia
+        del vault" arriba para el detalle completo del mecanismo asesor.
+        Mecánica exacta:
+          1. `index_repository(repo_path="<RUN_ROOT>/vault",
+             name="<run-id>-vault", mode="full")` — `repo_path` absoluto al
+             vault, NUNCA la raíz del repo; `mode="full"` solo en este
+             baseline (los refresh por gate usan `mode="fast"`). Baseline: en
+             este punto `vault/insumos/` ya tiene notas de insumos de la Fase
+             0; `vault/secciones/` aún no tiene notas de sección, porque las
+             Fases 1-7 no han corrido todavía.
+          2. `get_architecture(project="<run-id>-vault",
+             aspects=["clusters","hotspots","boundaries"])` + el chequeo
+             determinista de `[[wikilinks]]` con `Grep` (pasos 2-3 de "Refresh
+             del índice del vault").
+          3. Escribe `proposal/pipeline/vault-graph-report.md` — artefacto de
+             corrida, gitignoreado, nunca se commitea.
 Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
         archivo de salida), despachado ANTES del investigador. Antes de
@@ -859,14 +950,13 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
           intentos", último hallazgo conocido verbatim) y espera su guía
           antes de continuar
           → en PASS, continúa
-        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
         `vault/secciones/03_descripcion_problema.md` cambió en esta fase
         (recién escrita/actualizada por `investigador`); si no cambió,
-        reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar `graphify`.
-        Si cambió: `cd vault/ && graphify --update .` (incremental, NUNCA
-        `--force`, NUNCA reconstruye desde cero aquí; sin export HTML — ver
-        "Vault graph HTML export limited to G1b and Fase 7") →
-        `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta inline
+        reutiliza el reporte de grafo existente sin
+        re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
+        del índice del vault" (arriba) y lee
+        `proposal/pipeline/vault-graph-report.md`; arma e inyecta inline
         el bloque `EVIDENCIA DE GRAFO` (formato en "Grafo de coherencia del
         vault" arriba) en el prompt de la Task → revisor de este gate; si
         hay hallazgo de coherencia, agrégalo a `## Hallazgos de coherencia
@@ -921,13 +1011,12 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte.
           intentos", último hallazgo conocido verbatim) y espera su guía
           antes de continuar
           → en PASS, continúa
-        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
         `vault/secciones/04_estado_arte.md` o `vault/secciones/05_hipotesis.md`
-        cambiaron en esta fase; si no cambiaron, reutiliza el
-        `GRAPH_REPORT.md` existente sin re-ejecutar `graphify`. Si cambiaron:
-        `cd vault/ && graphify --update .` (sin export HTML — ver "Vault
-        graph HTML export limited to G1b and Fase 7") → `vault/graphify-out/`;
-        lee `GRAPH_REPORT.md`; arma e inyecta inline el bloque `EVIDENCIA DE
+        cambiaron en esta fase; si no cambiaron, reutiliza el reporte de grafo existente sin
+        re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
+        del índice del vault" (arriba) y lee
+        `proposal/pipeline/vault-graph-report.md`; arma e inyecta inline el bloque `EVIDENCIA DE
         GRAFO` en el prompt de la Task → revisor de este gate; si hay
         hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
         `proposal/estado_propuesta.md`. Antes de despachar la Task de este
@@ -944,12 +1033,12 @@ Fase 3  Task → redactor → §2 justificación y pertinencia. Antes de despach
         Directrices Generales + §2 (Justificación y pertinencia) +
         Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
         prompt.
-        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
         `vault/secciones/02_justificacion.md` cambió en esta fase; si no
-        cambió, reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar
-        `graphify`. Si cambió: `cd vault/ && graphify --update .` (sin
-        export HTML — ver "Vault graph HTML export limited to G1b and Fase
-        7") → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
+        cambió, reutiliza el reporte de grafo existente sin
+        re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
+        del índice del vault" (arriba) y lee
+        `proposal/pipeline/vault-graph-report.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de este gate; si hay hallazgo, agrégalo a `## Hallazgos de
         coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
@@ -966,14 +1055,13 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         FRAGMENTO DE GUÍA` con Directrices Generales + §6 (Objetivo
         general) + §7 (Objetivos específicos) + Convenciones técnicas de
         LaTeX y lo inyecta inline al inicio del prompt.
-        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
         `vault/secciones/06_objetivo_general.md` o
         `vault/secciones/07_objetivos_especificos.md` cambiaron en esta
-        fase; si no cambiaron, reutiliza el `GRAPH_REPORT.md` existente sin
-        re-ejecutar `graphify`. Si cambiaron: `cd vault/ && graphify
-        --update .` (sin export HTML — ver "Vault graph HTML export
-        limited to G1b and Fase 7") → `vault/graphify-out/`; lee
-        `GRAPH_REPORT.md`; arma e inyecta inline el bloque `EVIDENCIA DE
+        fase; si no cambiaron, reutiliza el reporte de grafo existente sin
+        re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
+        del índice del vault" (arriba) y lee
+        `proposal/pipeline/vault-graph-report.md`; arma e inyecta inline el bloque `EVIDENCIA DE
         GRAFO` en el prompt de la Task → revisor de este gate; si hay
         hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
         `proposal/estado_propuesta.md`. Antes de despachar la Task de este
@@ -1008,13 +1096,13 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo; 3-5
         en el MISMO turno/bloque de herramientas del dispatcher — no en
         turnos secuenciales — ya que §9 deriva solo de §7 (ya aprobada en la
         Fase 4) y §8 no depende de §9.
-        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
         `vault/secciones/08_marco_conceptual.md` o
         `vault/secciones/09_equipo_trabajo.md` cambiaron en esta fase; si no
-        cambiaron, reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar
-        `graphify`. Si cambiaron: `cd vault/ && graphify --update .` (sin
-        export HTML — ver "Vault graph HTML export limited to G1b and Fase
-        7") → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
+        cambiaron, reutiliza el reporte de grafo existente sin
+        re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
+        del índice del vault" (arriba) y lee
+        `proposal/pipeline/vault-graph-report.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de este gate; si hay hallazgo, agrégalo a `## Hallazgos de
         coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
@@ -1063,12 +1151,12 @@ Fase 5.5 [NUEVO] Task → redactor → §10 metodología (compuerta propia,
           intentos", último hallazgo conocido verbatim) y espera su guía
           antes de continuar
           → en PASS, continúa
-        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
         `vault/secciones/10_metodologia.md` cambió en esta fase; si no
-        cambió, reutiliza el `GRAPH_REPORT.md` existente sin re-ejecutar
-        `graphify`. Si cambió: `cd vault/ && graphify --update .` (sin
-        export HTML — ver "Vault graph HTML export limited to G1b and Fase
-        7") → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
+        cambió, reutiliza el reporte de grafo existente sin
+        re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
+        del índice del vault" (arriba) y lee
+        `proposal/pipeline/vault-graph-report.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de este gate (nota: distinto del bucle de figuras arriba,
         que usa `revisor-figuras`, no `revisor`, y no recibe evidencia de
@@ -1132,13 +1220,12 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
              filas/valores cambiaron y el nuevo total) y vuelve al paso 1.
              NUNCA auto-apruebes ni asumas conformidad por silencio.
           4. Si el usuario aprueba explícitamente → sale del bucle.
-        ──→ [NUEVO] DISPATCHER: guardia — reconstruye el grafo solo si
+        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
         `vault/secciones/13_presupuesto.md` cambió en esta fase (o en la
-        ronda interactiva más reciente); si no cambió, reutiliza el
-        `GRAPH_REPORT.md` existente sin re-ejecutar `graphify`. Si cambió:
-        `cd vault/ && graphify --update .` (sin export HTML — ver "Vault
-        graph HTML export limited to G1b and Fase 7") →
-        `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta inline
+        ronda interactiva más reciente); si no cambió, reutiliza el reporte de grafo existente sin
+        re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
+        del índice del vault" (arriba) y lee
+        `proposal/pipeline/vault-graph-report.md`; arma e inyecta inline
         el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task → revisor de
         este gate; si hay hallazgo, agrégalo a `## Hallazgos de coherencia
         (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
@@ -1163,7 +1250,7 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         pending]).
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
         `proposal/pipeline/65-fase6_4.md` (evento de esta compuerta, misma
-        plantilla mínima descrita arriba en "Grafo de pipeline") y actualiza
+        plantilla mínima descrita arriba en "Registro de pipeline") y actualiza
         `proposal/pipeline/_estado.md`, incluye además los campos de uso
         acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt) (sin gate
@@ -1185,10 +1272,10 @@ Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt) (sin gate
         (Bibliografía) y lo inyecta inline al inicio del prompt.
         ──→ [NUEVO] DISPATCHER: papers-graph refresh: guardia — ejecuta este
         bloque solo si `proposal/refs.bib` cambió en esta fase (la
-        consolidación MODE=deliverable lo acaba de extender). Mecánica: `cd
-        proposal/scoping/ && graphify --update papers/ && graphify export
-        html`. NUNCA `--force`. La salida sigue en
-        `proposal/scoping/graphify-out/`.
+        consolidación MODE=deliverable lo acaba de extender). Mecánica:
+        `index_repository(repo_path="<RUN_ROOT>/proposal/scoping/papers",
+        name="<run-id>-papers", mode="full")` (incremental, mismo `name`) y
+        reescribe `proposal/scoping/graph-report.md`.
 Fase 6.5 Task → redactor → secciones preliminares (front-matter), como
         síntesis del documento completo (§1–§16 ya aprobadas): Resumen
         (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen
@@ -1209,9 +1296,11 @@ Fase 6.5 Task → redactor → secciones preliminares (front-matter), como
         evento de esta compuerta) y actualiza `proposal/pipeline/_estado.md`,
         incluye además los campos de uso acumulados de la fase (ver
         "Telemetría de uso por fase").
-Fase 7  ──→ [NUEVO] DISPATCHER: `cd vault/ && graphify --update .` sobre el vault
-        completo (todas las secciones ya escritas) → `graphify export html`
-        → `vault/graphify-out/`; lee `GRAPH_REPORT.md`; arma e inyecta
+Fase 7  ──→ [NUEVO] DISPATCHER: aplica el procedimiento de "Refresh del índice
+        del vault" sobre el vault completo (todas las secciones ya escritas),
+        con `mode="full"` en vez de `"fast"` — es la última auditoría, conviene
+        la capa semántica completa; lee
+        `proposal/pipeline/vault-graph-report.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de la auditoría final; si hay hallazgo, agrégalo a `##
         Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.

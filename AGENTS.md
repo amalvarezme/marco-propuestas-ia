@@ -52,7 +52,20 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
    estilo numérico IEEE (`[1]`) está prohibido, conforme a
    `guiaProyectosIA_Agente.md` §16 Bibliografía. Sin tesis; preprints solo de
    labs/líderes reconocidos.
-7. **Salida LaTeX:** Cada sección se escribe como archivo `.tex` en
+7. **Raíz de corrida (`RUN_ROOT`):** cada corrida vive en **una sola
+   subcarpeta**, `proposals/<run-id>/`, creada por `/propuesta-init` (que
+   delega en `scripts/init-run.sh`, determinista e idempotente) y activada
+   mediante el puntero `proposals/.current-run`. Toda ruta `proposal/...` o
+   `vault/...` que aparezca en este playbook, en los agentes o en el
+   dispatcher se resuelve **dentro de `RUN_ROOT`**, nunca en la raíz del
+   repo; las únicas rutas relativas a la raíz son las del framework
+   (`.claude/`, `.opencode/`, `.pi/`, `scripts/`, `guiaProyectosIA_Agente.md`,
+   `AGENTS.md`, `proposals/registry.md`). Archivar una corrida es solo un
+   cambio de estado en su `_run.md` y en `proposals/registry.md`: la carpeta
+   ya **es** el archivo, no se copia ni se borra contenido. Hay un modo
+   heredado (sin puntero, corrida en la raíz) que se sigue donde está, nunca
+   se migra a mitad de camino.
+8. **Salida LaTeX:** Cada sección se escribe como archivo `.tex` en
    `proposal/sections/`; referencias en `proposal/refs.bib`; ensamblaje en
    `proposal/main.tex`. El template `main.tex` incluye un footer con los logos
    institucionales (`proposal/logos/`: LabIA, UNAL, GCPDS) vía `fancyhdr`; los
@@ -62,11 +75,26 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
    las corridas archivadas bajo `proposals/<run-id>/`) — GitHub solo aloja el
    esqueleto del framework (agentes, comandos, scripts, plantillas), nunca
    el contenido de una propuesta específica.
-8. **Espejo `vault/`:** `vault/secciones/` y `vault/insumos/` son un espejo
+9. **Espejo `vault/`:** `vault/secciones/` y `vault/insumos/` son un espejo
    Markdown compatible con Obsidian, generado a partir de `proposal/` para
-   navegación y coherencia (graphify) — **no** se versiona por separado ni se
-   trata como fuente de verdad. Ante cualquier conflicto entre `vault/` y
-   `proposal/`, `proposal/` (LaTeX) manda.
+   navegación y coherencia — **no** se versiona por separado ni se trata como
+   fuente de verdad. Ante cualquier conflicto entre `vault/` y `proposal/`,
+   `proposal/` (LaTeX) manda.
+10. **Grafo de conocimiento (`codebase-memory`):** la capa de grafo es el
+   servidor MCP `codegraph` declarado en `.mcp.json` (`codegraph serve
+   --mcp`), no una CLI ni una API key. El dispatcher mantiene dos índices por
+   corrida — `<run-id>-papers` sobre `proposal/scoping/papers` y
+   `<run-id>-vault` sobre `vault` — y escribe los reportes derivados en
+   `proposal/scoping/graph-report.md` y
+   `proposal/pipeline/vault-graph-report.md`. Dos restricciones verificadas
+   fijan esa forma: `codegraph` respeta `.gitignore` (y todo el contenido de
+   una corrida está gitignoreado), así que cada corpus se indexa **como raíz
+   propia** con `repo_path` absoluto; y las negaciones `!ruta` de `.cbmignore`
+   no revierten `.gitignore`, aunque `.cbmignore` sí sirve para excluir ruido
+   dentro del corpus. No hay export HTML ni edges de `[[wikilink]]`: el
+   artefacto que ve el usuario es el reporte Markdown, y los wikilinks rotos
+   se detectan con `Grep`. Detalle completo en "Cómo usar `codebase-memory`"
+   de `.claude/commands/propuesta.md`.
 
 ## Roster de agentes (`.claude/agents/`) y modelos por defecto
 
@@ -92,6 +120,8 @@ No existen agentes llamados `orquestador`, `observador` (a secas) ni
 ## Flujo del pipeline (interactivo, con gates)
 
 ```
+Paso previo  `/propuesta-init <idea>` → crea y activa `proposals/<run-id>/`
+        (`RUN_ROOT`) con todos los artefactos de la corrida dentro
 Fase 0  Insumos-Observador → ingerir insumos
 Fase 1  Investigador → §3 descripción del problema + pregunta, luego bucle de
         figura (árbol de problemas):
@@ -208,9 +238,12 @@ por su cuenta, salvo la auditoría final de Fase 7. Resumen de asignación:
 > El asistente primario de Claude Code despacha el pipeline completo vía
 > `/propuesta` y puede además despachar directamente cualquier subagente de
 > propuesta para tareas puntuales (ver sección "Dispatch directo" arriba).
-> **OpenCode** es un runtime secundario soportado: `.opencode/agents/` +
-> `.opencode/commands/propuesta.md` se generan de forma determinista y
-> zero-LLM a partir de las fuentes de Claude Code (`scripts/gen-opencode.py`,
-> ver ese script y `scripts/gen-opencode.rules.json` para la mecánica).
-> El comportamiento de Claude Code no cambia por esto; los archivos
-> `.claude/` siguen siendo la única fuente editada a mano.
+> **OpenCode** y **Pi** son runtimes secundarios soportados, ambos generados de
+> forma determinista y zero-LLM a partir de las fuentes de Claude Code:
+> `.opencode/agents/` + `.opencode/commands/*.md` con `scripts/gen-opencode.py`
+> (+ `gen-opencode.rules.json`), y `.pi/agents/` + `.pi/prompts/*.md` con
+> `scripts/gen-pi.py` (+ `gen-pi.rules.json`, ver también `.pi/README.md`).
+> Cada generador acepta `--check` (dry-run, exit≠ 0 si el puerto quedó desfasado
+> o si hay drift de menciones específicas de Claude). El comportamiento de
+> Claude Code no cambia por esto; los archivos `.claude/` siguen siendo la
+> única fuente editada a mano.

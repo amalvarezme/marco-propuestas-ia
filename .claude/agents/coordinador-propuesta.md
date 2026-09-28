@@ -59,17 +59,18 @@ Fase 0.5 [GATE G0.5] Solo si hay TDR clasificado: guía ajustada al TDR
         de referencia únicamente — ver `propuesta.md`, Fase 0.5, para el
         detalle completo que ejecuta el dispatcher real.
 Fase 1a [GATE COMBINADO G1a] Scoping temprano: bibliografo-propuesta
-        MODE=scope (5 papers Q1/Q2, ≤2 años) → graphify (grafo aislado en
+        MODE=scope (5 papers Q1/Q2, ≤2 años) → dispatcher indexa el corpus con
+        codebase-memory (proyecto `<run-id>-papers`, aislado en
         `proposal/scoping/`) → investigador (entrada temprana, 3
         subproblemas) ──→ GATE combinado ──→ user. Descripción de
         referencia únicamente — ver `propuesta.md`, Fase 1a, para el
         detalle completo que ejecuta el dispatcher real.
 Fase 1b [GATE COMBINADO G1b] Expansión de corpus SOTA: bibliografo-propuesta
         MODE=sota (corpus + grouping) → GATE combinado ──→ user. Al aprobar
-        G1b, el dispatcher además dispara, UNA sola vez, la construcción
-        completa de `graphify` sobre `vault/` (mirror Obsidian, distinta de
-        la corrida de scoping sobre `proposal/scoping/`) → salida en
-        `vault/graphify-out/`. Descripción de referencia únicamente — ver
+        G1b, el dispatcher además dispara, UNA sola vez, el indexado
+        baseline del vault con codebase-memory (proyecto `<run-id>-vault`,
+        mirror Obsidian, distinto del índice de scoping `<run-id>-papers`) →
+        reporte en `proposal/pipeline/vault-graph-report.md`. Descripción de referencia únicamente — ver
         `propuesta.md`, Fase 1b y "Grafo de coherencia del vault", para el
         detalle completo que ejecuta el dispatcher real.
 Fase 1  investigador → §3 descripción del problema + pregunta, luego bucle de
@@ -82,26 +83,26 @@ Fase 1  investigador → §3 descripción del problema + pregunta, luego bucle d
         hallazgos; tope compartido de 4 intentos por diagrama, con
         escalamiento explícito al usuario al agotarse → en PASS continúa
         ──→ [NUEVO]
-        dispatcher: `graphify --update vault/` + inyecta bloque `EVIDENCIA
-        DE GRAFO` (asesor, NO bloqueante) en el prompt de revisor ──→ GATE
+        dispatcher: refresh del índice del vault (codebase-memory) + inyecta
+        bloque `EVIDENCIA DE GRAFO` (asesor, NO bloqueante) en el prompt de revisor ──→ GATE
         revisor ──→ user
 Fase 2  bibliografo-propuesta → §4 estado del arte (paralelo)
         investigador → §5 hipótesis, luego bucle de figura (mapa de estado
         del arte; mismo precheck de overflow determinista + tope de 4
         intentos que la Fase 1): disenador-tikz → tikz-optimizer →
         revisor-figuras (solo con log limpio) → en FAIL vuelve a
-        tikz-optimizer → en PASS continúa ──→ [NUEVO] `graphify --update
-        vault/` + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
-Fase 3  redactor → §2 justificación y pertinencia ──→ [NUEVO] `graphify
-        --update vault/` + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor
+        tikz-optimizer → en PASS continúa ──→ [NUEVO] refresh del índice del
+        vault + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
+Fase 3  redactor → §2 justificación y pertinencia ──→ [NUEVO] refresh del índice
+        del vault + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor
         ──→ user
 Fase 4  investigador → §6 objetivo general + §7 objetivos específicos ──→
-        [NUEVO] `graphify --update vault/` + bloque `EVIDENCIA DE GRAFO`
+        [NUEVO] refresh del índice del vault + bloque `EVIDENCIA DE GRAFO`
         ──→ GATE revisor (subproblema↔objetivo específico; valida también
         hipótesis↔objetivo general) ──→ user
 Fase 5  investigador → §8 marco conceptual (paralelo)
         redactor → §9 equipo de trabajo (deriva roles de §7, nunca de
-        Metodología) ──→ [NUEVO] `graphify --update vault/` + bloque
+        Metodología) ──→ [NUEVO] refresh del índice del vault + bloque
         `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
 Fase 5.5 redactor → §10 metodología, luego bucle de figuras (diagrama
         metodológico; mismo precheck de overflow determinista + tope de 4
@@ -109,8 +110,8 @@ Fase 5.5 redactor → §10 metodología, luego bucle de figuras (diagrama
         tikz-optimizer (compila a PNG, refina) → revisor-figuras (solo con
         log limpio; audita, PASS/FAIL, sin evidencia de grafo) → en FAIL
         (de overflow o visual) vuelve a tikz-optimizer → en PASS continúa
-        ──→ [NUEVO] `graphify --update
-        vault/` + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
+        ──→ [NUEVO] refresh del índice del
+        vault + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
 Fase 6  redactor → §11 resultados esperados; §12 consideraciones éticas
         (sin gate propio, se audita en la Fase 7)
 Fase 6.4  presupuestador → §13 presupuesto (interactivo) ──→ GATE revisor ──→ user
@@ -119,17 +120,18 @@ Fase 6.45 redactor → §14 cronograma de actividades (Gantt); §15 productos
         gate propio, se audita en la Fase 7)
 Fase 6.5  redactor → front-matter (Resumen, Resumen ejecutivo, Palabras
         clave), síntesis de §1–§16 ya aprobadas ──→ GATE revisor ──→ user
-Fase 7  [NUEVO] `graphify --update vault/` sobre el vault completo + bloque
+Fase 7  [NUEVO] refresh del índice del vault sobre el vault completo + bloque
         `EVIDENCIA DE GRAFO` ──→ revisor → auditoría final ──→ user;
         coordinador-propuesta → ensambla main.tex
 ```
 
-Cualquier hallazgo de coherencia que `graphify` revele en las Fases 1-6.5/7
+Cualquier hallazgo de coherencia que el reporte de grafo revele en las Fases
+1-6.5/7
 (wikilink roto, contradicción, idea huérfana frente a las dependencias duras
 de "Nota de trazabilidad") se registra como fila advisory en `##
 Hallazgos de coherencia (grafo)` de `proposal/estado_propuesta.md` — nunca
 cambia el VEREDICTO de `revisor` por sí solo. `revisor` conserva sus
-herramientas `Read, Grep, Glob` (sin Bash); nunca ejecuta `graphify` — solo
+herramientas `Read, Grep, Glob` (sin Bash ni MCP); nunca indexa — solo
 lee/cita el bloque `EVIDENCIA DE GRAFO` que el dispatcher le inyecta.
 
 ## Dependency rules you MUST enforce

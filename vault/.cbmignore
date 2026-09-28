@@ -1,0 +1,6 @@
+# codebase-memory ignore file for the vault index (<run-id>-vault).
+# Indexed as its own root: index_repository(repo_path="<RUN_ROOT>/vault").
+.obsidian/
+.obsidian/**
+graphify-out/
+graphify-out/**

@@ -97,10 +97,10 @@ scoping-stage modes that add `consensus` to the tool scope.
 
   Never fabricate a paper or its abstract — every entry must trace to a real
   record returned by `consensus`, `semanticscholar`, or `openalex`.
-- **Do NOT run `graphify` yourself.** Return the 5 files plus the search
+- **Do NOT index the corpus yourself.** Return the 5 files plus the search
   parameters (query, quartile filter, year range, tool hits per source)
-  inline to the dispatcher — the dispatcher builds the isolated graph from
-  `proposal/scoping/papers/`.
+  inline to the dispatcher — the dispatcher builds the isolated
+  `codebase-memory` index from `proposal/scoping/papers/`.
 
 ### MODE=sota (Fase 1b pre-step)
 
@@ -120,11 +120,12 @@ scoping-stage modes that add `consensus` to the tool scope.
   abstract-only papers**.
 - Hard constraint: `paper-1.md`..`paper-5.md` stay **byte-unchanged** —
   never re-fetch, re-normalize, or edit them, only new files are added. This
-  sub-step also never touches the repo-root `graphify-out/` (the main
-  proposal's graph, outside `proposal/scoping/`) — that directory's
-  `graph.json` checksum/mtime must remain unchanged; only
-  `proposal/scoping/graphify-out/` (rebuilt by the dispatcher, see
-  `propuesta.md`, "Fase 1b") reflects the expanded corpus.
+  sub-step also never touches the vault index (`<run-id>-vault`, the main
+  proposal's idea graph, outside `proposal/scoping/`) nor its report
+  `proposal/pipeline/vault-graph-report.md`; only the papers index
+  (`<run-id>-papers`) and `proposal/scoping/graph-report.md` — both refreshed
+  by the dispatcher, see `propuesta.md`, "Fase 1b" — reflect the expanded
+  corpus.
 - Dedup: before writing a new `paper-N.md`, check its DOI (or, if missing,
   normalized title) against every existing paper in the corpus (seed +
   already-added). Skip duplicates.
@@ -146,16 +147,17 @@ scoping-stage modes that add `consensus` to the tool scope.
 - Output: `proposal/scoping/papers/paper-{6..N}.md`, plus the search
   parameters (query, quartile filter, year range, tool hits per source) and
   the final corpus count, returned inline to the dispatcher.
-- **Do NOT run `graphify` yourself** — same as MODE=scope, the dispatcher
-  rebuilds the graph from the expanded corpus.
+- **Do NOT index the corpus yourself** — same as MODE=scope, the dispatcher
+  re-indexes the expanded corpus with `codebase-memory`.
 
-#### Sub-step: grouping (Fase 1b, after the dispatcher's graphify update)
+#### Sub-step: grouping (Fase 1b, after the dispatcher's index refresh)
 
-- Dispatched only **after** the dispatcher has re-run `graphify --update` +
-  `graphify export html` over the expanded corpus (see `propuesta.md`,
-  "Fase 1b"). Never propose groupings before the updated graph exists.
-- Input: the expanded `GRAPH_REPORT.md` (God Nodes, Surprising Connections,
-  communities) plus every paper's abstract in
+- Dispatched only **after** the dispatcher has re-indexed the expanded corpus
+  with `codebase-memory` and rewritten `proposal/scoping/graph-report.md`
+  (see `propuesta.md`, "Fase 1b"). Never propose groupings before the updated
+  report exists.
+- Input: the expanded `proposal/scoping/graph-report.md` (central nodes,
+  thematic communities, suggested questions) plus every paper's abstract in
   `proposal/scoping/papers/paper-{1..N}.md`.
 - Output: propose **3-5 SOTA subsections** as a mapping table — not
   prose — with columns: paper → proposed subsection → cross-ref to
@@ -324,14 +326,14 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
    group of literature does NOT resolve (this phrase renders in red —
    `rojoLimitante` — at the cluster level, not per paper; keep it punchy,
    not a full sentence with citations). Ground the paper selection and
-   relationships in the **already-built graph over the papers corpus** —
-   `proposal/scoping/graphify-out/graph.json` and
-   `proposal/scoping/graphify-out/GRAPH_REPORT.md` (God Nodes, Communities,
-   Hyperedges) — rather than picking papers or relationships arbitrarily:
-   prioritize God Nodes and community-hub papers that fall within each
-   subsection's theme, and use the graph's own edges (`semantically_similar_to`,
-   hyperedge cluster membership, etc.) to justify which works you connect.
-   Read `GRAPH_REPORT.md` before drafting this block. If the graph doesn't
+   relationships in the **already-built index over the papers corpus** —
+   `proposal/scoping/graph-report.md`, the dispatcher's report over the
+   `<run-id>-papers` index (central nodes, thematic communities, suggested
+   questions) — rather than picking papers or relationships arbitrarily:
+   prioritize the central nodes and community-hub papers that fall within each
+   subsection's theme, and use the report's own community membership to
+   justify which works you connect.
+   Read `proposal/scoping/graph-report.md` before drafting this block. If the report doesn't
    cleanly cover a subsection (e.g. a theme added after the corpus was
    built), fall back to your own literature judgment for that subsection
    only, and note in the spec block that it wasn't graph-grounded.

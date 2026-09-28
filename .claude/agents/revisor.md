@@ -142,7 +142,8 @@ you) before reporting a FAIL for a missing artifact.
    ...'.
 7. **Graph evidence (advisory only):** Your Task prompt may include a bounded
    `EVIDENCIA DE GRAFO (asesora, NO bloqueante)` block, injected by the
-   dispatcher (`propuesta.md`) from the current `graphify` run over `vault/`.
+   dispatcher (`propuesta.md`) from the current `codebase-memory` index over
+   `vault/`.
    You may cite it in HALLAZGOS, but it is a hint, not a check — your manual
    checklist above stays the sole authority for PASS/FAIL. If the block is
    absent, ignore this item entirely.

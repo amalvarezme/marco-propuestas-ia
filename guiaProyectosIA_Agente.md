@@ -148,10 +148,11 @@ de literatura escrita como una **frase corta y contundente en color rojo**
 `grisLabIA`/`verdeGCPDS` — ver "Colores institucionales" abajo) dentro del
 propio bloque del cluster. La selección de trabajos y relaciones de cada
 cluster NO se inventa: se fundamenta en el grafo ya construido sobre el
-corpus de papers (`proposal/scoping/graphify-out/graph.json` +
-`GRAPH_REPORT.md` — God Nodes, Communities, Hyperedges), priorizando los
-papers con más conexiones (God Nodes) y las comunidades temáticas que el
-grafo ya identificó, en vez de una selección arbitraria. El
+corpus de papers (`proposal/scoping/graph-report.md`, el reporte del índice
+de `codebase-memory` sobre el corpus — nodos centrales, comunidades
+temáticas, preguntas sugeridas), priorizando los papers con más conexiones
+(nodos centrales) y las comunidades temáticas que el índice ya identificó, en
+vez de una selección arbitraria. El
 Bibliografo-Propuesta especifica el contenido del diagrama (clusters, papers,
 relaciones, frase roja por cluster) como bloque comentado al final de
 `04_estado_arte.tex`, mismo patrón que usa Investigador para el árbol de

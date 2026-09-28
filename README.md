@@ -11,12 +11,20 @@ Framework multi-agente que produce propuestas de investigación en IA en
 los agentes mantienen un mirror Markdown/Obsidian navegable en `vault/`
 (`vault/secciones/`, `vault/insumos/`) — capa visual para explorar la
 propuesta como grafo de ideas; **nunca** es fuente de verdad, ese rol lo
-conserva `proposal/`. **Runtime canónico: Claude Code** (`.claude/agents/` +
-`.claude/commands/propuesta.md`, la única fuente editada a mano). **OpenCode**
-es un runtime secundario soportado: `.opencode/agents/` +
-`.opencode/commands/propuesta.md` se generan de forma determinista y
-zero-LLM desde las fuentes de Claude Code (`python3 scripts/gen-opencode.py`
-— ver `AGENTS.md` para el detalle y el setup manual pendiente en OpenCode).
+conserva `proposal/`.
+
+**Una subcarpeta por corrida.** `/propuesta-init <idea>` crea
+`proposals/<run-id>/` y la activa: ahí dentro viven `proposal/`, `vault/` e
+`info_data/` de esa corrida, y toda ruta `proposal/...`/`vault/...` del marco se
+resuelve contra esa raíz (`RUN_ROOT`). Dos corridas nunca se pisan, y archivar
+una es solo un cambio de estado: la carpeta ya **es** el archivo.
+
+**Runtime canónico: Claude Code** (`.claude/agents/` + `.claude/commands/`, la
+única fuente editada a mano). **OpenCode** y **Pi** son runtimes secundarios
+soportados: `.opencode/agents/` + `.opencode/commands/` y `.pi/agents/` +
+`.pi/prompts/` se generan de forma determinista y zero-LLM desde las fuentes de
+Claude Code (`python3 scripts/gen-opencode.py`, `python3 scripts/gen-pi.py`;
+ambos aceptan `--check` — ver `AGENTS.md` y `.pi/README.md` para el detalle).
 El asistente primario despacha 9 subagentes de dominio — `investigador`,
 `redactor`, `revisor`, `bibliografo-propuesta`, `presupuestador`,
 `insumos-observador`, `disenador-tikz`, `tikz-optimizer`, `revisor-figuras` —
@@ -65,23 +73,33 @@ agota — nunca reintentan sin límite.
 ├── .mcp.json                        # Config de MCP servers
 ├── info_data/                       # Insumos del usuario (vacío entre corridas)
 ├── logos/                           # Logos institucionales (branding del repo/README)
-├── scripts/                         # Tooling del REPO (no de la propuesta): gen-opencode.py
-│                                     #   + gen-opencode.rules.json — generador Claude Code → OpenCode
+├── scripts/                         # Tooling del REPO (no de la propuesta):
+│                                     #   init-run.sh — scaffolding de proposals/<run-id>/ (RUN_ROOT)
+│                                     #   gen-opencode.py + .rules.json — puerto Claude Code → OpenCode
+│                                     #   gen-pi.py + .rules.json — puerto Claude Code → Pi
 ├── .claude/                         # Runtime canónico — única fuente editada a mano
 │   ├── agents/                      # 10 archivos: 9 subagentes + coordinador-propuesta
 │   └── commands/
 │       ├── propuesta.md             # Comando /propuesta
+│       ├── propuesta-init.md        # Comando /propuesta-init (crea y activa la corrida)
 │       └── propuesta-limpiar.md     # Comando /propuesta-limpiar (archiva + resetea, standalone)
 ├── .opencode/                       # Runtime secundario — GENERADO desde .claude/, no se edita a mano
 │   ├── agents/                      # 9 subagentes portados (1:1 con .claude/agents/, sin coordinador)
-│   └── commands/                    # propuesta.md + propuesta-limpiar.md portados
-├── vault/                           # Mirror Obsidian navegable (Markdown) — capa visual, no versión de verdad
+│   └── commands/                    # los 3 comandos portados
+├── .pi/                             # Runtime secundario — GENERADO desde .claude/, no se edita a mano
+│   ├── agents/                      # 9 subagentes portados (dispatch con subagent_run)
+│   ├── prompts/                     # los 3 comandos portados (slash commands de Pi)
+│   └── README.md                    # Único archivo de .pi/ escrito a mano
+├── vault/                           # Mirror Obsidian del layout heredado (raíz) — capa visual, no fuente de verdad
 │   ├── secciones/                   # Espejo de proposal/sections/*.tex por sección
-│   └── insumos/                     # Espejo de proposal/insumos.md
-├── proposals/                       # Índice + corridas archivadas de /propuesta (local, no en GitHub)
-│   └── registry.md                  # Único archivo versionado: tabla append-only de metadatos
-│                                     #   (run-id, estado, ruta local) — proposals/<run-id>/ en sí
-│                                     #   está en .gitignore
+│   ├── insumos/                     # Espejo de proposal/insumos.md
+│   └── .cbmignore                   # Exclusiones del índice de codebase-memory (.obsidian/)
+├── proposals/                       # Una subcarpeta por corrida + índice (local, no en GitHub)
+│   ├── registry.md                  # Único archivo versionado: tabla append-only de metadatos
+│   │                                 #   (run-id, estado, ruta local)
+│   ├── .current-run                 # Puntero a la corrida activa (local, gitignored)
+│   └── <run-id>/                    # RUN_ROOT: _run.md + proposal/ + vault/ + info_data/
+│                                     #   (todo el contenido de la corrida, gitignored)
 └── proposal/                        # Framework de salida LaTeX (versión de referencia)
     ├── build.sh                     # Compilación PDF/DOCX
     ├── scripts/                     # compile_tikz.py, prep_docx.py — específico del build LaTeX/DOCX
@@ -94,8 +112,9 @@ agota — nunca reintentan sin límite.
 ### Qué se versiona en GitHub (y qué no)
 
 El repo remoto solo contiene lo necesario para **correr el pipeline en
-local**: agentes (`.claude/agents/`, `.opencode/agents/`), comandos
-(`.claude/commands/`, `.opencode/commands/`), tooling (`scripts/`,
+local**: agentes (`.claude/agents/`, `.opencode/agents/`, `.pi/agents/`),
+comandos (`.claude/commands/`, `.opencode/commands/`, `.pi/prompts/`),
+tooling (`scripts/`,
 `proposal/scripts/`, `proposal/build.sh`), plantillas/logos
 (`proposal/templates/`, `proposal/logos/`), la guía
 (`guiaProyectosIA_Agente.md`) y `proposals/registry.md` (solo metadatos:
@@ -104,39 +123,51 @@ run-id, fechas, idea breve, ruta local — nunca contenido de la propuesta).
 **Nunca** se sincroniza el contenido de una propuesta, ni de la corrida
 activa ni de las archivadas: `proposal/sections/`, `proposal/refs.bib`,
 `proposal/main.tex/.pdf/.docx`, `vault/secciones/`, `vault/insumos/`,
-`info_data/` y `proposals/<run-id>/` completo están en `.gitignore`. El
-comando `/propuesta-limpiar` (§Uso) archiva la corrida activa a
-`proposals/<run-id>/` — **solo en disco local** — y resetea `proposal/` y
-`vault/` a scaffolding limpio, sin residuos de build ni cachés, listos para
-la próxima corrida.
+`info_data/` y `proposals/<run-id>/` completo están en `.gitignore`, igual que
+el puntero `proposals/.current-run`. Con una subcarpeta por corrida, archivar
+no copia nada: `/propuesta-limpiar` (§Uso) marca la corrida como archivada en
+su `_run.md` y en `proposals/registry.md`, y la siguiente corrida arranca con
+`/propuesta-init` en su propia carpeta limpia. En el layout heredado (corrida
+en la raíz del repo) ese mismo comando conserva su comportamiento anterior:
+copia a `proposals/<run-id>/` y resetea `proposal/` y `vault/`.
 
 `scripts/` (raíz) y `proposal/scripts/` son intencionalmente distintos: el
-primero es tooling del repo (portabilidad de agentes Claude Code → OpenCode,
-no depende de una corrida de `/propuesta`); el segundo es específico del
+primero es tooling del repo (scaffolding de corridas y portabilidad de agentes
+Claude Code → OpenCode/Pi, no depende de una corrida de `/propuesta`); el
+segundo es específico del
 build LaTeX/DOCX de una corrida (compilación de diagramas TikZ, export a
 Word) y solo tiene sentido una vez `proposal/sections/` existe.
 
 ## Uso
 
-Ejecuta el comando `/propuesta <idea>` en Claude Code. El asistente primario
-despacha la Fase 0 (`insumos-observador` ingiere insumos) y avanza fase por
-fase, deteniéndose en cada gate para aprobación del usuario. El mismo
-comando también está disponible en OpenCode (`.opencode/commands/propuesta.md`,
-generado desde las fuentes de Claude Code) — requiere sesión interactiva:
-las compuertas de aprobación no funcionan en `opencode run` headless.
+1. `/propuesta-init <idea>` — crea y activa la subcarpeta de la corrida
+   (`proposals/<run-id>/`) con todos sus artefactos dentro. Delega en
+   `scripts/init-run.sh`, que es determinista e idempotente y también puede
+   correrse a mano: `scripts/init-run.sh <run-id> "<idea breve>"`.
+2. `/propuesta <idea>` — el asistente primario despacha la Fase 0
+   (`insumos-observador` ingiere insumos) y avanza fase por fase,
+   deteniéndose en cada gate para aprobación del usuario.
 
-`/propuesta-limpiar` archiva la corrida activa (si existe) a
+Los mismos comandos están disponibles en OpenCode
+(`.opencode/commands/`) y en Pi (`.pi/prompts/`), generados desde las fuentes
+de Claude Code. En los tres runtimes hace falta una sesión interactiva: las
+compuertas de aprobación no funcionan en modo headless (`opencode run`,
+`pi -p`).
+
+`/propuesta-limpiar` cierra la corrida activa (si existe) sin tener que
+arrancar `/propuesta` primero: con una subcarpeta por corrida es un cambio de
+estado en `_run.md` + `proposals/registry.md`; en el layout heredado archiva a
 `proposals/<run-id>/` en disco local y deja `proposal/` y `vault/` en
-scaffolding limpio para una corrida nueva, sin tener que arrancar
-`/propuesta` primero. Ejecuta el mismo procedimiento de archivado que
+scaffolding limpio. Ejecuta el mismo procedimiento de archivado que
 `/propuesta` dispara automáticamente al detectar una corrida sin terminar
 (Fase 0, bloque ARCHIVADO-Y-REINICIO), pero de forma standalone y con
 confirmación explícita del usuario antes de vaciar el árbol activo.
 
 ## Flujo del pipeline
 
-Diagrama tipo BPMN del pipeline completo (fases, compuertas de aprobación y
-los tres grafos de conocimiento transversales). Fuente editable y notas de
+Diagrama tipo BPMN del pipeline completo (fases, compuertas de aprobación y las
+tres vistas de conocimiento transversales: los dos índices de
+`codebase-memory` y el registro del pipeline). Fuente editable y notas de
 lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
 
 ![Flujo del pipeline /propuesta](docs/pipeline-flow.svg)
@@ -156,11 +187,22 @@ lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
   otro proveedor (Anthropic, otro modelo OpenAI, etc.), editá `model_map` en
   `gen-opencode.rules.json` y volvé a correr `python3 scripts/gen-opencode.py`
   para regenerar los 9 archivos con el modelo que corresponda.
+- **Pi** (opcional) — runtime secundario soportado. `.pi/agents/` +
+  `.pi/prompts/` se regeneran con `python3 scripts/gen-pi.py` (stdlib puro);
+  los 9 subagentes quedan en `claude-bridge/claude-sonnet-5` /
+  `claude-bridge/claude-opus-5` (`model_map` en `scripts/gen-pi.rules.json`,
+  editá y regenerá si usás otro proveedor). Pi los descubre solo (son
+  directorios de proyecto estándar) tras conceder trust al proyecto; ver
+  `.pi/README.md`.
+- **codegraph** (`npm i -g @colbymchenry/codegraph`) — **codebase-memory**, la
+  capa de grafo del pipeline; requerido porque el servidor MCP `codegraph` de
+  `.mcp.json` invoca este binario (`codegraph serve --mcp`). Reemplaza al
+  `graphify` que usó este marco hasta ahora.
 - **engram** (`brew install gentleman-programming/tap/engram`) — memoria persistente; requerido porque el servidor MCP `engram` de `.mcp.json` invoca este binario directamente.
 - **gentle-ai** (recomendado, `brew install gentleman-programming/tap/gentle-ai`) — orquestación del workflow SDD (`/sdd-*`), registro de skills y asignación de modelos por fase.
 - LaTeX (pdflatex + bibtex, estilo `natbib`/`apalike`) para compilar `proposal/main.tex`.
-- MCP servers usados por los agentes de propuesta: OpenAlex, Crossref, Semantic
-  Scholar, PubMed, arXiv, Context7, Consensus. Ver `REQUIREMENTS.md` §1 para el
+- MCP servers usados por el pipeline: codegraph (codebase-memory), OpenAlex,
+  Crossref, Semantic Scholar, PubMed, arXiv, Context7, Consensus. Ver `REQUIREMENTS.md` §1 para el
   detalle de instalación y §3 para el detalle de paquetes; `.mcp.json` registra
   los servidores activos de este proyecto.
 

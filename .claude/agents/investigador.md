@@ -224,9 +224,9 @@ above — only inside Fase 1a (the TDR-gated scoping phase; see
 
 - **Inputs (ONLY):**
   - The 5 paper abstracts under `proposal/scoping/papers/paper-{1..5}.md`.
-  - A reference to the graph at `proposal/scoping/graphify-out/`, plus the
-    God Nodes / Surprising Connections / Suggested Questions excerpts from
-    its `GRAPH_REPORT.md`.
+  - A reference to the papers index (`<run-id>-papers`), plus the central
+    nodes / thematic communities / suggested questions excerpts from its
+    report `proposal/scoping/graph-report.md`.
   - The TDR criteria / applicable guide (the TDR-adjusted
     `proposal/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
     `guiaProyectosIA_Agente.md`).

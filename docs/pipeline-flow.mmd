@@ -31,7 +31,7 @@ flowchart TD
     Blocked -.-> Fase1a
 
     subgraph Fase1a["Fase 1a — COMPUERTA G1a: Scoping temprano (siempre corre)"]
-        Scope[Task: bibliografo MODE=scope<br/>5 papers Q1/Q2, menos 2 anos] --> PapersGraph1[Dispatcher: graphify papers/<br/>build completo]
+        Scope[Task: bibliografo MODE=scope<br/>5 papers Q1/Q2, menos 2 anos] --> PapersGraph1[Dispatcher: index_repository papers<br/>proyecto run-id-papers]
         PapersGraph1 --> EarlyProb[Task: investigador<br/>3 subproblemas tempranos]
         EarlyProb --> GateG1a{Usuario aprueba<br/>papers + grafo + subproblemas}
         GateG1a -->|cambios| Scope
@@ -42,12 +42,12 @@ flowchart TD
     CheckG1a -->|no| Fase1
 
     subgraph SubFase1b["Fase 1b — COMPUERTA G1b: Expansion SOTA"]
-        Corpus[Task: bibliografo MODE=sota<br/>corpus 30-40 papers] --> PapersGraphUpd[Dispatcher: graphify --update]
+        Corpus[Task: bibliografo MODE=sota<br/>corpus 30-40 papers] --> PapersGraphUpd[Dispatcher: index_repository incremental]
         PapersGraphUpd --> Grouping[Task: bibliografo<br/>agrupacion 3-5 subsecciones]
         Grouping --> GateG1b{Usuario aprueba}
         GateG1b -->|cambios| Corpus
         GateG1b -->|aprobado| WriteRefs[Task: bibliografo<br/>WRITE-REFS: refs.bib]
-        WriteRefs --> VaultBuild[Dispatcher: graphify vault/<br/>build completo, primera vez]
+        WriteRefs --> VaultBuild[Dispatcher: index_repository vault<br/>baseline, primera vez]
     end
     VaultBuild --> Fase1
     SubFase1b -.-> Fase1
@@ -147,7 +147,7 @@ flowchart TD
     Fase65 --> Fase7
 
     subgraph Fase7["Fase 7 — Auditoria final + Ensamble"]
-        VaultFinal[Dispatcher: graphify vault/ completo<br/>todas las secciones] --> AuditFinal{GATE revisor:<br/>auditoria final, incl. Presupuesto to Cronograma}
+        VaultFinal[Dispatcher: refresh indice vault completo<br/>todas las secciones] --> AuditFinal{GATE revisor:<br/>auditoria final, incl. Presupuesto to Cronograma}
         AuditFinal -->|FAIL| VaultFinal
         AuditFinal -->|PASS| Assemble[Asistente primario ensambla main.tex:<br/>front-matter, sec 1-16 en orden]
         Assemble --> PDF[build.sh to main.pdf<br/>logos: header UNAL, footer GCPDS/LabIA]
@@ -156,9 +156,9 @@ flowchart TD
     Fase7 --> End([Propuesta final: PDF + DOCX])
 
     subgraph Grafos["Grafos transversales (3, corren en paralelo al flujo principal)"]
-        GPapers["Grafo de papers<br/>proposal/scoping/graphify-out/<br/>seed G1a, refresca en G1b y Fase 2"]
-        GVault["Grafo de vault (coherencia)<br/>vault/graphify-out/<br/>build completo en G1b, --update en cada gate Fase 1-7"]
-        GPipeline["Grafo de pipeline (estructura)<br/>proposal/pipeline/NN-fase.md (eventos) + _estado.md<br/>un evento .md por transicion de compuerta, sin graphify (build/update/export eliminados)"]
+        GPapers["Indice de papers (codebase-memory)<br/>run-id-papers, reporte proposal/scoping/graph-report.md<br/>seed G1a, refresca en G1b y Fase 2"]
+        GVault["Indice de vault (coherencia, codebase-memory)<br/>run-id-vault, reporte proposal/pipeline/vault-graph-report.md<br/>baseline en G1b, refresh en cada gate Fase 1-7"]
+        GPipeline["Grafo de pipeline (estructura)<br/>proposal/pipeline/NN-fase.md (eventos) + _estado.md<br/>un evento .md por transicion de compuerta, sin indexar (no aporta valor consumido)"]
     end
 
     classDef gate fill:#fff3cd,stroke:#b8860b,stroke-width:1px

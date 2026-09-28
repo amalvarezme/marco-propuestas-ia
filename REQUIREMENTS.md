@@ -6,46 +6,35 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 
 | Tool | Min version | Purpose | Install |
 |------|-------------|---------|---------|
-| **Python** | 3.11+ | graphify, scripting | `brew install python@3.11` |
+| **Python** | 3.11+ | Framework scripting (stdlib-only) | `brew install python@3.11` |
 | **uv** | 0.11+ | Python package manager (recommended) | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | **Node.js** | 20+ | MCP servers via npx | `brew install node` |
 | **npm / npx** | 10+ | MCP server fetching | bundled with Node |
 | **TeX Live** | 2024+ | LaTeX compilation (pdflatex + bibtex) | `brew install --cask mactex` |
 | **git** | 2.40+ | Version control | `brew install git` |
+| **codegraph** | 1.2+ | **codebase-memory** knowledge-graph MCP server (required: `.mcp.json`'s `codegraph` server invokes this binary as `codegraph serve --mcp`) | `npm i -g @colbymchenry/codegraph` |
 | **engram** | 1.18+ | Persistent memory MCP server (required: `.mcp.json`'s `engram` server invokes this binary directly) | `brew install gentleman-programming/tap/engram` |
 | **gentle-ai** (recommended) | 1.43+ | SDD workflow orchestration, skill registry, model-assignment dispatch for `/sdd-*` commands | `brew install gentleman-programming/tap/gentle-ai` |
 | **OpenCode** (optional) | — | Secondary runtime for `.opencode/agents/` + `.opencode/commands/propuesta.md` (generated from `.claude/` via `scripts/gen-opencode.py`, stdlib-only, no new Python deps); interactive session required — gates don't work under `opencode run` headless | see [opencode.ai](https://opencode.ai) |
+| **Pi** (optional) | 0.87+ | Secondary runtime for `.pi/agents/` + `.pi/prompts/propuesta.md` (generated from `.claude/` via `scripts/gen-pi.py`); interactive session required for the approval gates | `npm i -g @earendil-works/pi-coding-agent` |
 
 ## 2. Python packages (`requirements.txt`)
 
-Install:
+Install (all optional):
 ```bash
-uv tool install --upgrade graphifyy
 pip install -r requirements.txt
 ```
 
-Core:
-- `graphifyy>=0.8.41` — knowledge graph extraction, clustering, visualization
-- `networkx>=3.4` — graph data structures
-- `numpy>=1.21` — numerical ops
-- `rapidfuzz>=3.0` — fuzzy string matching
-- `tree-sitter` + 16 language grammars — AST extraction for code files
-
-Optional extras (used in this project):
+Optional extras, only for manual local conversion of `info_data/` inputs:
 - `pypdf` + `markdownify` — PDF parsing (convocatoria, papers)
 - `python-docx` — DOCX parsing (Anexo 2 proposal)
-- `graspologic` — Leiden community detection
-- `matplotlib` — SVG graph export
-- `faster-whisper` + `yt-dlp` — video/audio transcription
-- `watchdog` — `--watch` auto-rebuild mode
 
-**Scope note:** every package above is consumed by the `graphify`/`graphifyy`
-CLI tool itself (when it indexes PDFs/DOCX/media dropped into `info_data/` or
-`vault/`) — none of the proposal-writing pipeline's own Python scripts import
-them. `proposal/scripts/compile_tikz.py`, `proposal/scripts/prep_docx.py`, and
-`scripts/gen-opencode.py` are stdlib-only (no third-party imports, nothing
-from this file); `requirements.txt` exists entirely for the graphify/CodeGraph
-tooling layer, not for the pipeline's own agents/scripts.
+**Scope note:** the pipeline itself needs **no** Python packages. The
+knowledge-graph layer is `codebase-memory` (the `codegraph` MCP server, a Node
+binary — see section 1), not a Python library. Every framework script is
+stdlib-only: `proposal/scripts/compile_tikz.py`,
+`proposal/scripts/prep_docx.py`, `scripts/gen-opencode.py`, and
+`scripts/gen-pi.py` import nothing from this file.
 
 ## 3. Node.js / MCP servers
 
@@ -94,28 +83,46 @@ pdflatex main.tex
 pdflatex main.tex
 ```
 
-## 5. Claude Code skills
+## 5. Knowledge graph (codebase-memory)
 
-| Skill | Source | Trigger |
-|-------|--------|---------|
-| **graphify** | `~/.claude/skills/graphify/SKILL.md` | `/graphify` |
+The pipeline's graph layer is the `codegraph` MCP server declared in
+`.mcp.json`. The dispatcher calls it with MCP tools (`index_repository`,
+`get_architecture`, `search_graph`, `query_graph`, `check_index_coverage`,
+`delete_project`) — never a CLI binary through Bash, and never with an API
+key.
 
-Graphify is a Claude Code skill file + the `graphifyy` Python package (in `requirements.txt`).
+Two indexes per run, both scoped to the run's own corpus directory:
+
+| Index | `repo_path` | Report |
+|-------|-------------|--------|
+| `<run-id>-papers` | `<RUN_ROOT>/proposal/scoping/papers` | `proposal/scoping/graph-report.md` |
+| `<run-id>-vault` | `<RUN_ROOT>/vault` | `proposal/pipeline/vault-graph-report.md` |
+
+Two verified constraints drive that shape:
+- `codegraph` honors `.gitignore`, and all run content is gitignored, so a
+  root-level index reports the corpus as `not_indexed` /
+  `reason: "gitignore"`. Indexing the corpus directory **as its own root**
+  bypasses the parent `.gitignore`.
+- `.cbmignore` can exclude noise inside a corpus (e.g. `vault/.cbmignore`
+  drops `.obsidian/`) but its `!path` negations do **not** re-include a
+  `.gitignore`d path.
+
+It has no HTML export and no `[[wikilink]]` edges: the user-facing artifact is
+the Markdown report the dispatcher writes, and broken wikilinks are detected
+deterministically with `Grep`.
 
 ## 6. Environment variables
 
 | Variable | Required by | Description |
 |----------|-------------|-------------|
 | `CONTACT_EMAIL` | openalex, crossref, pubmed MCP | Polite-pool access (set in shell or `.env`) |
-| `GEMINI_API_KEY` | graphify (optional) | Enables Gemini for semantic extraction |
-| `GOOGLE_API_KEY` | graphify (optional) | Alternative to GEMINI_API_KEY |
 | `CROSSREF_MAILTO` | crossref MCP | Polite-pool (falls back to CONTACT_EMAIL) |
 
 ## 7. Project structure
 
 ```
 .
-├── requirements.txt          # Python deps (this file's companion) — graphify/CodeGraph tooling only
+├── requirements.txt          # Optional Python deps — manual info_data/ conversion only
 ├── REQUIREMENTS.md           # This file
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
@@ -138,9 +145,12 @@ Graphify is a Claude Code skill file + the `graphifyy` Python package (in `requi
 │   │                           #   the source of truth (that's proposal/*.tex, LaTeX)
 │   ├── secciones/              # Mirrors proposal/sections/*.tex, one note per section
 │   └── insumos/                # Mirrors proposal/insumos.md
-├── proposals/                 # Registry + archived /propuesta runs
-│   └── registry.md             # Append-only table: run-id, estado, archivo, commit
-├── proposal/                 # Framework skeleton committed to git:
+├── proposals/                 # One subfolder per run + the registry
+│   ├── registry.md             # Append-only table: run-id, estado, archivo, commit
+│   ├── .current-run            # Active run-id pointer (local, gitignored)
+│   └── <run-id>/               # RUN_ROOT: _run.md + proposal/ + vault/ + info_data/
+│                               #   (every run artifact lives here; gitignored)
+├── proposal/                 # Framework skeleton committed to git, copied into each RUN_ROOT:
 │   ├── build.sh              # Compilación PDF/DOCX (logos header/footer)
 │   ├── scripts/               # compile_tikz.py, prep_docx.py — LaTeX/DOCX build-specific,
 │   │                           #   distinct from the root-level scripts/ (repo tooling)
@@ -149,5 +159,5 @@ Graphify is a Claude Code skill file + the `graphifyy` Python package (in `requi
 │   # Generados por cada corrida de /propuesta (no committeados, ver .gitignore):
 │   #   main.tex, refs.bib, sections/*.tex, insumos.md, estado_propuesta.md,
 │   #   guia_ajustada_TDR.md, pipeline/, scoping/
-└── graphify-out/             # Knowledge graph outputs (gitignored)
+└── .codegraph/               # codebase-memory index database (gitignored)
 ```
