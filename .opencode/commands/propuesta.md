@@ -24,18 +24,18 @@ misma.
 
 | Subcarpeta | Qué contiene | Quién escribe ahí |
 |---|---|---|
-| `docs/` | Insumos del usuario: TDR, papers, propuestas base, documentos de referencia. | El usuario. El pipeline solo lee. |
+| `insumos/` | Insumos del usuario: TDR, papers, propuestas base, documentos de referencia. | El usuario. El pipeline solo lee. |
 | `artefactos/` | Todo lo que el pipeline genera y **no** es fuente LaTeX: `estado_propuesta.md`, `insumos.md`, `guia_ajustada_TDR.md`, `pipeline/` (log de fases/compuertas), `scoping/papers/` (corpus), `vault/` (espejo Obsidian). | El dispatcher y los subagentes. |
 | `grafos/` | Reportes de `codebase-memory`: `papers-graph-report.md`, `vault-graph-report.md` y sus snapshots. | Solo el dispatcher. |
 | `redaccion/` | El proyecto LaTeX: `main.tex`, `sections/`, `refs.bib`, `main.pdf`, `main.docx`, más el tooling de build (`build.sh`, `scripts/`, `logos/`, `templates/`). | Los subagentes que escriben secciones. |
 
-En TODO este documento, cualquier ruta que empiece por `docs/`, `artefactos/`,
+En TODO este documento, cualquier ruta que empiece por `insumos/`, `artefactos/`,
 `grafos/` o `redaccion/` se resuelve **dentro de `RUN_ROOT`**, no en la raíz
 del repo. Las únicas rutas literalmente relativas a la raíz son las del
 framework: `.opencode/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,
-`proposals/registry.md` y `proposals/.current-run`. (Ojo con `docs/`: dentro de
-`RUN_ROOT` son los insumos del usuario; el `docs/` de la raíz del repo es
-documentación del framework y este documento nunca lo referencia.)
+`proposals/registry.md` y `proposals/.current-run`. Ninguno de los cuatro
+nombres de subcarpeta colisiona con un directorio del repo, así que una ruta de
+corrida nunca es ambigua.
 
 Resolución de `RUN_ROOT`, en este orden exacto:
 
@@ -151,9 +151,9 @@ Cada vez que una fase de abajo dice "aplica el procedimiento de Refresh del
 
 ## Instrucciones de inicio
 
-1. Si no hay insumos (PDFs/papers/enlaces) en el mensaje ni en `docs/`,
+1. Si no hay insumos (PDFs/papers/enlaces) en el mensaje ni en `insumos/`,
    pídelos al usuario antes de avanzar. Los archivos fuente se guardan en
-   `docs/`. Si los hay, despacha con `task` al subagente
+   `insumos/`. Si los hay, despacha con `task` al subagente
    `insumos-observador` (Fase 0) para clasificar (TDR / draft-base /
    background), extraer el TDR si aplica, y estructurar el contexto en
    `artefactos/insumos.md`. Ver el bloque "Fase 0" del pipeline abajo para el
@@ -519,7 +519,7 @@ Fase 0.5 [COMPUERTA G0.5] Solo aplica si el campo "Archivo TDR" de la tabla
         > realmente exigida (y no solo a los pesos de los criterios) necesito el
         > documento que liste las secciones obligatorias de la propuesta.
         > Por favor aporta ese documento (un archivo de "secciones"/"estructura" de la
-        > propuesta, PDF o .docx) en `docs/` y confírmame el nombre. Hasta
+        > propuesta, PDF o .docx) en `insumos/` y confírmame el nombre. Hasta
         > entonces la compuerta **G0.5 queda BLOQUEADA**: no puedo generar
         > `guia_ajustada_TDR.md` por la vía ajustada al TDR.
         > Alternativa explícita: si no existe tal documento y prefieres seguir con la

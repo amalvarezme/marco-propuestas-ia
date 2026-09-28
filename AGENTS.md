@@ -19,7 +19,7 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
 2. **Insumos:** La propuesta se construye desde un prompt/idea del usuario más
    PDFs, papers, enlaces o información relevante que este aporte. Los archivos
    fuente (PDFs, papers, propuestas previas, documentos de referencia) se
-   guardan en `docs/` de la corrida (ver regla 7). El agente
+   guardan en `insumos/` de la corrida (ver regla 7). El agente
    **Insumos-Observador** los lee desde ahí y extrae/estructura esos insumos en
    un contexto compartido.
 3. **Enfoque:** Productos/servicios de IA con innovación investigativa,
@@ -62,20 +62,19 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
 
    | Subcarpeta | Contenido | La llena |
    |---|---|---|
-   | `docs/` | Insumos del usuario: TDR, papers, propuestas base, documentos de referencia | el usuario |
+   | `insumos/` | Insumos del usuario: TDR, papers, propuestas base, documentos de referencia | el usuario |
    | `artefactos/` | Lo generado que no es fuente LaTeX: `estado_propuesta.md`, `insumos.md`, `guia_ajustada_TDR.md`, `pipeline/`, `scoping/papers/`, `vault/` | el pipeline |
    | `grafos/` | Reportes de `codebase-memory`: `papers-graph-report.md`, `vault-graph-report.md` | el dispatcher |
    | `redaccion/` | El proyecto LaTeX: `main.tex`, `sections/`, `refs.bib`, `main.pdf`, `main.docx`, `build.sh`, `scripts/`, `logos/`, `templates/` | el pipeline |
 
-   Toda ruta `docs/...`, `artefactos/...`, `grafos/...` o `redaccion/...` que
+   Toda ruta `insumos/...`, `artefactos/...`, `grafos/...` o `redaccion/...` que
    aparezca en este playbook, en los agentes o en el dispatcher se resuelve
    **dentro de `RUN_ROOT`**, nunca en la raíz del repo; las únicas rutas
    relativas a la raíz son las del framework (`.claude/`, `.opencode/`,
    `.pi/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,
-   `proposals/registry.md`). Ojo con `docs/`: dentro de `RUN_ROOT` son los
-   insumos del usuario, mientras que el `docs/` de la raíz del repo es
-   documentación del framework — ningún agente referencia el segundo.
-   Archivar una corrida es solo un cambio de estado en su `_run.md` y en
+   `proposals/registry.md`). Ninguno de los cuatro nombres de subcarpeta
+   colisiona con un directorio del repo, así que una ruta de corrida nunca es
+   ambigua. Archivar una corrida es solo un cambio de estado en su `_run.md` y en
    `proposals/registry.md`: la carpeta ya **es** el archivo, no se copia ni se
    borra contenido. El layout heredado (corridas previas, con `proposal/` y
    `vault/` planos en la raíz) no se migra ni se continúa: lo único soportado
@@ -137,8 +136,8 @@ No existen agentes llamados `orquestador`, `observador` (a secas) ni
 
 ```
 Paso previo  `/propuesta-init <idea>` → crea y activa `proposals/<run-id>/`
-        (`RUN_ROOT`) con sus cuatro subcarpetas: docs/ artefactos/ grafos/
-        redaccion/. El usuario deja sus insumos en `docs/`.
+        (`RUN_ROOT`) con sus cuatro subcarpetas: insumos/ artefactos/ grafos/
+        redaccion/. El usuario deja sus insumos en `insumos/`.
 Fase 0  Insumos-Observador → ingerir insumos
 Fase 1  Investigador → §3 descripción del problema + pregunta, luego bucle de
         figura (árbol de problemas):

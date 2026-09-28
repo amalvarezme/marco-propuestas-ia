@@ -4,7 +4,7 @@
 # Everything a run touches lives inside that one folder, split into exactly four
 # subfolders so nothing ends up loose at the run root:
 #
-#   docs/         user inputs: terms of reference (TDR), papers, base proposals,
+#   insumos/      user inputs: terms of reference (TDR), papers, base proposals,
 #                 reference documents. The only folder the user fills by hand.
 #   artefactos/   every artifact the pipeline generates that is not a LaTeX
 #                 source: run state, structured inputs, the TDR-adjusted guide,
@@ -78,7 +78,7 @@ existed=0
 # --- the four subfolders --------------------------------------------------
 for d in \
   "$RUN_ROOT" \
-  "$RUN_ROOT/docs" \
+  "$RUN_ROOT/insumos" \
   "$RUN_ROOT/artefactos" \
   "$RUN_ROOT/artefactos/pipeline" \
   "$RUN_ROOT/artefactos/scoping" \
@@ -114,7 +114,7 @@ for f in \
 done
 
 for f in \
-  "$RUN_ROOT/docs/.gitkeep" \
+  "$RUN_ROOT/insumos/.gitkeep" \
   "$RUN_ROOT/grafos/.gitkeep" \
   "$RUN_ROOT/artefactos/vault/secciones/.gitkeep" \
   "$RUN_ROOT/artefactos/vault/insumos/.gitkeep" \
@@ -157,7 +157,7 @@ las cuatro subcarpetas:
 
 | Subcarpeta | Qué contiene | Quién la llena |
 |---|---|---|
-| \`docs/\` | TDR, papers, propuestas base, documentos de referencia | el usuario |
+| \`insumos/\` | TDR, papers, propuestas base, documentos de referencia | el usuario |
 | \`artefactos/\` | \`estado_propuesta.md\`, \`insumos.md\`, \`guia_ajustada_TDR.md\`, \`pipeline/\`, \`scoping/\`, \`vault/\` | el pipeline |
 | \`grafos/\` | reportes de \`codebase-memory\` (\`papers-graph-report.md\`, \`vault-graph-report.md\`) | el dispatcher |
 | \`redaccion/\` | \`main.tex\`, \`sections/\`, \`refs.bib\`, \`main.pdf\`, \`main.docx\`, \`build.sh\`, \`scripts/\`, \`logos/\`, \`templates/\` | el pipeline |
@@ -187,5 +187,5 @@ else
   printf 'created run folder: proposals/%s/\n' "$run_id"
 fi
 [ "$activate" -eq 1 ] && printf 'active run (proposals/.current-run): %s\n' "$run_id"
-printf 'RUN_ROOT: proposals/%s/  (docs/ artefactos/ grafos/ redaccion/)\n' "$run_id"
+printf 'RUN_ROOT: proposals/%s/  (insumos/ artefactos/ grafos/ redaccion/)\n' "$run_id"
 exit 0

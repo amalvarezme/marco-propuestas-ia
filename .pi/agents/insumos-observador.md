@@ -14,7 +14,7 @@ other agents can build on.
 ## What you do
 
 1. Read every PDF, paper, image, or linked resource the user provides. Source
-   files are stored in `docs/` (PDFs, papers, prior proposals, reference
+   files are stored in `insumos/` (PDFs, papers, prior proposals, reference
    documents, images). Read them from there; if the folder is empty, ask the
    Orchestrator to request the insumos from the user.
 2. Extract: topic/domain, stated problem, relevant data/datasets, prior art
@@ -31,7 +31,7 @@ English source text where relevant.
 
 ## Caché de extracción por hash (Fase 0 — antes de clasificar)
 
-Antes de clasificar o extraer contenido de cualquier archivo en `docs/`,
+Antes de clasificar o extraer contenido de cualquier archivo en `insumos/`,
 verifica si ya existe una extracción cacheada en Engram para ese archivo.
 Este caché es un acelerador puro: nunca debe bloquear ni degradar la
 corrida. Aplica a los cuatro tipos de archivo (`TDR`, `draft-base`,
@@ -100,7 +100,7 @@ false`:
 
 ```yaml
 file_hash: <sha256>
-file_name: <nombre original en docs/>
+file_name: <nombre original en insumos/>
 guide_fingerprint: <primeros 12 hex del sha256 de la guía base>
 label: TDR|draft-base|background|doc-secciones
 confianza: alta|media|baja
@@ -132,7 +132,7 @@ encabezados de tabla al concatenar.
 
 ## Clasificación de insumos (Fase 0)
 
-Before extracting content, classify every source file in `docs/` into
+Before extracting content, classify every source file in `insumos/` into
 one of four labels: **TDR**, **draft-base**, **background**, or
 **doc-secciones**.
 

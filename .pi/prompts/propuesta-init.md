@@ -51,7 +51,7 @@ $ARGUMENTS
    ```
    proposals/<run-id>/
      _run.md                      # único archivo en la raíz: manifiesto de la corrida
-     docs/                        # INSUMOS DEL USUARIO: TDR, papers, propuestas base
+     insumos/                        # INSUMOS DEL USUARIO: TDR, papers, propuestas base
      artefactos/                  # todo lo generado que no es fuente LaTeX
        estado_propuesta.md        #   estado del pipeline y de cada compuerta
        insumos.md                 #   insumos estructurados por insumos-observador
@@ -71,11 +71,11 @@ $ARGUMENTS
    `proposals/.current-run` (el puntero que el dispatcher lee para resolver
    `RUN_ROOT`) y agrega una fila a `proposals/registry.md`.
 
-4. **Llevá los insumos a `docs/`.** Si el usuario ya dejó archivos en el
+4. **Llevá los insumos a `insumos/`.** Si el usuario ya dejó archivos en el
    `info_data/` de la raíz o los mencionó en el mensaje, preguntá si los
    copiás (`cp`, no `mv`, salvo que pida moverlos) a
-   `proposals/<run-id>/docs/`. Los insumos de una corrida viven dentro de su
-   corrida; `docs/` es la única subcarpeta que llena el usuario.
+   `proposals/<run-id>/insumos/`. Los insumos de una corrida viven dentro de su
+   corrida; `insumos/` es la única subcarpeta que llena el usuario.
 
 5. **Commit del registro, nada más.** `proposals/*/` está en `.gitignore`: el
    contenido de la corrida nunca se sincroniza con GitHub. Commiteá
@@ -87,7 +87,7 @@ $ARGUMENTS
    nombres de índice de `codebase-memory` que usará la corrida
    (`<run-id>-papers` sobre `artefactos/scoping/papers`, `<run-id>-vault`
    sobre `artefactos/vault`) y el siguiente paso literal: dejar los insumos en
-   `proposals/<run-id>/docs/` y correr `/propuesta <idea>`.
+   `proposals/<run-id>/insumos/` y correr `/propuesta <idea>`.
 
 ## Qué NO hace este comando
 

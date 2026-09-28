@@ -25,7 +25,7 @@ Install (all optional):
 pip install -r requirements.txt
 ```
 
-Optional extras, only for manual local conversion of a run's `docs/` inputs:
+Optional extras, only for manual local conversion of a run's `insumos/` inputs:
 - `pypdf` + `markdownify` — PDF parsing (convocatoria, papers)
 - `python-docx` — DOCX parsing (Anexo 2 proposal)
 
@@ -122,7 +122,7 @@ deterministically with `Grep`.
 
 ```
 .
-├── requirements.txt          # Optional Python deps — manual docs/ input conversion only
+├── requirements.txt          # Optional Python deps — manual insumos/ input conversion only
 ├── REQUIREMENTS.md           # This file
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
@@ -141,7 +141,7 @@ deterministically with `Grep`.
 │   ├── agents/                 # 9 ported subagents (1:1 with .claude/agents/, no coordinador)
 │   └── commands/propuesta.md   # Ported /propuesta command
 ├── info_data/                # LEGACY user-input drop (pre-per-run layout); new runs use
-│                              #   proposals/<run-id>/docs/ instead
+│                              #   proposals/<run-id>/insumos/ instead
 ├── vault/                     # LEGACY root Obsidian mirror (belongs to the legacy flat run;
 │   │                           #   new runs mirror into artefactos/vault/)
 │   ├── secciones/              # One note per section
@@ -150,7 +150,7 @@ deterministically with `Grep`.
 │   ├── registry.md             # Append-only table: run-id, estado, archivo, commit
 │   ├── .current-run            # Active run-id pointer (local, gitignored)
 │   └── <run-id>/               # RUN_ROOT — every run artifact lives here (gitignored):
-│                               #   _run.md + docs/ + artefactos/ + grafos/ + redaccion/
+│                               #   _run.md + insumos/ + artefactos/ + grafos/ + redaccion/
 ├── proposal/                 # LaTeX skeleton committed to git, copied into each RUN_ROOT
 │                              #   as redaccion/ (also the legacy flat run's tree):
 │   ├── build.sh              # Compilación PDF/DOCX (logos header/footer)

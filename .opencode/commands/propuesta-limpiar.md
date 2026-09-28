@@ -12,7 +12,7 @@ corrida activa, así que lo primero es decidir cuál aplica.
 
 Leé `proposals/.current-run`:
 
-- **Existe** → layout por corrida (`proposals/<run-id>/` con `docs/`,
+- **Existe** → layout por corrida (`proposals/<run-id>/` con `insumos/`,
   `artefactos/`, `grafos/`, `redaccion/`). Seguí la **Vía A**.
 - **No existe**, pero la raíz del repo tiene un `proposal/estado_propuesta.md`
   con `estado: activa` → layout heredado (árbol plano `proposal/` + `vault/`

@@ -19,12 +19,12 @@ y nada queda suelto fuera de ellas salvo el manifiesto `_run.md`:
 
 | Subcarpeta | Contenido | La llena |
 |---|---|---|
-| `docs/` | Insumos: TDR, papers, propuestas base, documentos de referencia | el usuario |
+| `insumos/` | Insumos: TDR, papers, propuestas base, documentos de referencia | el usuario |
 | `artefactos/` | Lo generado que no es LaTeX: `estado_propuesta.md`, `insumos.md`, `guia_ajustada_TDR.md`, `pipeline/`, `scoping/papers/`, `vault/` | el pipeline |
 | `grafos/` | Reportes de `codebase-memory`: `papers-graph-report.md`, `vault-graph-report.md` | el dispatcher |
 | `redaccion/` | El proyecto LaTeX: `main.tex`, `sections/`, `refs.bib`, `main.pdf`, `main.docx` + tooling de build | el pipeline |
 
-Toda ruta `docs/...`, `artefactos/...`, `grafos/...` o `redaccion/...` del marco
+Toda ruta `insumos/...`, `artefactos/...`, `grafos/...` o `redaccion/...` del marco
 se resuelve contra esa raíz (`RUN_ROOT`). Dos corridas nunca se pisan, y
 archivar una es solo un cambio de estado: la carpeta ya **es** el archivo.
 
@@ -49,7 +49,7 @@ inyecta a cada subagente solo el fragmento de sección que necesita (bloque
 `.claude/commands/propuesta.md`), en vez de que cada Task relea el archivo
 completo — la única excepción es la auditoría final (Fase 7), que sí necesita
 la guía íntegra. `insumos-observador` además cachea en Engram, por hash de
-contenido, la extracción de cada archivo de `docs/`: corridas repetidas
+contenido, la extracción de cada archivo de `insumos/`: corridas repetidas
 contra el mismo insumo (p. ej. la misma convocatoria) no vuelven a procesarlo
 desde cero.
 
@@ -81,7 +81,7 @@ agota — nunca reintentan sin límite.
 ├── guiaProyectosIA_Agente.md        # Guía autoritativa sección por sección
 ├── .mcp.json                        # Config de MCP servers
 ├── info_data/                       # LEGACY: entrega de insumos previa al layout por corrida
-│                                     #   (las corridas nuevas usan proposals/<run-id>/docs/)
+│                                     #   (las corridas nuevas usan proposals/<run-id>/insumos/)
 ├── logos/                           # Logos institucionales (branding del repo/README)
 ├── scripts/                         # Tooling del REPO (no de la propuesta):
 │                                     #   init-run.sh — scaffolding de proposals/<run-id>/ (RUN_ROOT)
@@ -108,7 +108,7 @@ agota — nunca reintentan sin límite.
 │   ├── registry.md                  # Único archivo versionado: tabla append-only de metadatos
 │   │                                 #   (run-id, estado, ruta local)
 │   ├── .current-run                 # Puntero a la corrida activa (local, gitignored)
-│   └── <run-id>/                    # RUN_ROOT: _run.md + docs/ + artefactos/ + grafos/
+│   └── <run-id>/                    # RUN_ROOT: _run.md + insumos/ + artefactos/ + grafos/
 │                                     #   + redaccion/ (todo gitignored)
 └── proposal/                        # Esqueleto LaTeX versionado; init lo copia a cada RUN_ROOT
                                      #   como redaccion/ (y es el árbol de la corrida heredada)

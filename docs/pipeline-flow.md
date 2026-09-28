@@ -6,7 +6,7 @@ en `.claude/commands/propuesta.md` y `.claude/agents/coordinador-propuesta.md`,
 alineado a las 16 secciones de `guiaProyectosIA_Agente.md`.
 
 - **Antes de la Fase 0**: `/propuesta-init` crea la subcarpeta de la corrida
-  (`proposals/<run-id>/`) y la activa; todas las rutas `docs/...`,
+  (`proposals/<run-id>/`) y la activa; todas las rutas `insumos/...`,
   `artefactos/...`, `grafos/...` y `redaccion/...` del diagrama se resuelven
   dentro de ese `RUN_ROOT`.
 - **Casillas amarillas**: compuertas de decisión/aprobación (usuario o `revisor`).
