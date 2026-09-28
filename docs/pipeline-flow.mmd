@@ -156,9 +156,9 @@ flowchart TD
     Fase7 --> End([Propuesta final: PDF + DOCX])
 
     subgraph Grafos["Grafos transversales (3, corren en paralelo al flujo principal)"]
-        GPapers["Indice de papers (codebase-memory)<br/>run-id-papers, reporte proposal/scoping/graph-report.md<br/>seed G1a, refresca en G1b y Fase 2"]
-        GVault["Indice de vault (coherencia, codebase-memory)<br/>run-id-vault, reporte proposal/pipeline/vault-graph-report.md<br/>baseline en G1b, refresh en cada gate Fase 1-7"]
-        GPipeline["Grafo de pipeline (estructura)<br/>proposal/pipeline/NN-fase.md (eventos) + _estado.md<br/>un evento .md por transicion de compuerta, sin indexar (no aporta valor consumido)"]
+        GPapers["Indice de papers (codebase-memory)<br/>run-id-papers sobre artefactos/scoping/papers, reporte grafos/papers-graph-report.md<br/>seed G1a, refresca en G1b y Fase 2"]
+        GVault["Indice de vault (coherencia, codebase-memory)<br/>run-id-vault sobre artefactos/vault, reporte grafos/vault-graph-report.md<br/>baseline en G1b, refresh en cada gate Fase 1-7"]
+        GPipeline["Registro de pipeline (estructura)<br/>artefactos/pipeline/NN-fase.md (eventos) + _estado.md<br/>un evento .md por transicion de compuerta, sin indexar (no aporta valor consumido)"]
     end
 
     classDef gate fill:#fff3cd,stroke:#b8860b,stroke-width:1px

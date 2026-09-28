@@ -1,10 +1,24 @@
 #!/usr/bin/env bash
 # init-run.sh — Scaffold one /propuesta run folder under proposals/<run-id>/.
 #
-# Every artifact a run produces (LaTeX sections, refs.bib, vault mirror,
-# pipeline log, scoping corpus, build output) lives inside that single folder,
-# so two runs never overwrite each other and archiving a run is a no-op: the
-# folder IS the archive.
+# Everything a run touches lives inside that one folder, split into exactly four
+# subfolders so nothing ends up loose at the run root:
+#
+#   docs/         user inputs: terms of reference (TDR), papers, base proposals,
+#                 reference documents. The only folder the user fills by hand.
+#   artefactos/   every artifact the pipeline generates that is not a LaTeX
+#                 source: run state, structured inputs, the TDR-adjusted guide,
+#                 the phase/gate log, the scoping corpus, and the Obsidian vault
+#                 mirror.
+#   grafos/       codebase-memory graph reports produced during the writing flow.
+#   redaccion/    the LaTeX project: main.tex, sections/, refs.bib, figures and
+#                 the built main.pdf / main.docx, plus the build tooling.
+#
+# Only _run.md sits at the run root, because it describes the folder itself.
+#
+# redaccion/ is a copy of the repo's proposal/ skeleton, so its internal relative
+# layout (sections/, logos/, templates/, scripts/) is unchanged and build.sh and
+# scripts/compile_tikz.py work there without modification.
 #
 # Deterministic and idempotent: re-running it on an existing run folder creates
 # only what is missing and never truncates an existing file. It writes nothing
@@ -44,7 +58,7 @@ while [ $# -gt 0 ]; do
       exit 0
       ;;
     --no-activate) activate=0; shift ;;
-    -h|--help) sed -n '2,25p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help) sed -n '2,37p' "${BASH_SOURCE[0]}"; exit 0 ;;
     --*) die "unknown option: $1" ;;
     *)
       if [ -z "$run_id" ]; then run_id="$1"; else idea="$1"; fi
@@ -61,28 +75,29 @@ RUN_ROOT="$RUNS_DIR/$run_id"
 existed=0
 [ -d "$RUN_ROOT" ] && existed=1
 
-# --- directories -----------------------------------------------------------
+# --- the four subfolders --------------------------------------------------
 for d in \
   "$RUN_ROOT" \
-  "$RUN_ROOT/info_data" \
-  "$RUN_ROOT/proposal" \
-  "$RUN_ROOT/proposal/sections" \
-  "$RUN_ROOT/proposal/pipeline" \
-  "$RUN_ROOT/proposal/scoping" \
-  "$RUN_ROOT/proposal/scoping/papers" \
-  "$RUN_ROOT/proposal/figures" \
-  "$RUN_ROOT/vault" \
-  "$RUN_ROOT/vault/secciones" \
-  "$RUN_ROOT/vault/insumos" \
+  "$RUN_ROOT/docs" \
+  "$RUN_ROOT/artefactos" \
+  "$RUN_ROOT/artefactos/pipeline" \
+  "$RUN_ROOT/artefactos/scoping" \
+  "$RUN_ROOT/artefactos/scoping/papers" \
+  "$RUN_ROOT/artefactos/vault" \
+  "$RUN_ROOT/artefactos/vault/secciones" \
+  "$RUN_ROOT/artefactos/vault/insumos" \
+  "$RUN_ROOT/grafos" \
+  "$RUN_ROOT/redaccion" \
+  "$RUN_ROOT/redaccion/sections" \
 ; do
   mkdir -p "$d"
 done
 
-# --- framework skeleton (copied, never symlinked: the run must stay
+# --- LaTeX skeleton, copied (never symlinked: the run must stay
 #     self-contained and readable after the framework moves on) -------------
 for item in build.sh scripts logos templates; do
   src="$SKELETON/$item"
-  dest="$RUN_ROOT/proposal/$item"
+  dest="$RUN_ROOT/redaccion/$item"
   [ -e "$src" ] || die "framework skeleton missing: $src"
   if [ ! -e "$dest" ]; then
     cp -R "$src" "$dest"
@@ -91,39 +106,34 @@ done
 
 # --- empty artifacts the dispatcher fills in -------------------------------
 for f in \
-  "$RUN_ROOT/proposal/estado_propuesta.md" \
-  "$RUN_ROOT/proposal/insumos.md" \
-  "$RUN_ROOT/proposal/refs.bib" \
+  "$RUN_ROOT/artefactos/estado_propuesta.md" \
+  "$RUN_ROOT/artefactos/insumos.md" \
+  "$RUN_ROOT/redaccion/refs.bib" \
 ; do
   [ -e "$f" ] || : > "$f"
 done
 
 for f in \
-  "$RUN_ROOT/vault/secciones/.gitkeep" \
-  "$RUN_ROOT/vault/insumos/.gitkeep" \
-  "$RUN_ROOT/info_data/.gitkeep" \
+  "$RUN_ROOT/docs/.gitkeep" \
+  "$RUN_ROOT/grafos/.gitkeep" \
+  "$RUN_ROOT/artefactos/vault/secciones/.gitkeep" \
+  "$RUN_ROOT/artefactos/vault/insumos/.gitkeep" \
 ; do
   [ -e "$f" ] || : > "$f"
 done
 
-# --- codebase-memory ignore files (exclude noise from the two run indexes;
-#     `!path` negations would NOT re-include .gitignore'd paths, which is why
-#     each corpus is always indexed as its own repo_path root) --------------
-if [ ! -e "$RUN_ROOT/vault/.cbmignore" ]; then
-  cat > "$RUN_ROOT/vault/.cbmignore" <<'EOF'
+# --- codebase-memory ignore file for the vault index ----------------------
+# Only the vault needs one: the papers corpus root (artefactos/scoping/papers)
+# holds nothing but papers, and the graph reports live in grafos/, outside both
+# corpora. Note that `!path` negations here would NOT re-include a .gitignore'd
+# path, which is why each corpus is always indexed as its own repo_path root.
+if [ ! -e "$RUN_ROOT/artefactos/vault/.cbmignore" ]; then
+  cat > "$RUN_ROOT/artefactos/vault/.cbmignore" <<'EOF'
 # codebase-memory ignore file for the vault index (<run-id>-vault).
-# Indexed as its own root: index_repository(repo_path="<RUN_ROOT>/vault").
+# Indexed as its own root:
+#   index_repository(repo_path="<RUN_ROOT>/artefactos/vault")
 .obsidian/
 .obsidian/**
-EOF
-fi
-
-if [ ! -e "$RUN_ROOT/proposal/scoping/.cbmignore" ]; then
-  cat > "$RUN_ROOT/proposal/scoping/.cbmignore" <<'EOF'
-# codebase-memory ignore file for the scoping corpus (<run-id>-papers).
-# Only papers/ is the corpus; the derived reports are never part of it.
-graph-report.md
-graph-report-*-snapshot.md
 EOF
 fi
 
@@ -142,13 +152,21 @@ if [ ! -e "$RUN_ROOT/_run.md" ]; then
 | idea | ${idea:-—} |
 | RUN_ROOT | \`proposals/$run_id/\` |
 
-Todos los artefactos de esta corrida viven bajo \`RUN_ROOT\`: \`proposal/\`
-(fuente de verdad LaTeX), \`vault/\` (espejo Markdown/Obsidian),
-\`info_data/\` (insumos del usuario). Nada de esto se versiona
-(\`.gitignore\`: \`proposals/*/\`); solo \`proposals/registry.md\` lo hace.
+Este es el único archivo en la raíz de la corrida; todo lo demás vive en una de
+las cuatro subcarpetas:
 
-Índices de \`codebase-memory\` de esta corrida:
-\`$run_id-papers\` (\`proposal/scoping/papers\`) y \`$run_id-vault\` (\`vault\`).
+| Subcarpeta | Qué contiene | Quién la llena |
+|---|---|---|
+| \`docs/\` | TDR, papers, propuestas base, documentos de referencia | el usuario |
+| \`artefactos/\` | \`estado_propuesta.md\`, \`insumos.md\`, \`guia_ajustada_TDR.md\`, \`pipeline/\`, \`scoping/\`, \`vault/\` | el pipeline |
+| \`grafos/\` | reportes de \`codebase-memory\` (\`papers-graph-report.md\`, \`vault-graph-report.md\`) | el dispatcher |
+| \`redaccion/\` | \`main.tex\`, \`sections/\`, \`refs.bib\`, \`main.pdf\`, \`main.docx\`, \`build.sh\`, \`scripts/\`, \`logos/\`, \`templates/\` | el pipeline |
+
+Nada de esto se versiona (\`.gitignore\`: \`proposals/*/\`); solo
+\`proposals/registry.md\` lo hace.
+
+Índices de \`codebase-memory\` de esta corrida: \`$run_id-papers\`
+(\`artefactos/scoping/papers\`) y \`$run_id-vault\` (\`artefactos/vault\`).
 EOF
 fi
 
@@ -169,5 +187,5 @@ else
   printf 'created run folder: proposals/%s/\n' "$run_id"
 fi
 [ "$activate" -eq 1 ] && printf 'active run (proposals/.current-run): %s\n' "$run_id"
-printf 'RUN_ROOT: proposals/%s/\n' "$run_id"
+printf 'RUN_ROOT: proposals/%s/  (docs/ artefactos/ grafos/ redaccion/)\n' "$run_id"
 exit 0

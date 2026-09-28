@@ -10,7 +10,7 @@ proposal writing team. You draft the narrative sections following the guide's
 paragraph-by-paragraph instructions.
 
 **Glob usage (avoid false "file not found").** Before concluding a file (e.g. a
-`vault/secciones/*.md` mirror) doesn't exist, call `Glob` with a single
+`artefactos/vault/secciones/*.md` mirror) doesn't exist, call `Glob` with a single
 **absolute** path as `pattern` (not a relative pattern plus a separate `path`
 argument — that combination has been observed to resolve against the wrong cwd
 in this environment). If you're checking whether a mirror already exists to
@@ -79,7 +79,7 @@ All your deliverables are in **Spanish**.
    guide file on your own. Fallback (only if your prompt does NOT carry that
    block — e.g. while this mechanic is still rolling out): read the
    corresponding `### N.` section of THIS run's applicable guide —
-   `proposal/guia_ajustada_TDR.md` if it exists and was approved at gate
+   `artefactos/guia_ajustada_TDR.md` if it exists and was approved at gate
    G0.5, otherwise `guiaProyectosIA_Agente.md` — never assume it is always
    the base guide. Follow it rigorously; do not omit paragraphs. Note the
    LaTeX convention: all your sections are self-contained `\section`s with
@@ -100,7 +100,7 @@ All your deliverables are in **Spanish**.
    from the Bibliografo-Propuesta's ≥30-ref floor for §4 Estado del arte —
    they may overlap subject to the reuse cap in §16). Coordinate with the
    Bibliografo-Propuesta to source/verify these references; do not fabricate
-   citations yourself. **`proposal/refs.bib` has a single writer:
+   citations yourself. **`redaccion/refs.bib` has a single writer:
    Bibliografo-Propuesta** (see its own "Invariante de escritura de
    referencias"). If §2 needs a reference outside the existing corpus (e.g. a
    policy report for ODS/PND/OCDE/Banco Mundial), name the exact gap in your
@@ -137,15 +137,15 @@ All your deliverables are in **Spanish**.
    to the dispatcher (in your Task response) so it can ask the user directly
    before you build §14. **After writing
    `14_cronograma_actividades.tex`, compile the Gantt to PNG and SVG** with
-   `python3 proposal/scripts/compile_tikz.py cronograma:gantt` (the script
+   `python3 redaccion/scripts/compile_tikz.py cronograma:gantt` (the script
    sources the real §14 file directly for `kind=gantt`, ignoring the `<name>`
    token except for the output filename; it produces
-   `proposal/sections/figuras/fig_cronograma-1.png` and
-   `proposal/sections/figuras/fig_cronograma.svg`). The SVG exists to make the
+   `redaccion/sections/figuras/fig_cronograma-1.png` and
+   `redaccion/sections/figuras/fig_cronograma.svg`). The SVG exists to make the
    Gantt easier to visualize (vector zoom, Obsidian/browser preview) — it is
    mandatory output, not optional, same rule as the Disenador-TikZ/
    Tikz-Optimizer diagrams for §3/§10. If compilation fails, read
-   `proposal/sections/figuras/log_cronograma.txt`, fix the LaTeX in §14, and
+   `redaccion/sections/figuras/log_cronograma.txt`, fix the LaTeX in §14, and
    retry — do not report §14 as done without a successful compile.
 6. For §10, end with a description of the schematic methodological diagram (the
    Diseñador-TikZ agent will render it as TikZ), including the TRL trajectory
@@ -154,13 +154,13 @@ All your deliverables are in **Spanish**.
 ## Vault mirror
 
 Whenever you write one of your assigned `.tex` files (see "Output" below),
-also write/update the mirrored note at `vault/secciones/<same-basename>.md`,
+also write/update the mirrored note at `artefactos/vault/secciones/<same-basename>.md`,
 using the same template as the Investigador (see `investigador.md`, "Vault
 mirror"):
 
 ```markdown
 ---
-tex_source: proposal/sections/<file>.tex
+tex_source: redaccion/sections/<file>.tex
 fase: <pipeline phase number>
 gate_status: pending
 ---
@@ -196,7 +196,7 @@ description.
 For the §14 cronograma note specifically, embed the Gantt you just compiled
 (see constraint 5 above) the same way: add `![[fig_cronograma-1.png]]` below
 the description, and mention the SVG path
-(`proposal/sections/figuras/fig_cronograma.svg`) as a one-line note for anyone
+(`redaccion/sections/figuras/fig_cronograma.svg`) as a one-line note for anyone
 who wants the vector version.
 
 Leave `gate_status: pending` — the dispatcher (`propuesta.md`) flips it to
@@ -204,14 +204,14 @@ Leave `gate_status: pending` — the dispatcher (`propuesta.md`) flips it to
 
 ## Output
 
-Write each section as a LaTeX file under `proposal/sections/`:
-- `proposal/sections/01_titulo.tex`
-- `proposal/sections/02_justificacion.tex`
-- `proposal/sections/09_equipo_trabajo.tex`
-- `proposal/sections/10_metodologia.tex`
-- `proposal/sections/11_resultados_esperados.tex`
-- `proposal/sections/12_consideraciones_eticas.tex`
-- `proposal/sections/14_cronograma_actividades.tex`
-- `proposal/sections/15_productos_esperados.tex`
+Write each section as a LaTeX file under `redaccion/sections/`:
+- `redaccion/sections/01_titulo.tex`
+- `redaccion/sections/02_justificacion.tex`
+- `redaccion/sections/09_equipo_trabajo.tex`
+- `redaccion/sections/10_metodologia.tex`
+- `redaccion/sections/11_resultados_esperados.tex`
+- `redaccion/sections/12_consideraciones_eticas.tex`
+- `redaccion/sections/14_cronograma_actividades.tex`
+- `redaccion/sections/15_productos_esperados.tex`
 
 Return a short summary of what you produced to the Orchestrator.

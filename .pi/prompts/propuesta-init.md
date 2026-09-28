@@ -1,14 +1,13 @@
 ---
-description: Crea la subcarpeta de una corrida nueva de /propuesta (proposals/<run-id>/) con todos los artefactos de la corrida dentro, y la deja activa.
+description: Crea la carpeta de proyecto de una corrida nueva de /propuesta (proposals/<run-id>/ con docs, artefactos, grafos y redaccion) y la deja activa.
 argument-hint: [idea breve de la propuesta] | run-id=<valor> [idea breve]
 ---
 
-# /propuesta-init — Crear la subcarpeta de una corrida
+# /propuesta-init — Crear la carpeta de proyecto de una corrida
 
-Crea **un solo directorio por corrida** —`proposals/<run-id>/`— donde se
-generan TODOS los artefactos de esa corrida: LaTeX, bibliografía, espejo del
-vault, registro del pipeline, corpus de scoping, insumos y build. Dos corridas
-nunca se pisan, y archivar una corrida deja de ser una copia: la carpeta ya
+Crea **una sola carpeta de proyecto por corrida** —`proposals/<run-id>/`— con
+sus artefactos repartidos en exactamente cuatro subcarpetas. Nada de la corrida
+queda suelto fuera de ahí, y archivarla deja de ser una copia: la carpeta ya
 **es** el archivo.
 
 Entrada del usuario:
@@ -27,17 +26,17 @@ $ARGUMENTS
 
 2. **Guardia de corrida activa.** Leé `proposals/.current-run` (si existe) y
    el `_run.md` de esa corrida. Si hay una corrida con `estado: activa`
-   distinta de la que se va a crear, **DETENTE** y preguntá explícitamente:
+   distinta de la que se va a crear, **DETENETE** y preguntá explícitamente:
    "Existe la corrida activa `<run-id-activo>` (última compuerta `<Gx>`).
    ¿Cerrarla como `archivada` y activar `<run-id-nuevo>`? (sí/no)". Solo "sí"
    continúa; con "no", ofrecé reanudar la corrida existente. Cerrarla es
    únicamente editar su `_run.md` (`estado: archivada`, `cerrada:
    <YYYY-MM-DD>`) y su fila en `proposals/registry.md` — **nunca** se copia ni
    se borra contenido: la carpeta de esa corrida ya lo conserva todo.
-   Si además existe una corrida heredada en la raíz del repo (`proposal/` con
-   `estado_propuesta.md` no vacío, esquema previo a las subcarpetas por
-   corrida), no la toques: avisá que quedó ahí y que `/propuesta-limpiar` es
-   el camino para archivarla.
+   Si además existe una corrida heredada en la raíz del repo (`proposal/` y
+   `vault/` planos, esquema previo a las subcarpetas por corrida), no la
+   toques: avisá que quedó ahí y que `/propuesta-limpiar` es el camino para
+   archivarla.
 
 3. **Creá la carpeta con el script determinista** (no lo hagas a mano, no
    reimplementes el scaffolding):
@@ -51,26 +50,32 @@ $ARGUMENTS
 
    ```
    proposals/<run-id>/
-     _run.md                      # manifiesto: run-id, fechas, estado, idea, RUN_ROOT
-     info_data/                   # insumos del usuario de ESTA corrida
-     proposal/                    # fuente de verdad (LaTeX)
+     _run.md                      # único archivo en la raíz: manifiesto de la corrida
+     docs/                        # INSUMOS DEL USUARIO: TDR, papers, propuestas base
+     artefactos/                  # todo lo generado que no es fuente LaTeX
+       estado_propuesta.md        #   estado del pipeline y de cada compuerta
+       insumos.md                 #   insumos estructurados por insumos-observador
+       pipeline/                  #   log de fases/compuertas (+ _estado.md)
+       scoping/papers/            #   corpus de papers del scoping (G1a/G1b)
+       vault/                     #   espejo Obsidian: secciones/, insumos/, .cbmignore
+     grafos/                      # reportes de codebase-memory (papers y vault)
+     redaccion/                   # el proyecto LaTeX
+       sections/  refs.bib        #   fuentes de la propuesta
        build.sh  scripts/  logos/  templates/   # copiados del esqueleto del framework
-       sections/  figures/  pipeline/
-       scoping/{papers/,.cbmignore}
-       estado_propuesta.md  insumos.md  refs.bib # vacíos, los llena el pipeline
-     vault/                       # espejo Markdown/Obsidian
-       .cbmignore  secciones/  insumos/
    ```
 
-   y activa la corrida escribiendo el run-id en `proposals/.current-run`
-   (el puntero que el dispatcher lee para resolver `RUN_ROOT`), más una fila
-   en `proposals/registry.md`.
+   `main.tex`, `main.pdf` y `main.docx` aparecen en `redaccion/` cuando el
+   pipeline los genera (Fase 7 y cada compilación de compuerta).
 
-4. **Mové los insumos, si el usuario ya los dejó en la raíz.** Si
-   `info_data/` de la raíz tiene archivos, preguntá si querés copiarlos
-   (`cp`, no `mv`, salvo que el usuario pida moverlos) a
-   `proposals/<run-id>/info_data/`. Los insumos de una corrida viven dentro de
-   su corrida.
+   El script además activa la corrida escribiendo el run-id en
+   `proposals/.current-run` (el puntero que el dispatcher lee para resolver
+   `RUN_ROOT`) y agrega una fila a `proposals/registry.md`.
+
+4. **Llevá los insumos a `docs/`.** Si el usuario ya dejó archivos en el
+   `info_data/` de la raíz o los mencionó en el mensaje, preguntá si los
+   copiás (`cp`, no `mv`, salvo que pida moverlos) a
+   `proposals/<run-id>/docs/`. Los insumos de una corrida viven dentro de su
+   corrida; `docs/` es la única subcarpeta que llena el usuario.
 
 5. **Commit del registro, nada más.** `proposals/*/` está en `.gitignore`: el
    contenido de la corrida nunca se sincroniza con GitHub. Commiteá
@@ -78,9 +83,11 @@ $ARGUMENTS
    `chore(proposals): register run <run-id>`. Nunca uses `git add -f` sobre
    nada bajo `proposals/<run-id>/`.
 
-6. **Cerrá informando**: run-id, `RUN_ROOT`, los dos nombres de índice de
-   `codebase-memory` que usará la corrida (`<run-id>-papers`,
-   `<run-id>-vault`) y el siguiente paso literal: `/propuesta <idea>`.
+6. **Cerrá informando**: run-id, `RUN_ROOT`, las cuatro subcarpetas, los dos
+   nombres de índice de `codebase-memory` que usará la corrida
+   (`<run-id>-papers` sobre `artefactos/scoping/papers`, `<run-id>-vault`
+   sobre `artefactos/vault`) y el siguiente paso literal: dejar los insumos en
+   `proposals/<run-id>/docs/` y correr `/propuesta <idea>`.
 
 ## Qué NO hace este comando
 

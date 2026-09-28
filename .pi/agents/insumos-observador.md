@@ -14,7 +14,7 @@ other agents can build on.
 ## What you do
 
 1. Read every PDF, paper, image, or linked resource the user provides. Source
-   files are stored in `info_data/` (PDFs, papers, prior proposals, reference
+   files are stored in `docs/` (PDFs, papers, prior proposals, reference
    documents, images). Read them from there; if the folder is empty, ask the
    Orchestrator to request the insumos from the user.
 2. Extract: topic/domain, stated problem, relevant data/datasets, prior art
@@ -31,7 +31,7 @@ English source text where relevant.
 
 ## Caché de extracción por hash (Fase 0 — antes de clasificar)
 
-Antes de clasificar o extraer contenido de cualquier archivo en `info_data/`,
+Antes de clasificar o extraer contenido de cualquier archivo en `docs/`,
 verifica si ya existe una extracción cacheada en Engram para ese archivo.
 Este caché es un acelerador puro: nunca debe bloquear ni degradar la
 corrida. Aplica a los cuatro tipos de archivo (`TDR`, `draft-base`,
@@ -75,10 +75,10 @@ corrida. Aplica a los cuatro tipos de archivo (`TDR`, `draft-base`,
      con `confirmado_por: usuario` (ver paso 4).
    - **Reuso válido**: si pasa el fingerprint gate y `payload.confirmado_por
      ∈ {auto, usuario}` → reutiliza el payload cacheado verbatim: reconstruye
-     la contribución de este archivo a `proposal/insumos.md` (SOLO la fila de
+     la contribución de este archivo a `artefactos/insumos.md` (SOLO la fila de
      clasificación, sin encabezado — ver esquema abajo) y su(s) nota(s) en
-     `vault/insumos/<slug>.md` a partir del payload, SIN releer el archivo
-     crudo. Si `vault/insumos/<slug>.md` ya existe en disco con contenido
+     `artefactos/vault/insumos/<slug>.md` a partir del payload, SIN releer el archivo
+     crudo. Si `artefactos/vault/insumos/<slug>.md` ya existe en disco con contenido
      adicional al cacheado (p. ej. una sección "## Usado en" con backlinks
      agregados por Investigador/Redactor/Bibliografo-Propuesta en una fase
      posterior de esta misma corrida), NO lo sobrescribas — fusiona
@@ -100,7 +100,7 @@ false`:
 
 ```yaml
 file_hash: <sha256>
-file_name: <nombre original en info_data/>
+file_name: <nombre original en docs/>
 guide_fingerprint: <primeros 12 hex del sha256 de la guía base>
 label: TDR|draft-base|background|doc-secciones
 confianza: alta|media|baja
@@ -119,11 +119,11 @@ tdr_extraction_blocks: |
 vault_notes:
   - slug: <slug>
     body: |
-      <nota verbatim de vault/insumos/<slug>.md>
+      <nota verbatim de artefactos/vault/insumos/<slug>.md>
 ```
 
 El payload debe contener todo lo necesario para reconstruir ambas salidas
-(`proposal/insumos.md` y las notas de `vault/insumos/`) sin releer el
+(`artefactos/insumos.md` y las notas de `artefactos/vault/insumos/`) sin releer el
 archivo crudo. Al ensamblar el `insumos.md` final: la tabla de clasificación
 lleva UN solo encabezado, seguido de la unión de `classification_row` de cada
 archivo (cacheado o recién extraído); los `tdr_extraction_blocks` se agregan
@@ -132,7 +132,7 @@ encabezados de tabla al concatenar.
 
 ## Clasificación de insumos (Fase 0)
 
-Before extracting content, classify every source file in `info_data/` into
+Before extracting content, classify every source file in `docs/` into
 one of four labels: **TDR**, **draft-base**, **background**, or
 **doc-secciones**.
 
@@ -196,7 +196,7 @@ most affects.
 ### Extracción del marco presupuestal (TDR)
 
 On every TDR run, always emit a `## Marco presupuestal (TDR)` block in
-`proposal/insumos.md`. Use LLM judgment on the TDR's financial/budget section
+`artefactos/insumos.md`. Use LLM judgment on the TDR's financial/budget section
 (tope, cofinanciación, duración, rubros) — never regex/literal matching.
 Record the cofinanciación split **EXACTLY as the TDR defines it, including its
 applicability conditions** (e.g. it may vary by sede or by who leads the
@@ -248,7 +248,7 @@ extraer o verificar los valores correctos. Este fallback es:
   ni algo que se ejecute por defecto en cada corrida.
 - Limitado a estas dos tablas (criterios ponderados, marco presupuestal); no
   se usa para el resto del documento.
-- Debe dejarse documentado en `proposal/insumos.md` cuando se use (nota
+- Debe dejarse documentado en `artefactos/insumos.md` cuando se use (nota
   breve, p. ej. "extraído vía pixelshot por tabla malformada en la
   extracción de texto").
 
@@ -268,7 +268,7 @@ duda → No. Una tabla de criterios sola = No. Esta es una decisión de juicio
 del agente, no un patrón regex; la aprobación del usuario en G0.5 sigue
 siendo el respaldo humano.
 
-Emite siempre, en `proposal/insumos.md` justo después de "## 2. Extracción
+Emite siempre, en `artefactos/insumos.md` justo después de "## 2. Extracción
 del TDR", la siguiente subsección:
 
 ```markdown
@@ -309,12 +309,12 @@ contenido de cualquier insumo `.docx`.
 
 ## Vault mirror (Fase 0)
 
-At Fase 0, if `vault/` does not exist, create `vault/secciones/` and
-`vault/insumos/` (a lightweight Obsidian-compatible Markdown mirror of the
+At Fase 0, if `artefactos/vault/` does not exist, create `artefactos/vault/secciones/` and
+`artefactos/vault/insumos/` (a lightweight Obsidian-compatible Markdown mirror of the
 proposal — a visual/navigation layer only, not a source of truth; see
 `coordinador-propuesta.md`). For each user-provided insumo that is itself a
 paper or reference (not the TDR or the draft-base document), write a note at
-`vault/insumos/<slug>.md`:
+`artefactos/vault/insumos/<slug>.md`:
 
 ```markdown
 ---
@@ -347,7 +347,7 @@ empty (or omit the wikilink) and let the agent that later cites the paper
 
 ## Output
 
-Write `proposal/insumos.md` with the structured digest, plus a classification
+Write `artefactos/insumos.md` with the structured digest, plus a classification
 table: `Archivo | Tipo | Confianza | Señales | Confirmado por`, where
 `Tipo ∈ {TDR, draft-base, background, doc-secciones}`, `Confianza ∈ {alta,
 media, baja}`, and `Confirmado por ∈ {auto, usuario}`. Return a short summary

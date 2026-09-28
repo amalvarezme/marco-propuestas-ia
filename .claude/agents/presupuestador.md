@@ -21,7 +21,7 @@ trust the dispatcher's prompt over this general note, and go `Read` the exact
 absolute paths it gives you.
 
 **Glob usage (avoid false "file not found").** Before concluding that
-`proposal/sections/` or any file in it doesn't exist, call `Glob` with a
+`redaccion/sections/` or any file in it doesn't exist, call `Glob` with a
 single **absolute** path as `pattern` (not a relative pattern plus a separate
 `path` argument — that combination has been observed to resolve against the
 wrong cwd in this environment and can cascade into wrongly concluding an
@@ -41,7 +41,7 @@ your Task prompt (see `propuesta.md`, Fase 6.4).
 
 ### MODE=tdr
 - Input includes a `## Marco presupuestal (TDR)` block (from
-  `proposal/insumos.md` or `guia_ajustada_TDR.md`) with a non-empty tope.
+  `artefactos/insumos.md` or `guia_ajustada_TDR.md`) with a non-empty tope.
 - HARD: grand total MUST NOT exceed the tope; per-source subtotals MUST meet
   the co-financing split **exactly as recorded in the block, with its
   applicability conditions** — the split may differ by sede or by who leads the
@@ -60,7 +60,7 @@ your Task prompt (see `propuesta.md`, Fase 6.4).
 ## Inputs
 - `## Marco presupuestal (TDR)` block (MODE=tdr) — tope, split (with its
   applicability conditions), duración, rubros permitidos, otros requisitos.
-- `proposal/sections/10_metodologia.tex` — named methodology elements each
+- `redaccion/sections/10_metodologia.tex` — named methodology elements each
   ítem must tie to. This is your actual dependency; §14 Cronograma de
   actividades does NOT exist yet at Fase 6.4 (it is drafted afterward, in
   Fase 6.45) and is therefore NOT an input to this phase. Any Presupuesto↔
@@ -108,8 +108,8 @@ This section is built through the dispatcher-mediated interactive gate (Fase
 - [ ] Single currency, consistent formatting; `\label{tab:presupuesto}` present.
 
 ## Vault mirror
-When you write `proposal/sections/13_presupuesto.tex`, also write/update
-`vault/secciones/13_presupuesto.md` using the shared template (see
+When you write `redaccion/sections/13_presupuesto.tex`, also write/update
+`artefactos/vault/secciones/13_presupuesto.md` using the shared template (see
 `investigador.md`, "Vault mirror"): frontmatter `tex_source`/`fase: 6.4`/
 `gate_status: pending`; `## Resumen`; `## Ideas principales`; `## Relaciones`
 linking `[[10_metodologia]]` (the justificación dependency) and
@@ -120,10 +120,10 @@ citing external cost benchmarks. Leave `gate_status: pending` — the
 dispatcher flips it after the gate.
 
 ## Output
-- `proposal/sections/13_presupuesto.tex` — self-contained `\section`, one
+- `redaccion/sections/13_presupuesto.tex` — self-contained `\section`, one
   `table` with `\label{tab:presupuesto}`, xcolor[table] shading (same style as
   §14 Cronograma Gantt), no new packages.
-- `vault/secciones/13_presupuesto.md` — the mirror note.
+- `artefactos/vault/secciones/13_presupuesto.md` — the mirror note.
 Return to the Orchestrator an inline summary: MODE, grand total, tope + margin
 (MODE=tdr), split compliance, row count, and the list of `[supuesto]` items
 awaiting user confirmation — so the dispatcher can drive the interactive gate.

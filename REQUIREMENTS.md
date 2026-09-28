@@ -25,7 +25,7 @@ Install (all optional):
 pip install -r requirements.txt
 ```
 
-Optional extras, only for manual local conversion of `info_data/` inputs:
+Optional extras, only for manual local conversion of a run's `docs/` inputs:
 - `pypdf` + `markdownify` — PDF parsing (convocatoria, papers)
 - `python-docx` — DOCX parsing (Anexo 2 proposal)
 
@@ -51,7 +51,7 @@ All MCP servers run via `npx -y` (fetched on demand, no global install needed). 
 
 ## 4. LaTeX packages (TeX Live)
 
-All loaded in `proposal/main.tex`. Install via `tlmgr install <pkg>` or MacTeX/full:
+All loaded in the run's `redaccion/main.tex`. Install via `tlmgr install <pkg>` or MacTeX/full:
 
 | Package | Collection | Purpose |
 |---------|-----------|---------|
@@ -95,15 +95,15 @@ Two indexes per run, both scoped to the run's own corpus directory:
 
 | Index | `repo_path` | Report |
 |-------|-------------|--------|
-| `<run-id>-papers` | `<RUN_ROOT>/proposal/scoping/papers` | `proposal/scoping/graph-report.md` |
-| `<run-id>-vault` | `<RUN_ROOT>/vault` | `proposal/pipeline/vault-graph-report.md` |
+| `<run-id>-papers` | `<RUN_ROOT>/artefactos/scoping/papers` | `grafos/papers-graph-report.md` |
+| `<run-id>-vault` | `<RUN_ROOT>/artefactos/vault` | `grafos/vault-graph-report.md` |
 
 Two verified constraints drive that shape:
 - `codegraph` honors `.gitignore`, and all run content is gitignored, so a
   root-level index reports the corpus as `not_indexed` /
   `reason: "gitignore"`. Indexing the corpus directory **as its own root**
   bypasses the parent `.gitignore`.
-- `.cbmignore` can exclude noise inside a corpus (e.g. `vault/.cbmignore`
+- `.cbmignore` can exclude noise inside a corpus (e.g. `artefactos/vault/.cbmignore`
   drops `.obsidian/`) but its `!path` negations do **not** re-include a
   `.gitignore`d path.
 
@@ -122,7 +122,7 @@ deterministically with `Grep`.
 
 ```
 .
-├── requirements.txt          # Optional Python deps — manual info_data/ conversion only
+├── requirements.txt          # Optional Python deps — manual docs/ input conversion only
 ├── REQUIREMENTS.md           # This file
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
@@ -140,24 +140,28 @@ deterministically with `Grep`.
 ├── .opencode/                 # Secondary runtime — GENERATED from .claude/, never hand-edited
 │   ├── agents/                 # 9 ported subagents (1:1 with .claude/agents/, no coordinador)
 │   └── commands/propuesta.md   # Ported /propuesta command
-├── info_data/                # User inputs (PDFs, DOCX) — vacío hasta la próxima corrida
-├── vault/                     # Navigable Obsidian/Markdown mirror — visual layer only, NEVER
-│   │                           #   the source of truth (that's proposal/*.tex, LaTeX)
-│   ├── secciones/              # Mirrors proposal/sections/*.tex, one note per section
-│   └── insumos/                # Mirrors proposal/insumos.md
+├── info_data/                # LEGACY user-input drop (pre-per-run layout); new runs use
+│                              #   proposals/<run-id>/docs/ instead
+├── vault/                     # LEGACY root Obsidian mirror (belongs to the legacy flat run;
+│   │                           #   new runs mirror into artefactos/vault/)
+│   ├── secciones/              # One note per section
+│   └── insumos/                # One note per input/reference
 ├── proposals/                 # One subfolder per run + the registry
 │   ├── registry.md             # Append-only table: run-id, estado, archivo, commit
 │   ├── .current-run            # Active run-id pointer (local, gitignored)
-│   └── <run-id>/               # RUN_ROOT: _run.md + proposal/ + vault/ + info_data/
-│                               #   (every run artifact lives here; gitignored)
-├── proposal/                 # Framework skeleton committed to git, copied into each RUN_ROOT:
+│   └── <run-id>/               # RUN_ROOT — every run artifact lives here (gitignored):
+│                               #   _run.md + docs/ + artefactos/ + grafos/ + redaccion/
+├── proposal/                 # LaTeX skeleton committed to git, copied into each RUN_ROOT
+│                              #   as redaccion/ (also the legacy flat run's tree):
 │   ├── build.sh              # Compilación PDF/DOCX (logos header/footer)
 │   ├── scripts/               # compile_tikz.py, prep_docx.py — LaTeX/DOCX build-specific,
 │   │                           #   distinct from the root-level scripts/ (repo tooling)
 │   ├── logos/                 # LabIA, UNAL, GCPDS logos embedded in the built PDF
 │   └── templates/reference.docx  # Plantilla pandoc para export DOCX
-│   # Generados por cada corrida de /propuesta (no committeados, ver .gitignore):
-│   #   main.tex, refs.bib, sections/*.tex, insumos.md, estado_propuesta.md,
-│   #   guia_ajustada_TDR.md, pipeline/, scoping/
+│   # Una corrida no escribe acá: sus artefactos van a proposals/<run-id>/
+│   #   (redaccion/main.tex, redaccion/sections/*.tex, redaccion/refs.bib,
+│   #    artefactos/insumos.md, artefactos/estado_propuesta.md,
+│   #    artefactos/guia_ajustada_TDR.md, artefactos/pipeline/,
+│   #    artefactos/scoping/, grafos/*.md)
 └── .codegraph/               # codebase-memory index database (gitignored)
 ```

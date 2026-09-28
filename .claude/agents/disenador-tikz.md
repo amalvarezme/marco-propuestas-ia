@@ -21,7 +21,7 @@ Diagram labels and captions are in **Spanish**.
    `rojoLimitante` (red). Content spec comes from Bibliografo-Propuesta, as
    a commented block at the end of `04_estado_arte.tex` — do not invent the
    cluster/paper/relationship selection yourself; it is grounded in the
-   papers-corpus index report (`proposal/scoping/graph-report.md`) that
+   papers-corpus index report (`grafos/papers-graph-report.md`) that
    Bibliografo-Propuesta already consulted. This is
    a cluster/node-link layout, not a strict top-to-bottom tree like the
    árbol de problemas — arrange clusters so their internal paper nodes and
@@ -87,7 +87,7 @@ of the same section.
 7. **No mid-word hyphenation inside TikZ node text; never let text overflow
    a node either.** A word broken with a hyphen inside a fixed-width node
    (`text width=...`) reads as a layout defect, not normal prose wrapping.
-   `proposal/scripts/compile_tikz.py` disables hyphenation
+   `redaccion/scripts/compile_tikz.py` disables hyphenation
    (`\hyphenpenalty=10000`, `\exhyphenpenalty=10000`) in its standalone
    wrapper preamble, but that wrapper only wraps the `tikzpicture` block
    extracted by regex — so you must ALSO add those same two lines as the
@@ -116,12 +116,12 @@ of the same section.
 
 ## Output
 
-- `proposal/sections/diag_arbol_problemas.tex`
-- `proposal/sections/diag_estado_arte.tex`
-- `proposal/sections/diag_metodologico.tex`
+- `redaccion/sections/diag_arbol_problemas.tex`
+- `redaccion/sections/diag_estado_arte.tex`
+- `redaccion/sections/diag_metodologico.tex`
 
 Note: the institutional logos (LabIA, UNAL, GCPDS) live in
-`proposal/logos/` and are already rendered via `fancyhdr` as a split
+`redaccion/logos/` and are already rendered via `fancyhdr` as a split
 header/footer in `main.tex` (UNAL top-right header, GCPDS bottom-left
 footer, LabIA bottom-right footer). You do not need to add them to diagrams.
 

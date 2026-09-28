@@ -18,7 +18,7 @@
 
 **Secciones preliminares (front-matter, sin numerar).** Las tres secciones siguientes (Resumen, Resumen ejecutivo, Palabras clave) son preliminares: se redactan como SÍNTESIS del documento completo en una fase tardía del pipeline (Fase 6.5, ver `.claude/commands/propuesta.md`) y en el documento final se renderizan ANTES de la sección 2, inmediatamente después del Título. NO llevan número (no alteran la numeración §2–§16); en el ensamble LaTeX se maquetan con `\section*{}` (sin numerar).
 
-**Invariante de precedencia (aplica también a `proposal/guia_ajustada_TDR.md`).** El Título es SIEMPRE la primera sección del documento — antes que el front-matter y antes que cualquier sección numerada — sin importar el orden en que un TDR o un `doc-secciones` externo enumere sus secciones obligatorias. Cualquier guía ajustada al TDR que la Fase 0.5 genere DEBE preservar este orden (Título → Resumen → Resumen ejecutivo → Palabras clave → §2...), tanto en su tabla de secciones definitivas como en el cuerpo del documento.
+**Invariante de precedencia (aplica también a `artefactos/guia_ajustada_TDR.md`).** El Título es SIEMPRE la primera sección del documento — antes que el front-matter y antes que cualquier sección numerada — sin importar el orden en que un TDR o un `doc-secciones` externo enumere sus secciones obligatorias. Cualquier guía ajustada al TDR que la Fase 0.5 genere DEBE preservar este orden (Título → Resumen → Resumen ejecutivo → Palabras clave → §2...), tanto en su tabla de secciones definitivas como en el cuerpo del documento.
 
 ### Resumen
 **Instrucción para el agente:** Redacta un resumen de máximo 400 palabras, en un solo bloque de texto (sin subdivisión en párrafos nombrados), que cubra en este orden: (1) el problema o contexto que motiva el proyecto; (2) el objetivo general; (3) una síntesis del enfoque metodológico; (4) el resultado o impacto esperado, incluyendo el TRL objetivo (6 o 7).
@@ -87,7 +87,7 @@ Cualquier cifra socioeconómica, tecnológica o ambiental que soporte la relevan
 
 Esta sección **no incluye** revisión de literatura ni hipótesis: el sustento bibliográfico de los subproblemas se desarrolla en Estado del arte (§4), y la hipótesis se formula en su propia sección (§5).
 
-**Diagrama del árbol de problemas (regla permanente).** El contenido del diagrama (raíces/causas por subproblema, tronco, ramas/efectos y copa/solución) se especifica como bloque comentado al final de `proposal/sections/03_descripcion_problema.tex` — mismo patrón que usa Bibliografo-Propuesta para el diagrama de estado del arte en §4 —; Diseñador-TikZ lo traduce a `proposal/sections/diag_arbol_problemas.tex`. Aplican las reglas de conexión (la copa nunca se conecta con las raíces, sí con las ramas), anclaje de flechas e hyphenation definidas en Convenciones técnicas de LaTeX más abajo.
+**Diagrama del árbol de problemas (regla permanente).** El contenido del diagrama (raíces/causas por subproblema, tronco, ramas/efectos y copa/solución) se especifica como bloque comentado al final de `redaccion/sections/03_descripcion_problema.tex` — mismo patrón que usa Bibliografo-Propuesta para el diagrama de estado del arte en §4 —; Diseñador-TikZ lo traduce a `redaccion/sections/diag_arbol_problemas.tex`. Aplican las reglas de conexión (la copa nunca se conecta con las raíces, sí con las ramas), anclaje de flechas e hyphenation definidas en Convenciones técnicas de LaTeX más abajo.
 
 **Estructura de redacción recomendada:** párrafos 1-2 (contexto general y desafíos técnicos, cerrando con la lista de subproblemas) → párrafos 3-5 (detalle de cada subproblema) → párrafo 6 (cierre, pregunta de investigación y figura de árbol de problemas).
 
@@ -140,7 +140,7 @@ piso de 6-10 por subsección, pero verifícalo explícitamente antes de dar
 por cerrada cada subsección.
 
 **Diagrama de estado del arte (regla permanente, 4º diagrama del pipeline).**
-§4 lleva una visualización obligatoria — `proposal/sections/diag_estado_arte.tex`
+§4 lleva una visualización obligatoria — `redaccion/sections/diag_estado_arte.tex`
 — que sintetiza, por cada subsección (3-5 clusters), sus 3-5 trabajos más
 relevantes, las relaciones entre ellos, y la limitante general de ese grupo
 de literatura escrita como una **frase corta y contundente en color rojo**
@@ -148,7 +148,7 @@ de literatura escrita como una **frase corta y contundente en color rojo**
 `grisLabIA`/`verdeGCPDS` — ver "Colores institucionales" abajo) dentro del
 propio bloque del cluster. La selección de trabajos y relaciones de cada
 cluster NO se inventa: se fundamenta en el grafo ya construido sobre el
-corpus de papers (`proposal/scoping/graph-report.md`, el reporte del índice
+corpus de papers (`grafos/papers-graph-report.md`, el reporte del índice
 de `codebase-memory` sobre el corpus — nodos centrales, comunidades
 temáticas, preguntas sugeridas), priorizando los papers con más conexiones
 (nodos centrales) y las comunidades temáticas que el índice ya identificó, en
@@ -306,8 +306,8 @@ de §16.
 
 **Ubicación del diagrama (regla permanente).** El contenido del diagrama
 esquemático metodológico se especifica como bloque comentado al final de
-`proposal/sections/10_metodologia.tex` (mismo patrón que §3/§4);
-Diseñador-TikZ lo traduce a `proposal/sections/diag_metodologico.tex`.
+`redaccion/sections/10_metodologia.tex` (mismo patrón que §3/§4);
+Diseñador-TikZ lo traduce a `redaccion/sections/diag_metodologico.tex`.
 Aplican las mismas reglas de conexión, anclaje de flechas e hyphenation
 definidas en Convenciones técnicas de LaTeX más abajo.
 
@@ -332,7 +332,7 @@ Todo contenido de esta sección que no provenga de un insumo directo del usuario
 **Nota de orden de redacción.** Aunque el Cronograma de actividades se numera después del Presupuesto (§14 va después de §13) para seguir el orden de la lista de secciones del documento final, el agente debe contar con el cronograma **ya esbozado** (aunque sea en borrador) antes de cerrar el presupuesto, puesto que cada ítem debe enlazarse con una actividad concreta del cronograma.
 
 **Modo de operación (según insumos):**
-*   **Modo TDR** — existe un bloque `## Marco presupuestal (TDR)` en `proposal/insumos.md` (o en `guia_ajustada_TDR.md`) con tope no vacío: toma de allí el tope total, el esquema de cofinanciación **tal como lo define el TDR** (con sus condiciones de aplicabilidad — el porcentaje puede variar por sede o por quién lidera la alianza; p. ej. 70/30 nacional/contrapartida para unas sedes y 100% nacional para otras), la duración y los rubros permitidos. La suma total **no puede exceder el tope**; los subtotales por fuente deben respetar el split aplicable al caso de esta propuesta.
+*   **Modo TDR** — existe un bloque `## Marco presupuestal (TDR)` en `artefactos/insumos.md` (o en `guia_ajustada_TDR.md`) con tope no vacío: toma de allí el tope total, el esquema de cofinanciación **tal como lo define el TDR** (con sus condiciones de aplicabilidad — el porcentaje puede variar por sede o por quién lidera la alianza; p. ej. 70/30 nacional/contrapartida para unas sedes y 100% nacional para otras), la duración y los rubros permitidos. La suma total **no puede exceder el tope**; los subtotales por fuente deben respetar el split aplicable al caso de esta propuesta.
 *   **Modo base** — no hay datos presupuestales en el TDR (sentinel `sin datos presupuestales en TDR`): construye un presupuesto razonado a partir de la metodología (§10) y el cronograma de actividades (§14). Todo monto o cantidad que no se derive de un insumo se marca explícitamente como **[supuesto]** para que el usuario lo revise en la compuerta interactiva.
 
 **Estructura de la tabla.** Una fila por ítem, con columnas: **Ítem** | **Cantidad** | **Valor unitario** | **Valor total** | **Descripción** | **Justificación**. Cuando la convocatoria defina rubros, agrupa las filas por rubro con un **subtotal por rubro**, y cierra con una fila de **Total general**.
@@ -352,7 +352,7 @@ Todo contenido de esta sección que no provenga de un insumo directo del usuario
 
 ### 14. Cronograma de actividades
 
-**Instrucción para el agente:** El cronograma de actividades se presenta como **tabla tipo cronograma (Diagrama de Gantt, vía el paquete `pgfgantt`)**, estructurada en fases o periodos (meses, trimestres, semestres, etc.). Es uno de los cuatro diagramas obligatorios del pipeline (ver "Exportación de diagramas a SVG" en Convenciones técnicas de LaTeX): no es un formato preferido frente a una tabla simple sin Gantt, es el formato exigido. El bloque `pgfgantt` vive directamente dentro de `proposal/sections/14_cronograma_actividades.tex` — a diferencia del árbol de problemas, el estado del arte y el diagrama metodológico, el Gantt no tiene un archivo `diag_*.tex` separado.
+**Instrucción para el agente:** El cronograma de actividades se presenta como **tabla tipo cronograma (Diagrama de Gantt, vía el paquete `pgfgantt`)**, estructurada en fases o periodos (meses, trimestres, semestres, etc.). Es uno de los cuatro diagramas obligatorios del pipeline (ver "Exportación de diagramas a SVG" en Convenciones técnicas de LaTeX): no es un formato preferido frente a una tabla simple sin Gantt, es el formato exigido. El bloque `pgfgantt` vive directamente dentro de `redaccion/sections/14_cronograma_actividades.tex` — a diferencia del árbol de problemas, el estado del arte y el diagrama metodológico, el Gantt no tiene un archivo `diag_*.tex` separado.
 1.  **Alineación Temporal:** El cronograma debe estar rigurosamente detallado y ajustado al tiempo total de ejecución establecido en los términos de referencia de la convocatoria (por ejemplo, 6 meses, 12 meses, 3 años).
 2.  **Actividades y Responsables:** Las actividades incluidas en la tabla deben corresponder exactamente con las fases y acciones de la Metodología (§10). Además, para cada actividad o etapa, se debe designar claramente el **personal o rol responsable** (coherente con el Equipo de trabajo, §9).
 3.  **Hitos y Productos:** El cronograma debe describir y evidenciar con claridad cómo y en qué momento exacto del tiempo se obtendrán y entregarán los resultados (§11) y productos (§15) prometidos.
@@ -376,7 +376,7 @@ Todo contenido de esta sección que no provenga de un insumo directo del usuario
     las claves del corpus, dejando poco margen fresco para las secciones
     posteriores (§10-§16). Antes de citar CUALQUIER clave en una sección que no sea la primera
     vez que se escribe esa clave en el documento, verifica con un `grep`/`rg` de la
-    clave contra TODOS los `.tex` ya escritos en `proposal/sections/` (no solo los 1
+    clave contra TODOS los `.tex` ya escritos en `redaccion/sections/` (no solo los 1
     o 2 archivos que el dispatcher mencionó como contexto) cuántas secciones
     DISTINTAS ya la citan. Si ya son 3, esa clave está agotada: no la cites de
     nuevo, y si no hay ninguna clave fresca genuina que respalde la afirmación,
@@ -417,7 +417,7 @@ Estas convenciones son la única fuente de verdad para el ensamble LaTeX; aplíc
 > quedar **visualmente identificable** (título propio) para el evaluador, porque
 > típicamente responde a un criterio de evaluación ponderado específico de esa
 > convocatoria. La guía ajustada que la Fase 0.5 genere para cada convocatoria
-> (`proposal/guia_ajustada_TDR.md`) declara estos sub-bloques explícitamente cuando
+> (`artefactos/guia_ajustada_TDR.md`) declara estos sub-bloques explícitamente cuando
 > el TDR los exige, anclando cada uno a su sección anfitriona.
 
 **Paquetes del preámbulo**
@@ -456,7 +456,7 @@ intermedio que ya produce el PNG (no requiere una segunda compilación de
 LaTeX). Mecánica y agentes responsables: ver `.claude/agents/tikz-optimizer.md`
 (árbol de problemas, diagrama metodológico) y `.claude/agents/redactor.md`
 (Gantt de §14) — ambos runtimes, Claude Code y OpenCode, comparten el mismo
-script `proposal/scripts/compile_tikz.py`, así que este requisito aplica sin
+script `redaccion/scripts/compile_tikz.py`, así que este requisito aplica sin
 distinción de runtime.
 
 **Árbol de problemas — la copa NUNCA se conecta visualmente con las raíces,
@@ -519,7 +519,7 @@ complementarios:
 fijo (`text width=...`) es contenido gráfico, no prosa continua: una palabra
 partida con guion a mitad de línea (p. ej. "argumen-tación") se percibe como
 un defecto de composición, no como el ajuste normal de un párrafo. Reglas:
-1. **Nunca hyphenation automática.** `proposal/scripts/compile_tikz.py` ya
+1. **Nunca hyphenation automática.** `redaccion/scripts/compile_tikz.py` ya
    desactiva la hyphenation (`\hyphenpenalty=10000`, `\exhyphenpenalty=10000`)
    en el preámbulo del wrapper standalone que rasteriza PNG/SVG — pero ese
    wrapper solo envuelve el `tikzpicture` extraído por regex, así que esas
@@ -593,7 +593,7 @@ LaTeX válido, solo imprime el número equivocado. En su lugar:
   NUNCA uses `\cref{}`/`\Cref{}`/`\nameref{}`. Estos tres archivos se compilan
   DOS VECES en contextos distintos: (1) `\input{}` dentro de `main.tex`, donde
   todas las etiquetas `sec:*`/`subsec:*` existen; y (2) de forma AISLADA vía
-  `proposal/scripts/compile_tikz.py` (rasterizado PNG/SVG, ver "Exportación de
+  `redaccion/scripts/compile_tikz.py` (rasterizado PNG/SVG, ver "Exportación de
   diagramas a SVG" arriba), donde NO se carga `cleveref` ni existe ningún
   `\label{}` externo — un `\cref{}` ahí es un `Undefined control sequence`
   fatal que rompe la compilación aislada (confirmado: así falló
@@ -608,8 +608,8 @@ LaTeX válido, solo imprime el número equivocado. En su lugar:
 
 Regla única de colocación de los tres logos institucionales en `main.tex`
 (fuente de verdad; los agentes de diagramación NO deben añadir logos a las
-figuras). Los archivos residen en `proposal/logos/` (ruta preservada entre
-ciclos de archivado). Como el build compila dentro de `proposal/`, se
+figuras). Los archivos residen en `redaccion/logos/` (ruta preservada entre
+ciclos de archivado). Como el build compila dentro de `redaccion/`, se
 referencian de forma relativa como `logos/*.png`.
 
 | Logo | Posición | Campo `fancyhdr` | Alto |

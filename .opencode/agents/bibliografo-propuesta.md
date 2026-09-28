@@ -43,7 +43,7 @@ scoping-stage modes that add `consensus` to the tool scope.
   add a paragraph-structure or prose requirement (still governed by the "No
   BibTeX, no §4 prose" bullet above). Fallback (only if your prompt does NOT
   carry that block): use THIS run's applicable guide —
-  `proposal/guia_ajustada_TDR.md` if it exists and was approved at gate
+  `artefactos/guia_ajustada_TDR.md` if it exists and was approved at gate
   G0.5, otherwise `guiaProyectosIA_Agente.md` — never assume it is always
   the base guide.
 
@@ -51,7 +51,7 @@ scoping-stage modes that add `consensus` to the tool scope.
 
 - Goal: find **exactly 5 papers** matching (a) the original `/propuesta` user
   prompt and (b) the applicable guide (the TDR-adjusted
-  `proposal/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
+  `artefactos/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
   `guiaProyectosIA_Agente.md`). Abstract-only — no full-text retrieval, no
   BibTeX, no §4 prose. Note: the dispatcher does not inject a `## FRAGMENTO
   DE GUÍA` block for this mode (Fase 1a) — unlike MODE=explore above (whose
@@ -76,10 +76,10 @@ scoping-stage modes that add `consensus` to the tool scope.
   via `consensus`. Explicitly **no** `crossref`/`pubmed`/`arxiv`/`context7` in
   this mode.
 - **MUST NOT** read any existing proposal draft — not the draft-base file,
-  not `proposal/sections/*.tex`, not `proposal/insumos.md` §F. This is a
+  not `redaccion/sections/*.tex`, not `artefactos/insumos.md` §F. This is a
   fresh scoping pass, independent of prior drafts.
 - Output artifacts: one Markdown file per paper under
-  `proposal/scoping/papers/paper-{1..5}.md`, with this exact schema:
+  `artefactos/scoping/papers/paper-{1..5}.md`, with this exact schema:
 
   ```markdown
   # {Título del paper}
@@ -100,7 +100,7 @@ scoping-stage modes that add `consensus` to the tool scope.
 - **Do NOT index the corpus yourself.** Return the 5 files plus the search
   parameters (query, quartile filter, year range, tool hits per source)
   inline to the dispatcher — the dispatcher builds the isolated
-  `codebase-memory` index from `proposal/scoping/papers/`.
+  `codebase-memory` index from `artefactos/scoping/papers/`.
 
 ### MODE=sota (Fase 1b pre-step)
 
@@ -121,9 +121,9 @@ scoping-stage modes that add `consensus` to the tool scope.
 - Hard constraint: `paper-1.md`..`paper-5.md` stay **byte-unchanged** —
   never re-fetch, re-normalize, or edit them, only new files are added. This
   sub-step also never touches the vault index (`<run-id>-vault`, the main
-  proposal's idea graph, outside `proposal/scoping/`) nor its report
-  `proposal/pipeline/vault-graph-report.md`; only the papers index
-  (`<run-id>-papers`) and `proposal/scoping/graph-report.md` — both refreshed
+  proposal's idea graph, outside `artefactos/scoping/`) nor its report
+  `grafos/vault-graph-report.md`; only the papers index
+  (`<run-id>-papers`) and `grafos/papers-graph-report.md` — both refreshed
   by the dispatcher, see `propuesta.md`, "Fase 1b" — reflect the expanded
   corpus.
 - Dedup: before writing a new `paper-N.md`, check its DOI (or, if missing,
@@ -144,7 +144,7 @@ scoping-stage modes that add `consensus` to the tool scope.
   menu: (a) widen years, (b) relax quartile (accept Q2-only or a user-named
   top venue), (c) widen/reformulate query terms, (d) proceed with fewer
   than 39, (e) accept a user-named paper.
-- Output: `proposal/scoping/papers/paper-{6..N}.md`, plus the search
+- Output: `artefactos/scoping/papers/paper-{6..N}.md`, plus the search
   parameters (query, quartile filter, year range, tool hits per source) and
   the final corpus count, returned inline to the dispatcher.
 - **Do NOT index the corpus yourself** — same as MODE=scope, the dispatcher
@@ -153,12 +153,12 @@ scoping-stage modes that add `consensus` to the tool scope.
 #### Sub-step: grouping (Fase 1b, after the dispatcher's index refresh)
 
 - Dispatched only **after** the dispatcher has re-indexed the expanded corpus
-  with `codebase-memory` and rewritten `proposal/scoping/graph-report.md`
+  with `codebase-memory` and rewritten `grafos/papers-graph-report.md`
   (see `propuesta.md`, "Fase 1b"). Never propose groupings before the updated
   report exists.
-- Input: the expanded `proposal/scoping/graph-report.md` (central nodes,
+- Input: the expanded `grafos/papers-graph-report.md` (central nodes,
   thematic communities, suggested questions) plus every paper's abstract in
-  `proposal/scoping/papers/paper-{1..N}.md`.
+  `artefactos/scoping/papers/paper-{1..N}.md`.
 - Output: propose **3-5 SOTA subsections** as a mapping table — not
   prose — with columns: paper → proposed subsection → cross-ref to
   SP1/SP2/SP3 (the 3 early subproblems approved at G1a). Every paper in the
@@ -171,7 +171,7 @@ scoping-stage modes that add `consensus` to the tool scope.
 
 - **Forbidden before G1b approval.** Only dispatched once the dispatcher
   records G1b = APROBADA.
-- Writes `proposal/refs.bib` in **one pass**, covering the **full corpus**
+- Writes `redaccion/refs.bib` in **one pass**, covering the **full corpus**
   (`paper-1.md`..`paper-N.md`), deriving BibTeX fields from each paper's
   already-captured metadata (título, autores, año, venue, DOI/URL) — **no
   re-search** for new candidate papers, no new discovery calls to
@@ -182,7 +182,7 @@ scoping-stage modes that add `consensus` to the tool scope.
   already in the corpus.
 - Cite keys follow the same convention as MODE=deliverable
   (`authorYear_keyword`).
-- Until this sub-step runs, `proposal/refs.bib`'s checksum stays unchanged
+- Until this sub-step runs, `redaccion/refs.bib`'s checksum stays unchanged
   (the file may not exist yet, or may hold prior content from an earlier
   phase); this sub-step is the **only** point in Fase 1b/Fase 1a that
   touches it, and it changes the checksum **exactly once** per G1b
@@ -227,7 +227,7 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
 "Modos de operación" above._
 
 1. For §4, consume the Fase 1b/G1b corpus
-   (`proposal/scoping/papers/paper-{1..N}.md`, 39-52 Q1/Q2 references) and
+   (`artefactos/scoping/papers/paper-{1..N}.md`, 39-52 Q1/Q2 references) and
    its approved subsection mapping table instead of re-searching from
    scratch — the ≥39 Q1/Q2 floor is satisfied by that corpus. Additional
    searching is allowed only insofar as needed to satisfy the §16 ≥65-total
@@ -262,15 +262,15 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
 9. For §4 and §16 authoring, use the injected `## FRAGMENTO DE GUÍA` block in
    your Task prompt (see `propuesta.md`, "FORMATO EXACTO DE INYECCIÓN") as
    the structure/format reference for that section — do not re-read any
-   guide file on your own. §4 output is `proposal/sections/04_estado_arte.tex`
+   guide file on your own. §4 output is `redaccion/sections/04_estado_arte.tex`
    (real `.tex` prose, see "Output" below), so its fragment DOES include the
    `### Convenciones técnicas de LaTeX` block — follow it. §16 output is
-   `proposal/refs.bib` only (no `.tex` file is authored here — the thin
+   `redaccion/refs.bib` only (no `.tex` file is authored here — the thin
    `16_bibliografia.tex` wrapper is assembled by the dispatcher at Fase 7,
    not by you), so its fragment never includes that block, and you don't
    need it. Fallback (only if your prompt does NOT carry the expected
    block): read the corresponding `### N.` section of THIS run's applicable
-   guide — `proposal/guia_ajustada_TDR.md` if it exists and was approved at
+   guide — `artefactos/guia_ajustada_TDR.md` if it exists and was approved at
    gate G0.5, otherwise `guiaProyectosIA_Agente.md` — never assume it is
    always the base guide. This does not alter constraint 3's APA/natbib
    format pointer, which stays as written above.
@@ -305,7 +305,7 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
    across 2-4 paragraphs usually satisfies this floor too, but verify it
    explicitly before considering a subsection done. When expanding a thin
    subsection to meet this floor, pull additional citations from
-   `proposal/refs.bib` (papers already in the approved corpus that touch
+   `redaccion/refs.bib` (papers already in the approved corpus that touch
    this subsection's theme but weren't yet cited here) subject to the
    existing §16 reuse cap (max 3 uses per key across the whole document,
    verified via the same reuse-ledger check already required before citing
@@ -315,7 +315,7 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
    block at the end of `04_estado_arte.tex` (same convention Investigador
    uses for the árbol de problemas at the end of `03_descripcion_problema.tex`)
    that Diseñador-TikZ will translate into
-   `proposal/sections/diag_estado_arte.tex`. For each of your 3-5 subsections,
+   `redaccion/sections/diag_estado_arte.tex`. For each of your 3-5 subsections,
    specify: (a) its 3-5 most relevant works — cite_key + short title AND a
    **3-5 word coded concept phrase** in Spanish summarizing that specific
    work's main finding/contribution (this phrase renders in `azulUNAL` as a
@@ -327,13 +327,13 @@ _Applies only to MODE=deliverable (Fase 4). MODE=explore is exempt — see
    `rojoLimitante` — at the cluster level, not per paper; keep it punchy,
    not a full sentence with citations). Ground the paper selection and
    relationships in the **already-built index over the papers corpus** —
-   `proposal/scoping/graph-report.md`, the dispatcher's report over the
+   `grafos/papers-graph-report.md`, the dispatcher's report over the
    `<run-id>-papers` index (central nodes, thematic communities, suggested
    questions) — rather than picking papers or relationships arbitrarily:
    prioritize the central nodes and community-hub papers that fall within each
    subsection's theme, and use the report's own community membership to
    justify which works you connect.
-   Read `proposal/scoping/graph-report.md` before drafting this block. If the report doesn't
+   Read `grafos/papers-graph-report.md` before drafting this block. If the report doesn't
    cleanly cover a subsection (e.g. a theme added after the corpus was
    built), fall back to your own literature judgment for that subsection
    only, and note in the spec block that it wasn't graph-grounded.
@@ -389,7 +389,7 @@ across sources for accuracy and to enrich metadata (DOIs, abstracts, citations).
 
 ## Invariante de escritura de referencias
 
-TODOS los modos que escriban `proposal/refs.bib` deben cumplir este
+TODOS los modos que escriban `redaccion/refs.bib` deben cumplir este
 invariante (redacción a prueba de futuro), vinculante hoy en los dos
 caminos reales que existen: **MODE=sota**, sub-paso WRITE-REFS (ver la sección «Sub-step: WRITE-REFS»,
 solo tras aprobación G1b) y **MODE=deliverable** (ver la sección «Hard constraints (MODE=deliverable)», Fase 6,
@@ -399,8 +399,8 @@ Fase 5 solo despacha al redactor y no toca `refs.bib` — el invariante NO
 aplica a esos caminos.
 
 Invariante: cada entrada nueva en `refs.bib` debe tener:
-1. Un `proposal/scoping/papers/paper-N.md` con un bloque `## Verificación`.
-2. Una nota `vault/insumos/<cite_key>.md`.
+1. Un `artefactos/scoping/papers/paper-N.md` con un bloque `## Verificación`.
+2. Una nota `artefactos/vault/insumos/<cite_key>.md`.
 3. Verificación de existencia APROBADA antes de escribir la entrada,
    resuelta por lote temático (batch), no candidato por candidato: (a) tras
    la búsqueda amplia del lote temático (candidatos de una misma pasada de
@@ -457,13 +457,13 @@ Aplica a los dos caminos reales que escriben `refs.bib` (MODE=sota
 WRITE-REFS y MODE=deliverable) — ver "Invariante de escritura de
 referencias" arriba; no está limitado a MODE=deliverable.
 
-When writing `proposal/sections/04_estado_arte.tex` and `proposal/refs.bib`,
+When writing `redaccion/sections/04_estado_arte.tex` and `redaccion/refs.bib`,
 also write/update:
 
-- `vault/secciones/04_estado_arte.md`, using the same template as the
+- `artefactos/vault/secciones/04_estado_arte.md`, using the same template as the
   Investigador (see `investigador.md`, "Vault mirror"), with a `## Papers
   relacionados` block listing every cited paper's `[[<cite_key>]]`.
-- One `vault/insumos/<cite_key>.md` note per BibTeX entry added to
+- One `artefactos/vault/insumos/<cite_key>.md` note per BibTeX entry added to
   `refs.bib`, using the same cite key as the `.bib` entry:
 
   ```markdown
@@ -485,10 +485,10 @@ also write/update:
 
 ## Output
 
-- `proposal/sections/04_estado_arte.tex` (the §4 prose, closing with a
+- `redaccion/sections/04_estado_arte.tex` (the §4 prose, closing with a
   synthesis paragraph for the Investigador's §5 Hipótesis — hipótesis itself
   is NOT drafted here, only the evidence synthesis it will build on).
-- `proposal/refs.bib` (all BibTeX entries; use cite keys like
+- `redaccion/refs.bib` (all BibTeX entries; use cite keys like
   `authorYear_keyword`).
 - The ≥13 Q1/Q2 references sourced for the Redactor's §2 Justificación (see
   "Your assigned sections" above), returned inline for the Redactor to cite.

@@ -4,15 +4,16 @@
 Usage:
     python3 compile_tikz.py arbol_problemas:tikz estado_arte:tikz metodologico:tikz gantt:gantt
 
-For kind "tikz", looks for diag_<name>.tex under proposal/sections/. For kind
+For kind "tikz", looks for diag_<name>.tex under <project>/sections/. For kind
 "gantt", the source is instead the Redactor's real §14 output,
-`proposal/sections/14_cronograma_actividades.tex` — there is no standalone
+`<project>/sections/14_cronograma_actividades.tex` — there is no standalone
 diag_gantt.tex (single-owner fix: Disenador-TikZ does not produce a separate
 Gantt file; Redactor owns §14 inline, as either a `tabular`+`tikz` table or a
-`ganttchart` spec). Both relative to the repo root (this script lives at
-proposal/scripts/compile_tikz.py, so the repo root is two parents up). All
-intermediate files (.tex wrappers, .pdf, .png, .svg, .log) go under
-`proposal/sections/figuras/` (see WORK below and "Output location" note).
+`ganttchart` spec). `<project>` is always the parent of this script's own
+directory, so the script works unmodified wherever the LaTeX project lives:
+`<RUN_ROOT>/redaccion` in the per-run layout, `<repo>/proposal` in the legacy
+flat one. All intermediate files (.tex wrappers, .pdf, .png, .svg, .log) go
+under `<project>/sections/figuras/` (see WORK below and "Output location").
 
 Every diagram is rendered to BOTH `fig_<name>-1.png` (raster, for the
 compiled PDF/DOCX) and `fig_<name>.svg` (vector, for easier visualization —
@@ -25,21 +26,23 @@ Code/OpenCode both call this same script).
 Requires: pdflatex, pdftoppm, pdftocairo in PATH (all three ship with a
 standard poppler install alongside pdftoppm, already a prerequisite).
 
-Output location: `proposal/sections/figuras/`, alongside the `.tex` section
+Output location: `<project>/sections/figuras/`, alongside the `.tex` section
 sources (NOT `/tmp` — a hidden/inconvenient path in Finder and most file
-managers, and one that differs across machines). This directory is
-per-run scratch just like the rest of `proposal/sections/`: already covered
-by the blanket `proposal/sections/` entry in `.gitignore`, wiped on
-ARCHIVADO-Y-REINICIO between corridas, and identical on Claude Code and
-OpenCode since both resolve it as a path relative to the repo root, not an
-OS-specific temp directory.
+managers, and one that differs across machines). This directory is per-run
+scratch just like the rest of `<project>/sections/`: gitignored with the whole
+run folder, discarded with it, and identical across runtimes since every
+runtime resolves it relative to this script's own location, not an OS-specific
+temp directory.
 """
 import sys, subprocess, re, pathlib
 
-# Repo root = parent of parent of this script's directory.
+# LaTeX project root = the directory that holds this scripts/ directory. Layout
+# independent on purpose: it resolves to <RUN_ROOT>/redaccion in the per-run
+# layout and to <repo>/proposal in the legacy flat layout, with no hardcoded
+# directory name and no assumption about how deep the run folder sits.
 HERE = pathlib.Path(__file__).resolve().parent
-ROOT = HERE.parent.parent
-WORK = ROOT / "proposal" / "sections" / "figuras"
+PROJ = HERE.parent
+WORK = PROJ / "sections" / "figuras"
 WORK.mkdir(parents=True, exist_ok=True)
 
 # Overfull-hbox detection (anchored to the literal `Overfull \hbox` prefix
@@ -95,9 +98,18 @@ def build(name, kind):
     if kind == "gantt":
         # §14 Cronograma is authored inline by Redactor, not as a standalone
         # diag_gantt.tex — source from the real section file.
-        src = ROOT / "proposal/sections" / "14_cronograma_actividades.tex"
+        src = PROJ / "sections" / "14_cronograma_actividades.tex"
+        if not src.exists():
+            # La guía ajustada al TDR puede renumerar el cronograma (p. ej. §19
+            # cuando el TDR añade secciones antes de él). Aceptar cualquier
+            # <NN>_cronograma_actividades.tex sin romper el caso §14.
+            candidates = sorted(
+                (PROJ / "sections").glob("*_cronograma_actividades.tex")
+            )
+            if candidates:
+                src = candidates[0]
     else:
-        src = ROOT / "proposal/sections" / f"diag_{name}.tex"
+        src = PROJ / "sections" / f"diag_{name}.tex"
     if not src.exists():
         raise SystemExit(
             f"no existe {src}. Los diagramas/secciones se generan por cada corrida de "

@@ -19,8 +19,9 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
 2. **Insumos:** La propuesta se construye desde un prompt/idea del usuario más
    PDFs, papers, enlaces o información relevante que este aporte. Los archivos
    fuente (PDFs, papers, propuestas previas, documentos de referencia) se
-   guardan en `info_data/`. El agente **Insumos-Observador** los lee desde ahí y
-   extrae/estructura esos insumos en un contexto compartido.
+   guardan en `docs/` de la corrida (ver regla 7). El agente
+   **Insumos-Observador** los lee desde ahí y extrae/estructura esos insumos en
+   un contexto compartido.
 3. **Enfoque:** Productos/servicios de IA con innovación investigativa,
    transferencia tecnológica clara, productos tangibles con **TRL 6 o 7**.
 4. **Estructura:** Sigue rigurosamente las 16 secciones de la
@@ -52,41 +53,56 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
    estilo numérico IEEE (`[1]`) está prohibido, conforme a
    `guiaProyectosIA_Agente.md` §16 Bibliografía. Sin tesis; preprints solo de
    labs/líderes reconocidos.
-7. **Raíz de corrida (`RUN_ROOT`):** cada corrida vive en **una sola
-   subcarpeta**, `proposals/<run-id>/`, creada por `/propuesta-init` (que
-   delega en `scripts/init-run.sh`, determinista e idempotente) y activada
-   mediante el puntero `proposals/.current-run`. Toda ruta `proposal/...` o
-   `vault/...` que aparezca en este playbook, en los agentes o en el
-   dispatcher se resuelve **dentro de `RUN_ROOT`**, nunca en la raíz del
-   repo; las únicas rutas relativas a la raíz son las del framework
-   (`.claude/`, `.opencode/`, `.pi/`, `scripts/`, `guiaProyectosIA_Agente.md`,
-   `AGENTS.md`, `proposals/registry.md`). Archivar una corrida es solo un
-   cambio de estado en su `_run.md` y en `proposals/registry.md`: la carpeta
-   ya **es** el archivo, no se copia ni se borra contenido. Hay un modo
-   heredado (sin puntero, corrida en la raíz) que se sigue donde está, nunca
-   se migra a mitad de camino.
+7. **Carpeta de proyecto por corrida (`RUN_ROOT`):** cada corrida vive en
+   **una sola carpeta**, `proposals/<run-id>/`, creada por `/propuesta-init`
+   (que delega en `scripts/init-run.sh`, determinista e idempotente) y
+   activada mediante el puntero `proposals/.current-run`. Dentro hay
+   exactamente **cuatro subcarpetas**, y nada queda suelto en la raíz de la
+   corrida salvo `_run.md`:
+
+   | Subcarpeta | Contenido | La llena |
+   |---|---|---|
+   | `docs/` | Insumos del usuario: TDR, papers, propuestas base, documentos de referencia | el usuario |
+   | `artefactos/` | Lo generado que no es fuente LaTeX: `estado_propuesta.md`, `insumos.md`, `guia_ajustada_TDR.md`, `pipeline/`, `scoping/papers/`, `vault/` | el pipeline |
+   | `grafos/` | Reportes de `codebase-memory`: `papers-graph-report.md`, `vault-graph-report.md` | el dispatcher |
+   | `redaccion/` | El proyecto LaTeX: `main.tex`, `sections/`, `refs.bib`, `main.pdf`, `main.docx`, `build.sh`, `scripts/`, `logos/`, `templates/` | el pipeline |
+
+   Toda ruta `docs/...`, `artefactos/...`, `grafos/...` o `redaccion/...` que
+   aparezca en este playbook, en los agentes o en el dispatcher se resuelve
+   **dentro de `RUN_ROOT`**, nunca en la raíz del repo; las únicas rutas
+   relativas a la raíz son las del framework (`.claude/`, `.opencode/`,
+   `.pi/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,
+   `proposals/registry.md`). Ojo con `docs/`: dentro de `RUN_ROOT` son los
+   insumos del usuario, mientras que el `docs/` de la raíz del repo es
+   documentación del framework — ningún agente referencia el segundo.
+   Archivar una corrida es solo un cambio de estado en su `_run.md` y en
+   `proposals/registry.md`: la carpeta ya **es** el archivo, no se copia ni se
+   borra contenido. El layout heredado (corridas previas, con `proposal/` y
+   `vault/` planos en la raíz) no se migra ni se continúa: lo único soportado
+   sobre él es archivarlo con `/propuesta-limpiar`.
 8. **Salida LaTeX:** Cada sección se escribe como archivo `.tex` en
-   `proposal/sections/`; referencias en `proposal/refs.bib`; ensamblaje en
-   `proposal/main.tex`. El template `main.tex` incluye un footer con los logos
-   institucionales (`proposal/logos/`: LabIA, UNAL, GCPDS) vía `fancyhdr`; los
-   agentes no deben eliminarlo. `proposal/` es la **fuente de verdad** dentro
-   de una corrida, pero **no está versionada**: `.tex`/`.bib`/`.pdf`/`.docx`
+   `redaccion/sections/`; referencias en `redaccion/refs.bib`; ensamblaje en
+   `redaccion/main.tex`. El template `main.tex` incluye un footer con los
+   logos institucionales (`redaccion/logos/`: LabIA, UNAL, GCPDS) vía
+   `fancyhdr`; los agentes no deben eliminarlo. `redaccion/` es la **fuente de
+   verdad** dentro de una corrida, pero **no está versionada**: `.tex`/`.bib`/`.pdf`/`.docx`
    y el resto del contenido de la corrida están en `.gitignore` (igual que
    las corridas archivadas bajo `proposals/<run-id>/`) — GitHub solo aloja el
    esqueleto del framework (agentes, comandos, scripts, plantillas), nunca
    el contenido de una propuesta específica.
-9. **Espejo `vault/`:** `vault/secciones/` y `vault/insumos/` son un espejo
-   Markdown compatible con Obsidian, generado a partir de `proposal/` para
-   navegación y coherencia — **no** se versiona por separado ni se trata como
-   fuente de verdad. Ante cualquier conflicto entre `vault/` y `proposal/`,
-   `proposal/` (LaTeX) manda.
+9. **Espejo `artefactos/vault/`:** `artefactos/vault/secciones/` y
+   `artefactos/vault/insumos/` son un espejo Markdown compatible con Obsidian,
+   generado a partir de `redaccion/` para navegación y coherencia — **no** se
+   versiona por separado ni se trata como fuente de verdad. Ante cualquier
+   conflicto entre `artefactos/vault/` y `redaccion/`, `redaccion/` (LaTeX)
+   manda.
 10. **Grafo de conocimiento (`codebase-memory`):** la capa de grafo es el
    servidor MCP `codegraph` declarado en `.mcp.json` (`codegraph serve
    --mcp`), no una CLI ni una API key. El dispatcher mantiene dos índices por
-   corrida — `<run-id>-papers` sobre `proposal/scoping/papers` y
-   `<run-id>-vault` sobre `vault` — y escribe los reportes derivados en
-   `proposal/scoping/graph-report.md` y
-   `proposal/pipeline/vault-graph-report.md`. Dos restricciones verificadas
+   corrida — `<run-id>-papers` sobre `artefactos/scoping/papers` y
+   `<run-id>-vault` sobre `artefactos/vault` — y escribe los reportes
+   derivados en `grafos/papers-graph-report.md` y
+   `grafos/vault-graph-report.md`. Dos restricciones verificadas
    fijan esa forma: `codegraph` respeta `.gitignore` (y todo el contenido de
    una corrida está gitignoreado), así que cada corpus se indexa **como raíz
    propia** con `repo_path` absoluto; y las negaciones `!ruta` de `.cbmignore`
@@ -121,7 +137,8 @@ No existen agentes llamados `orquestador`, `observador` (a secas) ni
 
 ```
 Paso previo  `/propuesta-init <idea>` → crea y activa `proposals/<run-id>/`
-        (`RUN_ROOT`) con todos los artefactos de la corrida dentro
+        (`RUN_ROOT`) con sus cuatro subcarpetas: docs/ artefactos/ grafos/
+        redaccion/. El usuario deja sus insumos en `docs/`.
 Fase 0  Insumos-Observador → ingerir insumos
 Fase 1  Investigador → §3 descripción del problema + pregunta, luego bucle de
         figura (árbol de problemas):
@@ -170,7 +187,8 @@ correcciones. Cada cierre de gate agrega además un punto de costo/tiempo
 (tokens, tool-uses, duración) al resumen presentado al usuario, acumulado
 por fase a partir del bloque `<usage>` de cada `Task` delegado — ver
 "Telemetría de uso por fase" en `.claude/commands/propuesta.md` para el
-detalle completo del cálculo y persistencia (`proposal/pipeline/_estado.md`).
+detalle completo del cálculo y persistencia
+(`artefactos/pipeline/_estado.md`).
 
 ## Dispatch directo de agentes de propuesta
 

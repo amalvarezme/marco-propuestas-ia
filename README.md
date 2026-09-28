@@ -7,17 +7,26 @@
 </p>
 
 Framework multi-agente que produce propuestas de investigación en IA en
-**español**, como LaTeX, en `proposal/` (versión de referencia). En paralelo,
-los agentes mantienen un mirror Markdown/Obsidian navegable en `vault/`
-(`vault/secciones/`, `vault/insumos/`) — capa visual para explorar la
+**español**, como LaTeX, en `redaccion/` (versión de referencia). En paralelo,
+los agentes mantienen un mirror Markdown/Obsidian navegable en
+`artefactos/vault/` (`secciones/`, `insumos/`) — capa visual para explorar la
 propuesta como grafo de ideas; **nunca** es fuente de verdad, ese rol lo
-conserva `proposal/`.
+conserva `redaccion/`.
 
-**Una subcarpeta por corrida.** `/propuesta-init <idea>` crea
-`proposals/<run-id>/` y la activa: ahí dentro viven `proposal/`, `vault/` e
-`info_data/` de esa corrida, y toda ruta `proposal/...`/`vault/...` del marco se
-resuelve contra esa raíz (`RUN_ROOT`). Dos corridas nunca se pisan, y archivar
-una es solo un cambio de estado: la carpeta ya **es** el archivo.
+**Una carpeta de proyecto por corrida.** `/propuesta-init <idea>` crea
+`proposals/<run-id>/` y la activa. Adentro hay exactamente cuatro subcarpetas,
+y nada queda suelto fuera de ellas salvo el manifiesto `_run.md`:
+
+| Subcarpeta | Contenido | La llena |
+|---|---|---|
+| `docs/` | Insumos: TDR, papers, propuestas base, documentos de referencia | el usuario |
+| `artefactos/` | Lo generado que no es LaTeX: `estado_propuesta.md`, `insumos.md`, `guia_ajustada_TDR.md`, `pipeline/`, `scoping/papers/`, `vault/` | el pipeline |
+| `grafos/` | Reportes de `codebase-memory`: `papers-graph-report.md`, `vault-graph-report.md` | el dispatcher |
+| `redaccion/` | El proyecto LaTeX: `main.tex`, `sections/`, `refs.bib`, `main.pdf`, `main.docx` + tooling de build | el pipeline |
+
+Toda ruta `docs/...`, `artefactos/...`, `grafos/...` o `redaccion/...` del marco
+se resuelve contra esa raíz (`RUN_ROOT`). Dos corridas nunca se pisan, y
+archivar una es solo un cambio de estado: la carpeta ya **es** el archivo.
 
 **Runtime canónico: Claude Code** (`.claude/agents/` + `.claude/commands/`, la
 única fuente editada a mano). **OpenCode** y **Pi** son runtimes secundarios
@@ -40,15 +49,15 @@ inyecta a cada subagente solo el fragmento de sección que necesita (bloque
 `.claude/commands/propuesta.md`), en vez de que cada Task relea el archivo
 completo — la única excepción es la auditoría final (Fase 7), que sí necesita
 la guía íntegra. `insumos-observador` además cachea en Engram, por hash de
-contenido, la extracción de cada archivo de `info_data/`: corridas repetidas
+contenido, la extracción de cada archivo de `docs/`: corridas repetidas
 contra el mismo insumo (p. ej. la misma convocatoria) no vuelven a procesarlo
 desde cero.
 
 **Telemetría de uso por fase.** El dispatcher lee el bloque `<usage>` que
 devuelve cada `Task` delegado (tokens, tool-uses, duración), lo acumula por
-fase y lo persiste en `proposal/pipeline/_estado.md` (columnas `Tokens |
+fase y lo persiste en `artefactos/pipeline/_estado.md` (columnas `Tokens |
 Tool-uses | Duración`) y en el frontmatter de cada evento de fase
-(`proposal/pipeline/<NN>-<fase>.md`: `tokens_total`, `tool_uses`,
+(`artefactos/pipeline/<NN>-<fase>.md`: `tokens_total`, `tool_uses`,
 `duration_ms`). Cada cierre de gate agrega un 4º punto — "(d) Costo/tiempo" —
 a la tríada habitual (resumen, veredicto, aprobación), y la Fase 7 cierra con
 una tabla resumen de una fila por fase.
@@ -71,7 +80,8 @@ agota — nunca reintentan sin límite.
 ├── AGENTS.md                        # Playbook / reglas globales
 ├── guiaProyectosIA_Agente.md        # Guía autoritativa sección por sección
 ├── .mcp.json                        # Config de MCP servers
-├── info_data/                       # Insumos del usuario (vacío entre corridas)
+├── info_data/                       # LEGACY: entrega de insumos previa al layout por corrida
+│                                     #   (las corridas nuevas usan proposals/<run-id>/docs/)
 ├── logos/                           # Logos institucionales (branding del repo/README)
 ├── scripts/                         # Tooling del REPO (no de la propuesta):
 │                                     #   init-run.sh — scaffolding de proposals/<run-id>/ (RUN_ROOT)
@@ -90,17 +100,18 @@ agota — nunca reintentan sin límite.
 │   ├── agents/                      # 9 subagentes portados (dispatch con subagent_run)
 │   ├── prompts/                     # los 3 comandos portados (slash commands de Pi)
 │   └── README.md                    # Único archivo de .pi/ escrito a mano
-├── vault/                           # Mirror Obsidian del layout heredado (raíz) — capa visual, no fuente de verdad
-│   ├── secciones/                   # Espejo de proposal/sections/*.tex por sección
-│   ├── insumos/                     # Espejo de proposal/insumos.md
+├── vault/                           # LEGACY: mirror Obsidian de la corrida plana de la raíz
+│   ├── secciones/                   # Una nota por sección
+│   ├── insumos/                     # Una nota por insumo/referencia
 │   └── .cbmignore                   # Exclusiones del índice de codebase-memory (.obsidian/)
 ├── proposals/                       # Una subcarpeta por corrida + índice (local, no en GitHub)
 │   ├── registry.md                  # Único archivo versionado: tabla append-only de metadatos
 │   │                                 #   (run-id, estado, ruta local)
 │   ├── .current-run                 # Puntero a la corrida activa (local, gitignored)
-│   └── <run-id>/                    # RUN_ROOT: _run.md + proposal/ + vault/ + info_data/
-│                                     #   (todo el contenido de la corrida, gitignored)
-└── proposal/                        # Framework de salida LaTeX (versión de referencia)
+│   └── <run-id>/                    # RUN_ROOT: _run.md + docs/ + artefactos/ + grafos/
+│                                     #   + redaccion/ (todo gitignored)
+└── proposal/                        # Esqueleto LaTeX versionado; init lo copia a cada RUN_ROOT
+                                     #   como redaccion/ (y es el árbol de la corrida heredada)
     ├── build.sh                     # Compilación PDF/DOCX
     ├── scripts/                     # compile_tikz.py, prep_docx.py — específico del build LaTeX/DOCX
     ├── logos/                       # Logos institucionales embebidos en el PDF (header/footer)
@@ -121,22 +132,23 @@ tooling (`scripts/`,
 run-id, fechas, idea breve, ruta local — nunca contenido de la propuesta).
 
 **Nunca** se sincroniza el contenido de una propuesta, ni de la corrida
-activa ni de las archivadas: `proposal/sections/`, `proposal/refs.bib`,
-`proposal/main.tex/.pdf/.docx`, `vault/secciones/`, `vault/insumos/`,
-`info_data/` y `proposals/<run-id>/` completo están en `.gitignore`, igual que
-el puntero `proposals/.current-run`. Con una subcarpeta por corrida, archivar
+activa ni de las archivadas: `proposals/<run-id>/` completo está en
+`.gitignore` —con sus cuatro subcarpetas— igual que el puntero
+`proposals/.current-run` y el árbol heredado de la raíz (`proposal/sections/`,
+`proposal/refs.bib`, `proposal/main.tex/.pdf/.docx`, `vault/secciones/`,
+`vault/insumos/`, `info_data/`). Con una subcarpeta por corrida, archivar
 no copia nada: `/propuesta-limpiar` (§Uso) marca la corrida como archivada en
 su `_run.md` y en `proposals/registry.md`, y la siguiente corrida arranca con
 `/propuesta-init` en su propia carpeta limpia. En el layout heredado (corrida
 en la raíz del repo) ese mismo comando conserva su comportamiento anterior:
-copia a `proposals/<run-id>/` y resetea `proposal/` y `vault/`.
+copia a `proposals/<run-id>/` y resetea `proposal/` y `vault/` de la raíz.
 
 `scripts/` (raíz) y `proposal/scripts/` son intencionalmente distintos: el
 primero es tooling del repo (scaffolding de corridas y portabilidad de agentes
 Claude Code → OpenCode/Pi, no depende de una corrida de `/propuesta`); el
 segundo es específico del
 build LaTeX/DOCX de una corrida (compilación de diagramas TikZ, export a
-Word) y solo tiene sentido una vez `proposal/sections/` existe.
+Word) y solo tiene sentido una vez `redaccion/sections/` de la corrida existe.
 
 ## Uso
 
@@ -157,8 +169,8 @@ compuertas de aprobación no funcionan en modo headless (`opencode run`,
 `/propuesta-limpiar` cierra la corrida activa (si existe) sin tener que
 arrancar `/propuesta` primero: con una subcarpeta por corrida es un cambio de
 estado en `_run.md` + `proposals/registry.md`; en el layout heredado archiva a
-`proposals/<run-id>/` en disco local y deja `proposal/` y `vault/` en
-scaffolding limpio. Ejecuta el mismo procedimiento de archivado que
+`proposals/<run-id>/` en disco local y deja `proposal/` y `vault/` de la raíz
+en scaffolding limpio. Ejecuta el mismo procedimiento de archivado que
 `/propuesta` dispara automáticamente al detectar una corrida sin terminar
 (Fase 0, bloque ARCHIVADO-Y-REINICIO), pero de forma standalone y con
 confirmación explícita del usuario antes de vaciar el árbol activo.
@@ -200,7 +212,7 @@ lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
   `graphify` que usó este marco hasta ahora.
 - **engram** (`brew install gentleman-programming/tap/engram`) — memoria persistente; requerido porque el servidor MCP `engram` de `.mcp.json` invoca este binario directamente.
 - **gentle-ai** (recomendado, `brew install gentleman-programming/tap/gentle-ai`) — orquestación del workflow SDD (`/sdd-*`), registro de skills y asignación de modelos por fase.
-- LaTeX (pdflatex + bibtex, estilo `natbib`/`apalike`) para compilar `proposal/main.tex`.
+- LaTeX (pdflatex + bibtex, estilo `natbib`/`apalike`) para compilar `redaccion/main.tex`.
 - MCP servers usados por el pipeline: codegraph (codebase-memory), OpenAlex,
   Crossref, Semantic Scholar, PubMed, arXiv, Context7, Consensus. Ver `REQUIREMENTS.md` §1 para el
   detalle de instalación y §3 para el detalle de paquetes; `.mcp.json` registra
@@ -208,11 +220,16 @@ lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
 
 ## Compilar la propuesta
 
-`proposal/main.tex` no está committeado: se genera en la Fase 7 (ensamble) de
-`/propuesta`. Ejecuta el pipeline hasta completarla y luego:
+`main.tex` no está committeado: se genera en la Fase 7 (ensamble) de
+`/propuesta`, dentro de la carpeta de la corrida. Ejecuta el pipeline hasta
+completarla y luego:
 
 ```bash
-cd proposal
+cd proposals/<run-id>/redaccion
 ./build.sh           # o: ./build.sh --manual (pdflatex→bibtex→pdflatex×2)
 ./build.sh --docx    # exporta a Word vía pandoc
 ```
+
+`build.sh` y `scripts/compile_tikz.py` resuelven el proyecto LaTeX como el
+directorio que los contiene, sin ninguna ruta fija, así que funcionan igual ahí
+y en el árbol heredado de la raíz (`cd proposal`).

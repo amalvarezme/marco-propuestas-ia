@@ -14,7 +14,7 @@ structured **PASS** or **FAIL** verdict.
 
 **Glob usage (avoid false "file not found" FAILs).** Always call `Glob` with a
 single **absolute** path as the `pattern` argument (e.g.
-`Glob(pattern="/Users/.../proposal/sections/figuras/fig_arbol_problemas.svg")`).
+`Glob(pattern="/Users/.../redaccion/sections/figuras/fig_arbol_problemas.svg")`).
 Passing a relative `pattern` together with a separate `path` argument has been
 observed to resolve against the wrong cwd in this environment and report files
 as missing when they exist — always verified independently before blaming the
@@ -42,7 +42,7 @@ pipeline. If a file you expect genuinely can't be found with an absolute-path
 4. **Traslapes:** no overlapping nodes, arrows, or blocks.
 5. **Paleta:** consistent color palette/style across figures (`azulUNAL`,
    `grisLabIA`, `verdeGCPDS`), no inconsistent or ad-hoc colors.
-6. **Exportación SVG:** `Glob("proposal/sections/figuras/fig_<name>.svg")` must
+6. **Exportación SVG:** `Glob("redaccion/sections/figuras/fig_<name>.svg")` must
    resolve — Tikz-Optimizer's helper script always emits this file alongside
    the PNG. FAIL if the SVG is missing; this is a mechanical existence check,
    not a visual judgment (you cannot open/render the SVG with your Read/Grep/
@@ -52,7 +52,7 @@ pipeline. If a file you expect genuinely can't be found with an absolute-path
    and destination block — no floating endpoint that starts or ends in
    empty space away from a node's edge — and no arrow visually overlaps a
    third, unrelated block. Read the diagram's `.tex` source
-   (`proposal/sections/diag_<name>.tex`) alongside the rendered PNG:
+   (`redaccion/sections/diag_<name>.tex`) alongside the rendered PNG:
    - Any `\draw` using the manual pattern `(nodeA.edge -| nodeB.edge) --
      (nodeB.edge)` is a FAIL candidate whenever `nodeB` is offset beyond
      `nodeA`'s width/height (check the nodes' coordinates/`text width` — if

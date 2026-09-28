@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-r"""Stage a docx-safe copy of proposal/main.tex for pandoc conversion.
+r"""Stage a docx-safe copy of the LaTeX project's main.tex for pandoc conversion.
+
+The project root is the parent of this script's own directory, so it works
+unmodified wherever that project lives: `<RUN_ROOT>/redaccion` in the per-run
+layout, `<repo>/proposal` in the legacy flat one.
 
 Pandoc's LaTeX reader cannot parse raw `tikzpicture`/`ganttchart`
-environments, so this script builds a staging tree that mirrors
-`proposal/` but replaces each diagram section (`diag_*.tex`) with a plain
+environments, so this script builds a staging tree that mirrors the project
+root but replaces each diagram section (`diag_*.tex`) with a plain
 `\includegraphics` stub pointing at a PNG rasterized via `compile_tikz.py`
 (reused as-is, via subprocess — kept a pure rasterizer per ADR-3).
 
@@ -26,8 +30,10 @@ import subprocess
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
-ROOT = HERE.parent.parent
-PROP = ROOT / "proposal"
+# LaTeX project root = the directory that holds this scripts/ directory. Layout
+# independent on purpose: <RUN_ROOT>/redaccion in the per-run layout,
+# <repo>/proposal in the legacy flat layout, with no hardcoded directory name.
+PROP = HERE.parent
 # Same location compile_tikz.py writes to — proposal/sections/figuras/, not
 # /tmp (hidden/inconvenient in Finder, OS-specific). Already covered by the
 # blanket proposal/sections/ .gitignore entry.
@@ -44,7 +50,19 @@ DIAGRAM_MAP = {
 # rasterize it when it actually contains a diagram env; a plain tabular is
 # pandoc-safe and gets copied verbatim.
 CRONOGRAMA_FILE = "14_cronograma_actividades.tex"
+# La guía ajustada al TDR puede renumerar el cronograma (p. ej. §19), así que
+# el archivo se localiza por sufijo y no solo por su nombre en la guía base.
+CRONOGRAMA_SUFFIX = "_cronograma_actividades.tex"
 _GANTT_ENV_RE = re.compile(r'\\begin\{(ganttchart|tikzpicture)\}')
+
+
+def cronograma_path(sections_dir: pathlib.Path):
+    """Resolve the Cronograma section file, whatever its section number."""
+    f = sections_dir / CRONOGRAMA_FILE
+    if f.exists():
+        return f
+    candidates = sorted(sections_dir.glob("*" + CRONOGRAMA_SUFFIX))
+    return candidates[0] if candidates else None
 
 
 def warn(msg: str) -> None:
@@ -55,8 +73,8 @@ def cronograma_has_diagram_env(sections_dir: pathlib.Path) -> bool:
     """Detect whether Redactor's §14 output uses a `ganttchart`/`tikzpicture`
     env (needs rasterization for pandoc) vs. a plain `tabular` (pandoc-safe,
     copy verbatim)."""
-    f = sections_dir / CRONOGRAMA_FILE
-    if not f.exists():
+    f = cronograma_path(sections_dir)
+    if f is None or not f.exists():
         return False
     text = f.read_text(encoding="utf-8")
     return bool(_GANTT_ENV_RE.search(text))
@@ -213,7 +231,7 @@ def build_stage(stage: pathlib.Path) -> pathlib.Path:
                     f"\\includegraphics[width=\\linewidth]{{{png_name}}}\n",
                     encoding="utf-8",
                 )
-            elif f.name == CRONOGRAMA_FILE and cronograma_is_diagram:
+            elif f.name.endswith(CRONOGRAMA_SUFFIX) and cronograma_is_diagram:
                 png_name = stage_diagram_image("gantt", stage)
                 original = f.read_text(encoding="utf-8")
                 (stage / "sections" / f.name).write_text(

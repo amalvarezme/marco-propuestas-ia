@@ -12,7 +12,7 @@ verdict with specific, actionable corrections.
 
 **Glob usage (avoid false "file not found" FAILs).** Always call `Glob` with a
 single **absolute** path as the `pattern` argument (e.g.
-`Glob(pattern="/Users/.../proposal/sections/03_descripcion_problema.tex")`), and
+`Glob(pattern="/Users/.../redaccion/sections/03_descripcion_problema.tex")`), and
 prefer `Read` directly on the absolute path the Orchestrator gives you over
 discovering files via `Glob` in the first place. Passing a relative `pattern`
 together with a separate `path` argument has been observed to resolve against
@@ -46,7 +46,7 @@ you) before reporting a FAIL for a missing artifact.
    - **Any other gate, if your prompt does NOT carry a `## FRAGMENTO DE
      GUÍA` block** (unexpected — e.g. while this mechanism is deployed
      incrementally): Fallback — read only the corresponding `### N.`
-     section(s) of THIS run's applicable guide — `proposal/guia_ajustada_TDR.md`
+     section(s) of THIS run's applicable guide — `artefactos/guia_ajustada_TDR.md`
      if it exists and was approved at gate G0.5, otherwise
      `guiaProyectosIA_Agente.md` — never assume it is always the base guide,
      and never read the guide COMPLETE here (that's the Fase 7 case above,
@@ -76,8 +76,8 @@ you) before reporting a FAIL for a missing artifact.
    line. Flag any call with >3 keys, any key reused >3 times or reused twice
    within one section, and any IEEE numeric `[n]` marker.
    No-orphan check (forward-only, Read/Grep/Glob only): every `\citep`/
-   `\citet` cite key must resolve to a `proposal/scoping/papers/paper-N.md`
-   (or `vault/insumos/<key>.md`) containing a `## Verificación` block with a
+   `\citet` cite key must resolve to a `artefactos/scoping/papers/paper-N.md`
+   (or `artefactos/vault/insumos/<key>.md`) containing a `## Verificación` block with a
    resolved stable ID. FAIL any unverified entry citing the missing note.
    Pre-existing orphans predating this check are out of scope.
 4b. **Scientific self-containment for §3/§4 (mandatory, only when your gate
@@ -143,13 +143,13 @@ you) before reporting a FAIL for a missing artifact.
 7. **Graph evidence (advisory only):** Your Task prompt may include a bounded
    `EVIDENCIA DE GRAFO (asesora, NO bloqueante)` block, injected by the
    dispatcher (`propuesta.md`) from the current `codebase-memory` index over
-   `vault/`.
+   `artefactos/vault/`.
    You may cite it in HALLAZGOS, but it is a hint, not a check — your manual
    checklist above stays the sole authority for PASS/FAIL. If the block is
    absent, ignore this item entirely.
 8. **Presupuesto (§13) — solo cuando la fase de presupuesto corrió:**
    Independently recompute the budget table by reading the visible numbers in
-   `proposal/sections/13_presupuesto.tex` (Read/Grep/Glob only — no Bash):
+   `redaccion/sections/13_presupuesto.tex` (Read/Grep/Glob only — no Bash):
    - **Per-row:** verify `Valor total = Cantidad × Valor unitario` for every row.
    - **Rubro subtotals:** verify each subtotal equals the sum of its rows'
      Valor total.
@@ -164,7 +164,7 @@ you) before reporting a FAIL for a missing artifact.
      assigned to a rubro outside that list.
    - **Cruce Presupuesto (§13) ↔ Cronograma (§14), diferido a Fase 7:** §14 does
      not exist yet at the Fase 6.4 interactive gate — skip this bullet
-     entirely when `proposal/sections/14_cronograma_actividades.tex` is absent.
+     entirely when `redaccion/sections/14_cronograma_actividades.tex` is absent.
      Once §14 exists (Fase 7 final audit), this check becomes mandatory and
      blocking: verify that every ítem/rubro referencing a cronograma
      phase/activity actually matches a real phase/activity in §14, and that

@@ -16,32 +16,47 @@ $ARGUMENTS
 
 ## Raíz de corrida (`RUN_ROOT`) — lee esto antes de escribir cualquier archivo
 
-Todos los artefactos de una corrida viven en **una sola subcarpeta**,
-`proposals/<run-id>/`. En TODO este documento, cualquier ruta que empiece por
-`proposal/` o `vault/` (p. ej. `proposal/sections/03_*.tex`,
-`proposal/estado_propuesta.md`, `vault/secciones/`) se resuelve **dentro de
-`RUN_ROOT`**, no en la raíz del repo. Las únicas rutas que son literalmente
-relativas a la raíz son las del framework: `.claude/`, `scripts/`,
-`guiaProyectosIA_Agente.md`, `AGENTS.md`, `proposals/registry.md` y
-`proposals/.current-run`.
+Todos los artefactos de una corrida viven en **una sola carpeta de proyecto**,
+`proposals/<run-id>/`, repartidos en exactamente **cuatro subcarpetas**. Nada
+queda suelto en la raíz de la corrida salvo `_run.md`, que describe la carpeta
+misma.
+
+| Subcarpeta | Qué contiene | Quién escribe ahí |
+|---|---|---|
+| `docs/` | Insumos del usuario: TDR, papers, propuestas base, documentos de referencia. | El usuario. El pipeline solo lee. |
+| `artefactos/` | Todo lo que el pipeline genera y **no** es fuente LaTeX: `estado_propuesta.md`, `insumos.md`, `guia_ajustada_TDR.md`, `pipeline/` (log de fases/compuertas), `scoping/papers/` (corpus), `vault/` (espejo Obsidian). | El dispatcher y los subagentes. |
+| `grafos/` | Reportes de `codebase-memory`: `papers-graph-report.md`, `vault-graph-report.md` y sus snapshots. | Solo el dispatcher. |
+| `redaccion/` | El proyecto LaTeX: `main.tex`, `sections/`, `refs.bib`, `main.pdf`, `main.docx`, más el tooling de build (`build.sh`, `scripts/`, `logos/`, `templates/`). | Los subagentes que escriben secciones. |
+
+En TODO este documento, cualquier ruta que empiece por `docs/`, `artefactos/`,
+`grafos/` o `redaccion/` se resuelve **dentro de `RUN_ROOT`**, no en la raíz
+del repo. Las únicas rutas literalmente relativas a la raíz son las del
+framework: `.claude/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,
+`proposals/registry.md` y `proposals/.current-run`. (Ojo con `docs/`: dentro de
+`RUN_ROOT` son los insumos del usuario; el `docs/` de la raíz del repo es
+documentación del framework y este documento nunca lo referencia.)
 
 Resolución de `RUN_ROOT`, en este orden exacto:
 
 1. Si existe `proposals/.current-run`, `RUN_ROOT` = `proposals/<contenido
    de ese archivo>/`. Es el caso normal, y lo escribe `/propuesta-init`.
-2. Si NO existe pero la raíz tiene una corrida heredada (un
-   `proposal/estado_propuesta.md` no vacío, esquema previo a las subcarpetas
-   por corrida), `RUN_ROOT` = la raíz del repo, y sigues esa corrida donde
-   está — nunca la migres a mitad de camino.
-3. Si no existe ninguno de los dos, **DETENTE** antes de escribir nada:
-   pídele al usuario que corra `/propuesta-init <idea>` (o corre tú mismo
+2. Si no existe, **DETENTE** antes de escribir nada: pídele al usuario que
+   corra `/propuesta-init <idea>` (o corre tú mismo
    `scripts/init-run.sh <run-id> "<idea>"` tras resolver el run-id como
-   describe la Fase 0) y solo después continúa con la Fase 0.
+   describe la Fase 0) y solo después continúa con la Fase 0. Nunca improvises
+   una carpeta de corrida a mano ni escribas artefactos en la raíz del repo.
+
+Sobre el layout heredado (corridas anteriores a estas subcarpetas, con
+`proposal/` y `vault/` planos en la raíz del repo): no se migra ni se continúa
+desde acá. Lo único soportado es archivarlo con `/propuesta-limpiar`; ver
+"LAYOUT HEREDADO" en la Fase 0.
 
 Cuando una llamada MCP de `codebase-memory` pide un `repo_path` absoluto,
 `<RUN_ROOT>` es la ruta absoluta de esa carpeta (p. ej.
-`/ruta/al/repo/proposals/2026-09-siun-alianzas`). Los nombres de índice se
-derivan del mismo run-id: `<run-id>-papers` y `<run-id>-vault`.
+`/ruta/al/repo/proposals/2026-09-siun-alianzas`), y los dos corpus son
+`<RUN_ROOT>/artefactos/scoping/papers` y `<RUN_ROOT>/artefactos/vault`. Los
+nombres de índice se derivan del mismo run-id: `<run-id>-papers` y
+`<run-id>-vault`.
 
 ## Roster de subagentes (`.claude/agents/`)
 
@@ -78,13 +93,13 @@ Reglas duras:
   del repo. `codebase-memory` respeta `.gitignore`, y todo el contenido de
   una corrida está gitignoreado: indexado desde la raíz, el corpus aparece
   como `not_indexed` con `reason: "gitignore"`. Indexado con el corpus
-  **como raíz propia** (`<RUN_ROOT>/vault`,
-  `<RUN_ROOT>/proposal/scoping/papers`), el `.gitignore` del repo padre no
+  **como raíz propia** (`<RUN_ROOT>/artefactos/vault`,
+  `<RUN_ROOT>/artefactos/scoping/papers`), el `.gitignore` del repo padre no
   aplica y los archivos sí entran. Las negaciones (`!ruta`) en `.cbmignore`
   **no** revierten una regla de `.gitignore`, así que el corpus-como-raíz es
   la única mecánica válida.
 - **Ruido excluido con `.cbmignore`** dentro del corpus (esto sí funciona):
-  `vault/.cbmignore` excluye `.obsidian/`; `proposal/scoping/.cbmignore`
+  `artefactos/vault/.cbmignore` excluye `.obsidian/`; `artefactos/scoping/.cbmignore`
   excluye los reportes derivados.
 - **Nombres de proyecto estables por corrida**: `<run-id>-papers` para el
   corpus de scoping y `<run-id>-vault` para el mirror Obsidian. Son dos
@@ -114,8 +129,8 @@ exactamente estas tres secciones, derivadas de las llamadas MCP:
 <3-5 preguntas que el DISPATCHER deriva de los dos bloques anteriores>
 ```
 
-Rutas fijas del reporte: `proposal/scoping/graph-report.md` (corpus de
-papers) y `proposal/pipeline/vault-graph-report.md` (mirror del vault).
+Rutas fijas del reporte: `grafos/papers-graph-report.md` (corpus de
+papers) y `grafos/vault-graph-report.md` (mirror del vault).
 Ambos son artefactos de corrida, gitignoreados, nunca se commitean.
 
 ### Refresh del índice del vault (procedimiento único)
@@ -123,37 +138,37 @@ Ambos son artefactos de corrida, gitignoreados, nunca se commitean.
 Cada vez que una fase de abajo dice "aplica el procedimiento de Refresh del
 índice del vault", el DISPATCHER hace exactamente esto:
 
-1. `index_repository(repo_path="<RUN_ROOT>/vault", name="<run-id>-vault",
+1. `index_repository(repo_path="<RUN_ROOT>/artefactos/vault", name="<run-id>-vault",
    mode="fast")` — incremental, sin borrar nada.
 2. `get_architecture(project="<run-id>-vault",
    aspects=["clusters","hotspots","boundaries"])`.
-3. `Grep` sobre `vault/` con el patrón `\[\[([^\]]+)\]\]` y contrasta cada
-   destino contra los archivos existentes de `vault/secciones/` y
-   `vault/insumos/`: cada destino sin archivo es un `[[wikilink]]` roto.
-4. Reescribe `proposal/pipeline/vault-graph-report.md` con las tres
+3. `Grep` sobre `artefactos/vault/` con el patrón `\[\[([^\]]+)\]\]` y contrasta cada
+   destino contra los archivos existentes de `artefactos/vault/secciones/` y
+   `artefactos/vault/insumos/`: cada destino sin archivo es un `[[wikilink]]` roto.
+4. Reescribe `grafos/vault-graph-report.md` con las tres
    secciones del formato de arriba, más una línea por `[[wikilink]]` roto.
 
 ## Instrucciones de inicio
 
-1. Si no hay insumos (PDFs/papers/enlaces) en el mensaje ni en `info_data/`,
+1. Si no hay insumos (PDFs/papers/enlaces) en el mensaje ni en `docs/`,
    pídelos al usuario antes de avanzar. Los archivos fuente se guardan en
-   `info_data/`. Si los hay, despacha con `Task` al subagente
+   `docs/`. Si los hay, despacha con `Task` al subagente
    `insumos-observador` (Fase 0) para clasificar (TDR / draft-base /
    background), extraer el TDR si aplica, y estructurar el contexto en
-   `proposal/insumos.md`. Ver el bloque "Fase 0" del pipeline abajo para el
+   `artefactos/insumos.md`. Ver el bloque "Fase 0" del pipeline abajo para el
    flujo completo de clasificación, gate de ambigüedad y decisión de ruta.
 2. Crea/mantén un registro de estado del documento en
-   `proposal/estado_propuesta.md` con: sección actual, artefactos clave
+   `artefactos/estado_propuesta.md` con: sección actual, artefactos clave
    (pregunta de investigación, subproblemas, objetivos, hipótesis) y estado de
    cada gate. En esta misma Fase 0 asegúrate también de que existan
-   `vault/secciones/` y `vault/insumos/` (créalos si faltan) — el mirror
+   `artefactos/vault/secciones/` y `artefactos/vault/insumos/` (créalos si faltan) — el mirror
    Obsidian de la propuesta (ver "Vault mirror" en `coordinador-propuesta.md`).
    Más adelante (a partir de G1b, ver bloque "Fase 1b" abajo), el dispatcher
-   indexa `vault/` con `codebase-memory` bajo el nombre de proyecto
+   indexa `artefactos/vault/` con `codebase-memory` bajo el nombre de proyecto
    `<run-id>-vault` y escribe el reporte derivado en
-   `proposal/pipeline/vault-graph-report.md` — artefacto de corrida,
+   `grafos/vault-graph-report.md` — artefacto de corrida,
    gitignoreado, nunca se commitea, igual que
-   `proposal/scoping/graph-report.md` de la Fase 1a/1b (son dos índices
+   `grafos/papers-graph-report.md` de la Fase 1a/1b (son dos índices
    completamente distintos, sobre corpus y reportes distintos).
 3. Avanza fase por fase según el pipeline de `coordinador-propuesta.md`
    (resumido abajo). Tras cada gate, presenta al usuario: (a) resumen de lo
@@ -164,9 +179,9 @@ Cada vez que una fase de abajo dice "aplica el procedimiento de Refresh del
    fase" abajo para el detalle de cómo se calculan estos valores).
    **NO avances sin aprobación.**
 4. Recuerda: toda la salida del documento es en español; los archivos van en
-   `proposal/sections/*.tex` y `proposal/refs.bib`; ensambla `proposal/main.tex`
-   al final (Fase 7). También existen `vault/secciones/*.md` y
-   `vault/insumos/*.md`: un mirror visual en Markdown (Obsidian) mantenido por
+   `redaccion/sections/*.tex` y `redaccion/refs.bib`; ensambla `redaccion/main.tex`
+   al final (Fase 7). También existen `artefactos/vault/secciones/*.md` y
+   `artefactos/vault/insumos/*.md`: un mirror visual en Markdown (Obsidian) mantenido por
    los propios agentes que escriben secciones (`insumos-observador`,
    `investigador`, `redactor`, `bibliografo-propuesta`, `presupuestador`) al
    escribir su `.tex` o `.bib` correspondiente — tú no lo regeneras aparte.
@@ -176,14 +191,14 @@ Cada vez que una fase de abajo dice "aplica el procedimiento de Refresh del
 ## Grafo de coherencia del vault (asesor, NO bloqueante)
 
 A partir de la aprobación de G1b, el DISPATCHER mantiene un índice de ideas
-sobre `vault/` con `codebase-memory` y lo inyecta como evidencia asesora en
+sobre `artefactos/vault/` con `codebase-memory` y lo inyecta como evidencia asesora en
 cada `Task → revisor` de las Fases 1-5 y 7 (ver los pasos "[NUEVO]" dentro de
 cada fase, abajo). Este índice es DISTINTO del de la Fase 1a/1b (que indexa
-`proposal/scoping/papers/`, el corpus de papers de scoping, bajo el proyecto
-`<run-id>-papers`, y reporta en `proposal/scoping/graph-report.md`): el índice
+`artefactos/scoping/papers/`, el corpus de papers de scoping, bajo el proyecto
+`<run-id>-papers`, y reporta en `grafos/papers-graph-report.md`): el índice
 de esta sección es el proyecto `<run-id>-vault`, cubre el mirror Obsidian
-(`vault/secciones/` + `vault/insumos/`) y reporta en
-`proposal/pipeline/vault-graph-report.md`. Nunca lo indexa `revisor` (solo
+(`artefactos/vault/secciones/` + `artefactos/vault/insumos/`) y reporta en
+`grafos/vault-graph-report.md`. Nunca lo indexa `revisor` (solo
 tiene Read/Grep/Glob, sin acceso MCP) — siempre lo dispara el dispatcher, con
 el procedimiento "Refresh del índice del vault" definido arriba.
 
@@ -192,7 +207,7 @@ Formato exacto del bloque que el dispatcher inyecta inline en el prompt de
 HALLAZGOS debe leerse contra este bloque):
 
 ```
-EVIDENCIA DE GRAFO (asesora, NO bloqueante) — proposal/pipeline/vault-graph-report.md
+EVIDENCIA DE GRAFO (asesora, NO bloqueante) — grafos/vault-graph-report.md
 Dependencias duras (guia_ajustada_TDR "Nota de trazabilidad"): §3↔§7, §3↔§6, §5↔§6, §10↔§8.
 - Presentes: <referencias cruzadas halladas entre notas del vault>
 - Ausentes/huérfanas: <p. ej. SP3 sin objetivo enlazado>
@@ -211,22 +226,22 @@ causa-efecto explícito) quedó absorbida en Metodología (§10), punto 1
 Si el reporte de grafo revela un `[[wikilink]]` roto, una contradicción, o una idea
 huérfana frente a uno de los 4 pares de trazabilidad de arriba, el
 dispatcher además agrega una fila a `## Hallazgos de coherencia (grafo)` en
-`proposal/estado_propuesta.md` (crea la sección la primera vez que se usa),
+`artefactos/estado_propuesta.md` (crea la sección la primera vez que se usa),
 con fase, archivo, y tipo de problema. Este hallazgo NUNCA por sí solo hace
 que `revisor` cambie su VEREDICTO a FAIL.
 
-## Registro de pipeline (`proposal/pipeline/`, distinto de los índices de papers y vault)
+## Registro de pipeline (`artefactos/pipeline/`, distinto de los índices de papers y vault)
 
 Un TERCER registro, independiente de los dos índices, documenta la estructura del
 pipeline mismo (fases/compuertas/agentes/artefactos), no el corpus de
-papers ni el mirror Obsidian. Corpus y CWD dedicados: `proposal/pipeline/`
+papers ni el mirror Obsidian. Corpus y CWD dedicados: `artefactos/pipeline/`
 — NUNCA corre desde la raíz del repo.
 
-Corpus: el DISPATCHER escribe/actualiza un archivo `proposal/pipeline/<NN>-<fase>.md`
+Corpus: el DISPATCHER escribe/actualiza un archivo `artefactos/pipeline/<NN>-<fase>.md`
 por cada evento de fase (p. ej. `00-fase0.md`, `10-fase1a.md`,
-`11-fase1b.md`, `20-fase1.md`, ...), más un `proposal/pipeline/_estado.md`
+`11-fase1b.md`, `20-fase1.md`, ...), más un `artefactos/pipeline/_estado.md`
 compacto que espeja la tabla de compuertas en cada actualización (mantiene
-el corpus autocontenido bajo el único CWD `proposal/pipeline/`, ya que
+el corpus autocontenido bajo el único CWD `artefactos/pipeline/`, ya que
 `estado_propuesta.md` vive un nivel arriba). Plantilla mínima por evento:
 
 ```markdown
@@ -253,7 +268,7 @@ duration_ms: <N | no medible directamente>
 | 1 | insumos-observador | — | 12345 | 8 | 45000 |
 ```
 
-`proposal/pipeline/_estado.md` mantiene el mismo set de columnas en cada
+`artefactos/pipeline/_estado.md` mantiene el mismo set de columnas en cada
 actualización — encabezado exacto:
 
 ```
@@ -269,7 +284,7 @@ Cuándo actualiza: en CADA transición de compuerta (los mismos puntos donde
 el dispatcher voltea `gate_status`, ver "Reglas de gate (obligatorias)"
 abajo) — ver el bloque `[NUEVO] DISPATCHER: pipeline-graph` dentro de cada
 fase/compuerta. Mecánica: el DISPATCHER únicamente escribe/actualiza el
-archivo de evento `.md` y `proposal/pipeline/_estado.md` — `proposal/pipeline/`
+archivo de evento `.md` y `artefactos/pipeline/_estado.md` — `artefactos/pipeline/`
 NO se indexa con `codebase-memory` (no aporta valor consumido; el overhead se
 descarta). Nunca lo hace
 `revisor` (solo Read/Grep/Glob) — siempre lo hace el dispatcher.
@@ -388,99 +403,54 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): si
         valida `<valor>` contra `[a-z0-9-]+` y úsalo tal cual (el resto de
         `$ARGUMENTS` es la idea); si no hay override, usa el slug
         auto-derivado. Escribe el run-id resuelto en
-        `proposal/estado_propuesta.md` ("## Identidad de la corrida
+        `artefactos/estado_propuesta.md` ("## Identidad de la corrida
         (run-id)": `run_id`, `slug_source` [auto|user], `idea`, `creada`
         [YYYY-MM-DD], `estado` [activa]) y agrega una fila a
         `proposals/registry.md` (crea el archivo con su tabla de encabezado
         si no existe: `| run-id | creada | cerrada | estado | idea (breve) |
         archivo | commit |`).
-        ──→ CUÁL VARIANTE DE ARCHIVADO APLICA: si `RUN_ROOT` es una
-        subcarpeta por corrida (`proposals/<run-id>/`, caso 1 de "Raíz de
-        corrida"), archivar una corrida previa es SOLO un cambio de estado:
-        `estado: archivada` + `cerrada: <YYYY-MM-DD>` en su `_run.md` y en su
-        fila de `proposals/registry.md`, más
-        `delete_project("<run-id-previo>-papers")` y
-        `delete_project("<run-id-previo>-vault")` para no dejar índices
-        huérfanos. NO se copia ni se borra contenido, y los pasos 2 y 5 de
-        ARCHIVADO-Y-REINICIO (copia a `proposals/<run-id>/` y reinicio del
-        árbol activo) NO aplican: cada corrida ya vive en su propia carpeta.
-        Los pasos 3 y 4 (manifiesto + commit solo del registro) sí aplican.
-        El procedimiento completo de abajo, con copia y reinicio, aplica
-        únicamente al layout heredado en la raíz (caso 2).
-        ──→ GUARDIA DE COLISIÓN (corrida previa sin archivar): si
-        `proposal/estado_propuesta.md` ya existe con `estado: activa` en su
-        bloque "Identidad de la corrida", DETENTE y exige confirmación
-        explícita — **sin importar si todas las compuertas están cerradas o
-        no**: una corrida con Fase 7 en PASS pero nunca archivada vía
-        ARCHIVADO-Y-REINICIO o `/propuesta-limpiar` sigue teniendo su
-        `main.pdf`/`main.docx` únicamente en el árbol de trabajo efímero
-        `proposal/`, no en `proposals/<run-id>/`; arrancar una corrida nueva
-        sin este guardado los sobrescribiría sin dejar copia. Si quedan
-        compuertas pendientes: "Existe una corrida SIN terminar
-        (`<run-id>`, última compuerta `<Gx>`). ¿Archivarla y empezar una
-        nueva? (sí/no)". Si todas las compuertas están cerradas: "La
-        corrida `<run-id>` ya terminó (todas las compuertas en PASS) pero
-        no fue archivada — su `main.pdf`/`main.docx` siguen solo en
-        `proposal/`. ¿Archivarla a `proposals/<run-id>/` (copia local
-        permanente) y empezar una corrida nueva? (sí/no)". Solo "sí"
-        continúa con ARCHIVADO-Y-REINICIO (abajo); "no" ofrece
-        reanudar/revisar la corrida existente en vez de iniciar una nueva.
-        ──→ ARCHIVADO-Y-REINICIO (solo corridas futuras, tras "sí" arriba):
-          1. Lee el `run_id` previo de `estado_propuesta.md`.
-          2. `mkdir -p proposals/<run-id-previo>/`; copia el contenido de la
-             corrida activa a `proposals/<run-id-previo>/proposal/` y
-             `proposals/<run-id-previo>/vault/` (misma superficie que la
-             eliminación única de la corrida actual, ver Fase de limpieza
-             única en el diseño). Esta copia es **solo local**:
-             `proposals/*/` está en `.gitignore` — el contenido de una
-             propuesta (activa o archivada) nunca se sincroniza con GitHub;
-             el repo remoto solo contiene lo necesario para correr el
-             pipeline (agentes, comandos, scripts, plantillas), nunca el
-             producto de una corrida.
-          3. Escribe `proposals/<run-id-previo>/run.md` (manifiesto: run-id,
-             idea, fechas, estado final de cada compuerta, conteo de
-             referencias); marca la fila del registro como `archivada`, fija
-             `cerrada` y `archivo` (ruta local, no URL de GitHub).
-          4. Commit **solo** de `proposals/registry.md` (nunca del contenido
-             archivado, que está gitignored):
+        ──→ GUARDIA DE CORRIDA ACTIVA: lee el `_run.md` de la corrida
+        apuntada por `proposals/.current-run`. Si su `estado` es `activa` y
+        NO es la corrida que estás arrancando, DETENTE y exige confirmación
+        explícita — sin importar si todas sus compuertas están cerradas o no:
+        "Existe la corrida activa `<run-id>` (última compuerta `<Gx>`).
+        ¿Cerrarla como `archivada` y seguir con `<run-id-nuevo>`? (sí/no)".
+        Solo "sí" continúa; "no" ofrece reanudar/revisar esa corrida en vez
+        de iniciar una nueva.
+        ──→ CIERRE DE LA CORRIDA PREVIA (tras "sí" arriba): con una
+        subcarpeta por corrida, cerrar una corrida NO copia ni borra nada —
+        su `main.pdf`/`main.docx` y todos sus artefactos ya están a salvo en
+        `proposals/<run-id-previo>/`, que **es** el archivo. Son cuatro pasos:
+          1. En `proposals/<run-id-previo>/_run.md`: `estado: archivada` y
+             `cerrada: <YYYY-MM-DD>`.
+          2. En `proposals/registry.md`: misma fila a `archivada`, con
+             `cerrada` y `archivo` (ruta local `proposals/<run-id-previo>/`,
+             nunca una URL de GitHub).
+          3. Descarta sus índices de `codebase-memory` para no dejar índices
+             huérfanos: `delete_project("<run-id-previo>-papers")` y
+             `delete_project("<run-id-previo>-vault")`.
+          4. Commit **solo** de `proposals/registry.md` (el contenido de la
+             corrida está gitignored y nunca se sincroniza):
              `chore(proposals): record archive of run <run-id-previo>`. No
-             hay `git add -f`/force-add de nada bajo `proposals/<run-id-previo>/`
-             — si algún archivo ahí quedara trackeado por error, es un bug a
-             corregir en `.gitignore`, no un caso para forzar el add.
-          5. Reinicia el árbol activo a scaffolding, dejando `proposal/` y
-             `vault/` exactamente como en un clon nuevo del repo más las
-             carpetas vacías de trabajo. Regla general: borra todo lo que no
-             esté en la lista CONSERVA de abajo y no sea uno de los 3
-             archivos que se reescriben vacíos — build auxiliar, residuos de
-             compilación y cachés de la corrida cerrada nunca deben
-             sobrevivir al reinicio, aunque ya estén gitignored (esto es
-             limpieza de disco, no de git). En esta corrida eso incluye
-             concretamente:
-             - Vacía: `proposal/sections/`, `proposal/scoping/papers/`,
-               `proposal/pipeline/`, `vault/secciones/`, `vault/insumos/`
-               (conserva `.gitkeep` en estas dos últimas).
-             - Reescribe vacíos (0 bytes): `proposal/estado_propuesta.md`,
-               `proposal/refs.bib`, `proposal/insumos.md`.
-             - Borra por completo: `proposal/guia_ajustada_TDR.md`;
-               `proposal/main.tex`, `proposal/main.pdf`, `proposal/main.docx`
-               y todo build auxiliar de LaTeX (`main.aux/.bbl/.blg/
-               .fdb_latexmk/.fls/.log/.out/.synctex.gz`); `proposal/
-               pixelshot-out/`; `proposal/scoping/graph-report.md` y cualquier
-               snapshot (`proposal/scoping/graph-report-*-snapshot.md`);
-               `proposal/pipeline/vault-graph-report.md`;
-               `proposal/scripts/__pycache__/`. Además, descarta los índices
-               de `codebase-memory` de la corrida anterior con
-               `delete_project("<run-id-anterior>-papers")` y
-               `delete_project("<run-id-anterior>-vault")`.
-             - CONSERVA siempre: `proposal/build.sh`, `proposal/scripts/*.py`,
-               `proposal/logos/`, `proposal/templates/`. Nunca toques
-               `vault/.obsidian/` (estado local del editor Obsidian, no es
-               contenido de la corrida).
-          6. Continúa con el nuevo run-id (paso "RESOLUCIÓN DE RUN-ID"
-             arriba).
+             hay `git add -f`/force-add de nada bajo
+             `proposals/<run-id-previo>/` — si algún archivo ahí quedara
+             trackeado por error, es un bug a corregir en `.gitignore`, no un
+             caso para forzar el add.
+        Nunca vacíes ni "reinicies" la carpeta de la corrida previa: la
+        corrida nueva nace en su propia carpeta vía `/propuesta-init`.
+        ──→ LAYOUT HEREDADO (corridas anteriores a las subcarpetas por
+        corrida): si no hay puntero y en la raíz del repo hay un
+        `proposal/estado_propuesta.md` con `estado: activa`, esa corrida vive
+        en el árbol plano de la raíz (`proposal/` + `vault/`) y **no** se
+        migra a mitad de camino. Lo único soportado sobre ella es archivarla
+        con `/propuesta-limpiar`, que copia ese árbol a
+        `proposals/<run-id>/` y lo deja en scaffolding limpio; ese comando es
+        la fuente de verdad del procedimiento heredado y no se duplica acá.
+        Tras archivarla, toda corrida nueva usa el layout de cuatro
+        subcarpetas.
         ──→ SIN CORRIDA PREVIA: si no existe una corrida anterior, omite
-        GUARDIA DE COLISIÓN y ARCHIVADO-Y-REINICIO por completo; continúa
-        directo con el resto de la Fase 0.
+        GUARDIA DE CORRIDA ACTIVA y CIERRE DE LA CORRIDA PREVIA por
+        completo; continúa directo con el resto de la Fase 0.
         ──→ FINGERPRINT DE GUÍA BASE (liviano, antes de despachar
         insumos-observador): calcula
         `guide_fingerprint = shasum -a 256 guiaProyectosIA_Agente.md | cut -c1-12`
@@ -507,7 +477,7 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): si
         calidad/innovación→§6/§7 (objetivos), §4/§5/§8 (estado del
         arte/hipótesis/marco conceptual), §10 (metodología); formación→§15;
         impacto territorial/ODS→§2; articulación→§2/§15) y escríbela en
-        `proposal/estado_propuesta.md` ("Prioridad por sección"). Si no hay
+        `artefactos/estado_propuesta.md` ("Prioridad por sección"). Si no hay
         TDR, omite este paso por completo.
         ──→ RAMA DRAFT: si hay draft-base confirmado → ruta DRAFT-EXISTS.
         Si no, pregunta explícitamente "¿existe un borrador previo?" antes
@@ -515,7 +485,7 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): si
         a DRAFT-EXISTS.
         ──→ Escribe la decisión de ruta (DRAFT-EXISTS | NO-DRAFT, archivo
         TDR, archivo draft-base y quién confirmó cada uno) en
-        `proposal/estado_propuesta.md` ("Clasificación y ruta (Fase 0)").
+        `artefactos/estado_propuesta.md` ("Clasificación y ruta (Fase 0)").
         ──→ CORROBORACIÓN DE SECCIONES (solo si hay TDR): lee de insumos.md
         "Secciones obligatorias declaradas por el TDR" y registra en
         estado_propuesta.md ("Clasificación y ruta") los 3 campos nuevos (TDR
@@ -548,7 +518,7 @@ Fase 0.5 [COMPUERTA G0.5] Solo aplica si el campo "Archivo TDR" de la tabla
         > realmente exigida (y no solo a los pesos de los criterios) necesito el
         > documento que liste las secciones obligatorias de la propuesta.
         > Por favor aporta ese documento (un archivo de "secciones"/"estructura" de la
-        > propuesta, PDF o .docx) en `info_data/` y confírmame el nombre. Hasta
+        > propuesta, PDF o .docx) en `docs/` y confírmame el nombre. Hasta
         > entonces la compuerta **G0.5 queda BLOQUEADA**: no puedo generar
         > `guia_ajustada_TDR.md` por la vía ajustada al TDR.
         > Alternativa explícita: si no existe tal documento y prefieres seguir con la
@@ -563,31 +533,31 @@ Fase 0.5 [COMPUERTA G0.5] Solo aplica si el campo "Archivo TDR" de la tabla
         búsqueda de literatura? (sí/no)".
           - "no" → guía aplicable = `guiaProyectosIA_Agente.md` (sin
             cambios); registra G0.5 = OMITIDA-POR-USUARIO en
-            `proposal/estado_propuesta.md` ("Compuertas tempranas (G0.5,
+            `artefactos/estado_propuesta.md` ("Compuertas tempranas (G0.5,
             G1a)").
           - "sí" → Task → investigador → genera
-            `proposal/guia_ajustada_TDR.md` a partir de
+            `artefactos/guia_ajustada_TDR.md` a partir de
             `guiaProyectosIA_Agente.md` (entrada de solo lectura — el
             archivo base NUNCA se modifica), ajustando
             secciones/alcance/requisitos según la tabla de criterios
-            ponderados ya extraída en `proposal/insumos.md` ("Extracción
+            ponderados ya extraída en `artefactos/insumos.md` ("Extracción
             del TDR"). El archivo generado DEBE incluir la "Tabla de
             secciones definitivas" con el formato exacto que exige
             `investigador.md` ("Generación de la guía ajustada") — es un
             requisito de forma del entregable, no opcional.
-        ──→ GATE G0.5: presenta `proposal/guia_ajustada_TDR.md` al usuario
+        ──→ GATE G0.5: presenta `artefactos/guia_ajustada_TDR.md` al usuario
         para aprobación explícita. La presentación de este gate NO es un
         resumen en prosa: el dispatcher copia la "Tabla de secciones
         definitivas" completa (todas las filas, sin resumir ni truncar) tal
-        cual quedó en `proposal/guia_ajustada_TDR.md` y la renderiza como
+        cual quedó en `artefactos/guia_ajustada_TDR.md` y la renderiza como
         tabla Markdown directamente en el mensaje de chat al usuario — la
         misma tabla debe ya existir en el `.md` (no se genera una versión
         distinta para consola). La aprobación/petición de cambios del
         usuario se resuelve sobre esa tabla específica (fila por fila si
         aplica), no sobre el documento en general.
-          - Aprobada → guía aplicable = `proposal/guia_ajustada_TDR.md`;
+          - Aprobada → guía aplicable = `artefactos/guia_ajustada_TDR.md`;
             registra G0.5 = APROBADA (quién/fecha) en
-            `proposal/estado_propuesta.md`.
+            `artefactos/estado_propuesta.md`.
           - Cambios solicitados → vuelve a despachar la misma Task al
             `investigador` con las correcciones exactas del usuario (p. ej.
             "renombrar §X", "fusionar §Y con §Z", "mover el bloque de
@@ -605,7 +575,7 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         ──→ PRE-CARGA DE FRAGMENTOS DE GUÍA (una sola lectura completa por
         corrida, antes del paso (a) siguiente): el DISPATCHER (no un
         subagente) lee la guía aplicable UNA vez con un único `Read`
-        completo (`guide = proposal/guia_ajustada_TDR.md` si G0.5 =
+        completo (`guide = artefactos/guia_ajustada_TDR.md` si G0.5 =
         APROBADA, si no `guiaProyectosIA_Agente.md`) y retiene el contenido
         verbatim en su propia memoria de sesión — SIN `grep`/`rg`, SIN
         llamadas `Read` adicionales con `offset`/`limit`, SIN aritmética de
@@ -709,21 +679,21 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         (a) Task → bibliografo-propuesta MODE=scope → exactamente 5 papers
         Q1/Q2 publicados en los últimos 2 años, abstract-only, que calcen
         con (i) el prompt original del usuario a `/propuesta` y (ii) la guía
-        aplicable (`proposal/guia_ajustada_TDR.md` si G0.5 = APROBADA, si no
+        aplicable (`artefactos/guia_ajustada_TDR.md` si G0.5 = APROBADA, si no
         `guiaProyectosIA_Agente.md`). Ver `bibliografo-propuesta.md`,
         "MODE=scope", para el contrato completo (herramientas, esquema de
-        salida `proposal/scoping/papers/paper-{1..5}.md`, prohibición de
+        salida `artefactos/scoping/papers/paper-{1..5}.md`, prohibición de
         leer cualquier borrador existente).
         (b) El DISPATCHER (no el subagente) indexa el corpus con
         `codebase-memory`, de forma aislada. Mecánica exacta:
-          1. `index_repository(repo_path="<RUN_ROOT>/proposal/scoping/papers",
+          1. `index_repository(repo_path="<RUN_ROOT>/artefactos/scoping/papers",
              name="<run-id>-papers", mode="full")` — `repo_path` absoluto al
              directorio del corpus, NUNCA la raíz del repo (ver "Reglas
              duras" en "Cómo usar `codebase-memory`"); `mode="full"` porque
              la agrupación temática de la Fase 1b necesita la capa semántica.
           2. `get_architecture(project="<run-id>-papers",
              aspects=["clusters","hotspots","boundaries","file_tree"])`.
-          3. Escribe `proposal/scoping/graph-report.md` con las tres secciones
+          3. Escribe `grafos/papers-graph-report.md` con las tres secciones
              del formato de "Reporte de grafo" (Nodos centrales, Comunidades
              temáticas, Preguntas sugeridas).
         Si una iteración previa de G1a dejó un índice con papers distintos,
@@ -743,7 +713,7 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
           1. Los 5 papers + parámetros de búsqueda (query, filtro de
              cuartil, rango de años, hits por herramienta).
           2. El grafo: la ruta del reporte
-             `proposal/scoping/graph-report.md` (indícale al usuario que puede
+             `grafos/papers-graph-report.md` (indícale al usuario que puede
              abrirlo para revisar comunidades y nodos centrales; no hay HTML
              navegable — `codebase-memory` no exporta uno) + sus 3 secciones:
              Nodos centrales, Comunidades temáticas, Preguntas sugeridas.
@@ -773,13 +743,13 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
           (e) aceptar un paper específico que el usuario nombre.
         Aplica la opción elegida y vuelve a presentar dentro de G1a.
         ──→ Al aprobar G1a: escribe los 3 subproblemas aprobados + G1a =
-        APROBADA en `proposal/estado_propuesta.md` ("Compuertas tempranas
+        APROBADA en `artefactos/estado_propuesta.md` ("Compuertas tempranas
         (G0.5, G1a)" → sub-tabla "G1a — Scoping temprano": 5 papers,
         parámetros de búsqueda, ruta del grafo + extracto del reporte, los 3
         subproblemas tempranos con su gap/`paper-N`, y Estado G1a).
         ──→ [NUEVO] DISPATCHER: pipeline-graph (primera inicialización):
-        escribe `proposal/pipeline/00-fase0.md` + `10-fase1a.md` (evento de
-        esta compuerta) y `proposal/pipeline/_estado.md`. Fase 0 no tiene
+        escribe `artefactos/pipeline/00-fase0.md` + `10-fase1a.md` (evento de
+        esta compuerta) y `artefactos/pipeline/_estado.md`. Fase 0 no tiene
         compuerta propia, así que su fila/evento se escribe recién acá, en
         la primera transición de compuerta de la corrida (G1a): cada archivo
         de evento lleva los campos de uso acumulados de SU PROPIA fase
@@ -791,7 +761,7 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
         `_estado.md` (ver "Telemetría de uso por fase").
 Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         siempre que la Fase 1a cerró con G1a = APROBADA (ver
-        `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano");
+        `artefactos/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano");
         si G1a no corrió o no cerró en APROBADA, omite esta fase por
         completo y continúa directo a la Fase 1.
         (a) Task → bibliografo-propuesta MODE=sota, sub-paso **corpus** →
@@ -805,19 +775,19 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         corpus ampliado, de forma incremental (NUNCA `delete_project` en esta
         fase, a diferencia de la re-iteración del paso (b) de la Fase 1a).
         Mecánica exacta:
-          1. `cp proposal/scoping/graph-report.md proposal/scoping/graph-report-g1a-snapshot.md`
+          1. `cp grafos/papers-graph-report.md grafos/papers-graph-report-g1a-snapshot.md`
              (snapshot del reporte de G1a sobre el corpus semilla, antes de
              tocar nada; esta copia queda fija para siempre, NUNCA se
              regenera, sirve de referencia/diff frente al corpus ampliado).
-          2. `index_repository(repo_path="<RUN_ROOT>/proposal/scoping/papers",
+          2. `index_repository(repo_path="<RUN_ROOT>/artefactos/scoping/papers",
              name="<run-id>-papers", mode="full")` — mismo `name` que en la
              Fase 1a, así que reindexa incrementalmente: `paper-1..5.md` no
              cambiaron y solo entra el trabajo nuevo de `paper-6..N.md`.
           3. `get_architecture(project="<run-id>-papers",
              aspects=["clusters","hotspots","boundaries","file_tree"])` y
-             reescribe `proposal/scoping/graph-report.md` sobre el corpus
+             reescribe `grafos/papers-graph-report.md` sobre el corpus
              ampliado.
-        El reporte vigente sigue en `proposal/scoping/graph-report.md` (ahora
+        El reporte vigente sigue en `grafos/papers-graph-report.md` (ahora
         refleja el corpus ampliado); `graph-report-g1a-snapshot.md` queda fijo
         como la foto de G1a.
         (c) Task → bibliografo-propuesta MODE=sota, sub-paso **grouping**
@@ -830,7 +800,7 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
              búsqueda (query, filtro de cuartil, rango de años, hits por
              herramienta) del sub-paso corpus.
           2. El grafo actualizado: la ruta del reporte
-             `proposal/scoping/graph-report.md` + sus 3 secciones (Nodos
+             `grafos/papers-graph-report.md` + sus 3 secciones (Nodos
              centrales, Comunidades temáticas, Preguntas sugeridas) sobre el
              corpus ampliado.
           3. La tabla de mapeo de 3-5 subsecciones SOTA (paper → subsección
@@ -859,23 +829,23 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
           (e) aceptar un paper específico que el usuario nombre.
         Aplica la opción elegida y vuelve a presentar dentro de G1b.
         ──→ Al aprobar G1b: Task → bibliografo-propuesta MODE=sota, sub-paso
-        **WRITE-REFS** → escribe `proposal/refs.bib` en una sola pasada
+        **WRITE-REFS** → escribe `redaccion/refs.bib` en una sola pasada
         cubriendo el corpus completo (prohibido antes de esta aprobación).
         Luego escribe el corpus aprobado + la tabla de subsecciones + G1b =
-        APROBADA en `proposal/estado_propuesta.md` ("Compuertas tempranas
+        APROBADA en `artefactos/estado_propuesta.md` ("Compuertas tempranas
         (G0.5, G1a)" → sub-tabla "G1b — Corpus y subsecciones SOTA": conteo
         de papers, parámetros de búsqueda, ruta del grafo actualizado +
         extracto del reporte, tabla de mapeo de subsecciones, y Estado
         G1b).
         ──→ [NUEVO] DISPATCHER: papers-graph refresh (post-WRITE-REFS):
-        guardia — ejecuta este bloque solo si `proposal/refs.bib` cambió en
+        guardia — ejecuta este bloque solo si `redaccion/refs.bib` cambió en
         este sub-paso (WRITE-REFS lo acaba de escribir). Mecánica:
-        `index_repository(repo_path="<RUN_ROOT>/proposal/scoping/papers",
+        `index_repository(repo_path="<RUN_ROOT>/artefactos/scoping/papers",
         name="<run-id>-papers", mode="full")` (incremental, mismo `name`) y
-        reescribe `proposal/scoping/graph-report.md`.
+        reescribe `grafos/papers-graph-report.md`.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/11-fase1b.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        `artefactos/pipeline/11-fase1b.md` (evento de esta compuerta) y
+        actualiza `artefactos/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
         ──→ [NUEVO] Índice de ideas del vault — baseline (primera vez):
         inmediatamente después de lo anterior, en esta misma transición de
@@ -883,22 +853,22 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
         DISPATCHER construye el índice baseline del vault. Este índice es
         DISTINTO del del paso (b) de esta misma Fase 1b (que actualiza el
         índice del corpus de papers de scoping, `<run-id>-papers`): este cubre
-        el mirror Obsidian (`vault/secciones/` + `vault/insumos/`), no el
+        el mirror Obsidian (`artefactos/vault/secciones/` + `artefactos/vault/insumos/`), no el
         corpus de papers, y es un proyecto aparte. Ver "Grafo de coherencia
         del vault" arriba para el detalle completo del mecanismo asesor.
         Mecánica exacta:
-          1. `index_repository(repo_path="<RUN_ROOT>/vault",
+          1. `index_repository(repo_path="<RUN_ROOT>/artefactos/vault",
              name="<run-id>-vault", mode="full")` — `repo_path` absoluto al
              vault, NUNCA la raíz del repo; `mode="full"` solo en este
              baseline (los refresh por gate usan `mode="fast"`). Baseline: en
-             este punto `vault/insumos/` ya tiene notas de insumos de la Fase
-             0; `vault/secciones/` aún no tiene notas de sección, porque las
+             este punto `artefactos/vault/insumos/` ya tiene notas de insumos de la Fase
+             0; `artefactos/vault/secciones/` aún no tiene notas de sección, porque las
              Fases 1-7 no han corrido todavía.
           2. `get_architecture(project="<run-id>-vault",
              aspects=["clusters","hotspots","boundaries"])` + el chequeo
              determinista de `[[wikilinks]]` con `Grep` (pasos 2-3 de "Refresh
              del índice del vault").
-          3. Escribe `proposal/pipeline/vault-graph-report.md` — artefacto de
+          3. Escribe `grafos/vault-graph-report.md` — artefacto de
              corrida, gitignoreado, nunca se commitea.
 Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         literatura de amplitud (≥5 obras, devuelto inline al dispatcher, sin
@@ -915,14 +885,14 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         Convenciones técnicas de LaTeX, y lo inyecta inline al inicio del
         mismo prompt.
         Si la Fase 1a corrió y su gate cerró con G1a = APROBADA (ver
-        `proposal/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano"),
+        `artefactos/estado_propuesta.md`, sub-tabla "G1a — Scoping temprano"),
         inyecta ADEMÁS, inline, el bloque "SUBPROBLEMAS TEMPRANOS APROBADOS
         (G1a)" con los 3 subproblemas tempranos y su justificación
         gap↔`paper-N`. Si la Fase 1a no corrió (o no cerró en APROBADA),
         omite por completo este bloque adicional: el despacho de esta Task
         es entonces idéntico al de hoy.
         Si además la Fase 1b corrió y su gate cerró con G1b = APROBADA (ver
-        `proposal/estado_propuesta.md`, sub-tabla "G1b — Corpus y
+        `artefactos/estado_propuesta.md`, sub-tabla "G1b — Corpus y
         subsecciones SOTA"), inyecta ADEMÁS, inline, el bloque "CORPUS Y
         SUBSECCIONES APROBADAS (G1b)" con el conteo del corpus ampliado y la
         tabla de mapeo de subsecciones; si la Fase 1b no corrió (o no cerró
@@ -951,23 +921,23 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
           antes de continuar
           → en PASS, continúa
         ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
-        `vault/secciones/03_descripcion_problema.md` cambió en esta fase
+        `artefactos/vault/secciones/03_descripcion_problema.md` cambió en esta fase
         (recién escrita/actualizada por `investigador`); si no cambió,
         reutiliza el reporte de grafo existente sin
         re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
         del índice del vault" (arriba) y lee
-        `proposal/pipeline/vault-graph-report.md`; arma e inyecta inline
+        `grafos/vault-graph-report.md`; arma e inyecta inline
         el bloque `EVIDENCIA DE GRAFO` (formato en "Grafo de coherencia del
         vault" arriba) en el prompt de la Task → revisor de este gate; si
         hay hallazgo de coherencia, agrégalo a `## Hallazgos de coherencia
-        (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
+        (grafo)` en `artefactos/estado_propuesta.md`. Antes de despachar la
         Task de este gate, el dispatcher arma además el bloque `##
         FRAGMENTO DE GUÍA` con Directrices Generales + §3 (Descripción del
         problema) y lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/20-fase1.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        `artefactos/pipeline/20-fase1.md` (evento de esta compuerta) y
+        actualiza `artefactos/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 2  Task → bibliografo-propuesta → §4 estado del arte.
         Además del texto de §4 (3-5 subsecciones), esta Task produce, como
@@ -993,7 +963,7 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte.
           Task → disenador-tikz (autor diag_estado_arte.tex a partir del
           bloque comentado en 04_estado_arte.tex)
           → Task → tikz-optimizer (compila a PNG, primer ajuste;
-          `python3 proposal/scripts/compile_tikz.py estado_arte:tikz`; el
+          `python3 redaccion/scripts/compile_tikz.py estado_arte:tikz`; el
           reporte de esta Task incluye el token verbatim `OVERFULL:
           estado_arte <N> occurrence(s)`)
           → DISPATCHER: precheck determinístico sobre ese token — si N > 0,
@@ -1012,21 +982,21 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte.
           antes de continuar
           → en PASS, continúa
         ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
-        `vault/secciones/04_estado_arte.md` o `vault/secciones/05_hipotesis.md`
+        `artefactos/vault/secciones/04_estado_arte.md` o `artefactos/vault/secciones/05_hipotesis.md`
         cambiaron en esta fase; si no cambiaron, reutiliza el reporte de grafo existente sin
         re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
         del índice del vault" (arriba) y lee
-        `proposal/pipeline/vault-graph-report.md`; arma e inyecta inline el bloque `EVIDENCIA DE
+        `grafos/vault-graph-report.md`; arma e inyecta inline el bloque `EVIDENCIA DE
         GRAFO` en el prompt de la Task → revisor de este gate; si hay
         hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
-        `proposal/estado_propuesta.md`. Antes de despachar la Task de este
+        `artefactos/estado_propuesta.md`. Antes de despachar la Task de este
         gate, el dispatcher arma además el bloque `## FRAGMENTO DE GUÍA` con
         Directrices Generales + §4 (Estado del arte) + §5 (Hipótesis) y lo
         inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/30-fase2.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        `artefactos/pipeline/30-fase2.md` (evento de esta compuerta) y
+        actualiza `artefactos/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 3  Task → redactor → §2 justificación y pertinencia. Antes de despachar
         esta Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
@@ -1034,21 +1004,21 @@ Fase 3  Task → redactor → §2 justificación y pertinencia. Antes de despach
         Convenciones técnicas de LaTeX y lo inyecta inline al inicio del
         prompt.
         ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
-        `vault/secciones/02_justificacion.md` cambió en esta fase; si no
+        `artefactos/vault/secciones/02_justificacion.md` cambió en esta fase; si no
         cambió, reutiliza el reporte de grafo existente sin
         re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
         del índice del vault" (arriba) y lee
-        `proposal/pipeline/vault-graph-report.md`; arma e inyecta
+        `grafos/vault-graph-report.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de este gate; si hay hallazgo, agrégalo a `## Hallazgos de
-        coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
+        coherencia (grafo)` en `artefactos/estado_propuesta.md`. Antes de
         despachar la Task de este gate, el dispatcher arma además el bloque
         `## FRAGMENTO DE GUÍA` con Directrices Generales + §2 (Justificación
         y pertinencia) y lo inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/40-fase3.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        `artefactos/pipeline/40-fase3.md` (evento de esta compuerta) y
+        actualiza `artefactos/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específicos.
         Antes de despachar esta Task, el dispatcher arma el bloque `##
@@ -1056,15 +1026,15 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         general) + §7 (Objetivos específicos) + Convenciones técnicas de
         LaTeX y lo inyecta inline al inicio del prompt.
         ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
-        `vault/secciones/06_objetivo_general.md` o
-        `vault/secciones/07_objetivos_especificos.md` cambiaron en esta
+        `artefactos/vault/secciones/06_objetivo_general.md` o
+        `artefactos/vault/secciones/07_objetivos_especificos.md` cambiaron en esta
         fase; si no cambiaron, reutiliza el reporte de grafo existente sin
         re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
         del índice del vault" (arriba) y lee
-        `proposal/pipeline/vault-graph-report.md`; arma e inyecta inline el bloque `EVIDENCIA DE
+        `grafos/vault-graph-report.md`; arma e inyecta inline el bloque `EVIDENCIA DE
         GRAFO` en el prompt de la Task → revisor de este gate; si hay
         hallazgo, agrégalo a `## Hallazgos de coherencia (grafo)` en
-        `proposal/estado_propuesta.md`. Antes de despachar la Task de este
+        `artefactos/estado_propuesta.md`. Antes de despachar la Task de este
         gate, el dispatcher arma además el bloque `## FRAGMENTO DE GUÍA` con
         Directrices Generales + §3 (Descripción del problema) + §5
         (Hipótesis) + §6 (Objetivo general) + §7 (Objetivos específicos) —
@@ -1077,8 +1047,8 @@ Fase 4  Task → investigador → §6 objetivo general + §7 objetivos específi
         ↔objetivo general, con bloque EVIDENCIA DE GRAFO inline) ──→ usuario.
         NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/50-fase4.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        `artefactos/pipeline/50-fase4.md` (evento de esta compuerta) y
+        actualiza `artefactos/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 5  Task → investigador → §8 marco conceptual (en paralelo; 3-5
         subsecciones, título claro por concepto — ver `investigador.md`
@@ -1097,15 +1067,15 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo; 3-5
         turnos secuenciales — ya que §9 deriva solo de §7 (ya aprobada en la
         Fase 4) y §8 no depende de §9.
         ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
-        `vault/secciones/08_marco_conceptual.md` o
-        `vault/secciones/09_equipo_trabajo.md` cambiaron en esta fase; si no
+        `artefactos/vault/secciones/08_marco_conceptual.md` o
+        `artefactos/vault/secciones/09_equipo_trabajo.md` cambiaron en esta fase; si no
         cambiaron, reutiliza el reporte de grafo existente sin
         re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
         del índice del vault" (arriba) y lee
-        `proposal/pipeline/vault-graph-report.md`; arma e inyecta
+        `grafos/vault-graph-report.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de este gate; si hay hallazgo, agrégalo a `## Hallazgos de
-        coherencia (grafo)` en `proposal/estado_propuesta.md`. Antes de
+        coherencia (grafo)` en `artefactos/estado_propuesta.md`. Antes de
         despachar la Task de este gate, el dispatcher arma además el bloque
         `## FRAGMENTO DE GUÍA` con Directrices Generales + §3 (Descripción
         del problema) + §7 (Objetivos específicos) + §8 (Marco conceptual) +
@@ -1116,11 +1086,11 @@ Fase 5  Task → investigador → §8 marco conceptual (en paralelo; 3-5
         inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER PDF-en-compuerta: ensambla/compila
-        `proposal/main.tex` → `proposal/main.pdf` (ver "Reglas de gate
+        `redaccion/main.tex` → `redaccion/main.pdf` (ver "Reglas de gate
         (obligatorias)") antes de presentar el veredicto al usuario.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/60-fase5.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        `artefactos/pipeline/60-fase5.md` (evento de esta compuerta) y
+        actualiza `artefactos/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 5.5 [NUEVO] Task → redactor → §10 metodología (compuerta propia,
         separada de la Fase 5). Antes de despachar esta Task, el dispatcher
@@ -1152,16 +1122,16 @@ Fase 5.5 [NUEVO] Task → redactor → §10 metodología (compuerta propia,
           antes de continuar
           → en PASS, continúa
         ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
-        `vault/secciones/10_metodologia.md` cambió en esta fase; si no
+        `artefactos/vault/secciones/10_metodologia.md` cambió en esta fase; si no
         cambió, reutiliza el reporte de grafo existente sin
         re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
         del índice del vault" (arriba) y lee
-        `proposal/pipeline/vault-graph-report.md`; arma e inyecta
+        `grafos/vault-graph-report.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de este gate (nota: distinto del bucle de figuras arriba,
         que usa `revisor-figuras`, no `revisor`, y no recibe evidencia de
         grafo); si hay hallazgo, agrégalo a `## Hallazgos de coherencia
-        (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
+        (grafo)` en `artefactos/estado_propuesta.md`. Antes de despachar la
         Task de este gate, el dispatcher arma además el bloque `##
         FRAGMENTO DE GUÍA` con Directrices Generales + §7 (Objetivos
         específicos) + §8 (Marco conceptual) + §9 (Equipo de trabajo) + §10
@@ -1171,11 +1141,11 @@ Fase 5.5 [NUEVO] Task → redactor → §10 metodología (compuerta propia,
         inyecta inline al inicio del prompt.
         ──→ GATE Task → revisor (con bloque EVIDENCIA DE GRAFO inline) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER PDF-en-compuerta: ensambla/compila
-        `proposal/main.tex` → `proposal/main.pdf` antes de presentar el
+        `redaccion/main.tex` → `redaccion/main.pdf` antes de presentar el
         veredicto al usuario.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/65-fase5_5.md` (evento de esta compuerta) y
-        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        `artefactos/pipeline/65-fase5_5.md` (evento de esta compuerta) y
+        actualiza `artefactos/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 6  Task → redactor → §11 resultados esperados (sin gate propio; §11 y
         §12 se auditan juntas en la Fase 7 junto con el resto del
@@ -1197,12 +1167,12 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         Fase 7 (referencia hacia adelante válida, ver "Reglas de
         dependencia"). DEBE cerrar ANTES de la Fase 6.45 y de la Fase 6.5
         (el front-matter sintetiza §1–§16 ya aprobadas).
-        ──→ RESOLUCIÓN DE MODO: si `proposal/insumos.md` (o
+        ──→ RESOLUCIÓN DE MODO: si `artefactos/insumos.md` (o
         `guia_ajustada_TDR.md`) trae un bloque `## Marco presupuestal (TDR)`
         con tope no vacío → MODE=tdr; si trae el sentinel `sin datos
         presupuestales en TDR` o no hay bloque → MODE=base.
         (a) Task → presupuestador (MODE=tdr | MODE=base) → primer borrador de
-        `proposal/sections/13_presupuesto.tex` + su mirror de vault, con el
+        `redaccion/sections/13_presupuesto.tex` + su mirror de vault, con el
         self-audit aritmético ya aplicado; cada monto/cantidad no derivable de
         un insumo va marcado `[supuesto]`.
         ──→ BUCLE INTERACTIVO (sin tope de rondas; termina SOLO con
@@ -1221,14 +1191,14 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
              NUNCA auto-apruebes ni asumas conformidad por silencio.
           4. Si el usuario aprueba explícitamente → sale del bucle.
         ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
-        `vault/secciones/13_presupuesto.md` cambió en esta fase (o en la
+        `artefactos/vault/secciones/13_presupuesto.md` cambió en esta fase (o en la
         ronda interactiva más reciente); si no cambió, reutiliza el reporte de grafo existente sin
         re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
         del índice del vault" (arriba) y lee
-        `proposal/pipeline/vault-graph-report.md`; arma e inyecta inline
+        `grafos/vault-graph-report.md`; arma e inyecta inline
         el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task → revisor de
         este gate; si hay hallazgo, agrégalo a `## Hallazgos de coherencia
-        (grafo)` en `proposal/estado_propuesta.md`. Antes de despachar la
+        (grafo)` en `artefactos/estado_propuesta.md`. Antes de despachar la
         Task de este gate, el dispatcher arma además el bloque `##
         FRAGMENTO DE GUÍA` con Directrices Generales + §10 (Metodología) +
         §13 (Presupuesto) — §10 es necesaria acá porque el checklist de
@@ -1241,17 +1211,17 @@ Fase 6.4 [COMPUERTA INTERACTIVA G-Presupuesto] Presupuesto (interactivo).
         (Metodología; el cruce contra §14 Cronograma se valida recién en la
         Fase 7), membresía de rubro) ──→ usuario. NO avances sin aprobación.
         ──→ Al aprobar: el DISPATCHER voltea `gate_status` a `pass` en
-        `vault/secciones/13_presupuesto.md` y registra la fila de la fase en
-        `proposal/estado_propuesta.md` (tabla "Presupuesto (Fase 6.4)": modo
+        `artefactos/vault/secciones/13_presupuesto.md` y registra la fila de la fase en
+        `artefactos/estado_propuesta.md` (tabla "Presupuesto (Fase 6.4)": modo
         [tdr|base], tope [valor+moneda o "n/a (base)"], total general, margen
         frente al tope, cofinanciación/split aplicable + cumplimiento, número
         de rondas interactivas, supuestos `[supuesto]` confirmados por el
         usuario, estado del gate G-Presupuesto [APROBADA (quién/fecha) |
         pending]).
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/65-fase6_4.md` (evento de esta compuerta, misma
+        `artefactos/pipeline/65-fase6_4.md` (evento de esta compuerta, misma
         plantilla mínima descrita arriba en "Registro de pipeline") y actualiza
-        `proposal/pipeline/_estado.md`, incluye además los campos de uso
+        `artefactos/pipeline/_estado.md`, incluye además los campos de uso
         acumulados de la fase (ver "Telemetría de uso por fase").
 Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt) (sin gate
         propio; §14, §15 y §16 se auditan juntas en la Fase 7, mismo patrón
@@ -1271,16 +1241,16 @@ Fase 6.45 Task → redactor → §14 cronograma de actividades (Gantt) (sin gate
         `## FRAGMENTO DE GUÍA` con Directrices Generales + §16
         (Bibliografía) y lo inyecta inline al inicio del prompt.
         ──→ [NUEVO] DISPATCHER: papers-graph refresh: guardia — ejecuta este
-        bloque solo si `proposal/refs.bib` cambió en esta fase (la
+        bloque solo si `redaccion/refs.bib` cambió en esta fase (la
         consolidación MODE=deliverable lo acaba de extender). Mecánica:
-        `index_repository(repo_path="<RUN_ROOT>/proposal/scoping/papers",
+        `index_repository(repo_path="<RUN_ROOT>/artefactos/scoping/papers",
         name="<run-id>-papers", mode="full")` (incremental, mismo `name`) y
-        reescribe `proposal/scoping/graph-report.md`.
+        reescribe `grafos/papers-graph-report.md`.
 Fase 6.5 Task → redactor → secciones preliminares (front-matter), como
         síntesis del documento completo (§1–§16 ya aprobadas): Resumen
-        (proposal/sections/00_resumen.tex, máx. 400 palabras), Resumen
-        ejecutivo (proposal/sections/00_resumen_ejecutivo.tex, exactamente 5
-        párrafos), Palabras clave (proposal/sections/00_palabras_clave.tex,
+        (redaccion/sections/00_resumen.tex, máx. 400 palabras), Resumen
+        ejecutivo (redaccion/sections/00_resumen_ejecutivo.tex, exactamente 5
+        párrafos), Palabras clave (redaccion/sections/00_palabras_clave.tex,
         5 palabras). Mismo mirror de vault que el resto de secciones del
         redactor. Antes de despachar esta Task, el dispatcher arma el
         bloque `## FRAGMENTO DE GUÍA` con Directrices Generales + §Resumen +
@@ -1292,35 +1262,35 @@ Fase 6.5 Task → redactor → secciones preliminares (front-matter), como
         del prompt.
         ──→ GATE Task → revisor (valida las 3 preliminares contra la guía) ──→ usuario. NO avances sin aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.45 + Fase 6.5,
-        evento de esta compuerta) y actualiza `proposal/pipeline/_estado.md`,
+        `artefactos/pipeline/70-fase6.md` (cubre Fase 6 + Fase 6.45 + Fase 6.5,
+        evento de esta compuerta) y actualiza `artefactos/pipeline/_estado.md`,
         incluye además los campos de uso acumulados de la fase (ver
         "Telemetría de uso por fase").
 Fase 7  ──→ [NUEVO] DISPATCHER: aplica el procedimiento de "Refresh del índice
         del vault" sobre el vault completo (todas las secciones ya escritas),
         con `mode="full"` en vez de `"fast"` — es la última auditoría, conviene
         la capa semántica completa; lee
-        `proposal/pipeline/vault-graph-report.md`; arma e inyecta
+        `grafos/vault-graph-report.md`; arma e inyecta
         inline el bloque `EVIDENCIA DE GRAFO` en el prompt de la Task →
         revisor de la auditoría final; si hay hallazgo, agrégalo a `##
-        Hallazgos de coherencia (grafo)` en `proposal/estado_propuesta.md`.
+        Hallazgos de coherencia (grafo)` en `artefactos/estado_propuesta.md`.
         Task → revisor → auditoría final (con bloque EVIDENCIA DE GRAFO inline;
         incluye AHORA la verificación cruzada Presupuesto (§13) ↔ Cronograma
         de actividades (§14) diferida desde la Fase 6.4, ya que ambas
         secciones existen recién en este punto) ──→ usuario. NO avances sin
         aprobación.
         ──→ [NUEVO] DISPATCHER: pipeline-graph: escribe
-        `proposal/pipeline/80-fase7.md` (evento de la auditoría final) y
-        actualiza `proposal/pipeline/_estado.md`, incluye además los campos
+        `artefactos/pipeline/80-fase7.md` (evento de la auditoría final) y
+        actualiza `artefactos/pipeline/_estado.md`, incluye además los campos
         de uso acumulados de la fase (ver "Telemetría de uso por fase").
         ──→ [NUEVO] DISPATCHER: resumen de costo/tiempo de la corrida
         completa — lee directamente las filas ya acumuladas de
-        `proposal/pipeline/_estado.md` (sin recomputar nada) y presenta una
+        `artefactos/pipeline/_estado.md` (sin recomputar nada) y presenta una
         tabla `Fase | Tokens | Tool-uses | Duración`, una fila por cada fase
         de `_estado.md` (ninguna fase omitida), más una fila `TOTAL` que
         suma solo las filas numéricas (las filas con el sentinel
         `no medible directamente` quedan excluidas de la suma).
-        Tú (el asistente primario) ensamblas `proposal/main.tex` una vez aprobado.
+        Tú (el asistente primario) ensamblas `redaccion/main.tex` una vez aprobado.
         Los 3 archivos `00_*.tex` (Resumen → Resumen ejecutivo → Palabras
         clave, en ese orden) DEBEN incluirse antes del contenido de §2,
         maquetados con `\section*{}`. Orden del cuerpo (`\input{sections/...}`,
@@ -1338,9 +1308,9 @@ Fase 7  ──→ [NUEVO] DISPATCHER: aplica el procedimiento de "Refresh del í
         aunque ambas secciones referencian las mismas fases de la
         Metodología (§10) — es la posición mandada por
         `guiaProyectosIA_Agente.md`, no un error de orden.
-        Tras ensamblar y compilar `proposal/main.pdf` (`proposal/build.sh`),
+        Tras ensamblar y compilar `redaccion/main.pdf` (`redaccion/build.sh`),
         genera también la versión Word con `./build.sh --docx` desde
-        `proposal/`: produce `proposal/main.docx` con los 3 diagramas
+        `redaccion/`: produce `redaccion/main.docx` con los 3 diagramas
         rasterizados como imágenes y §13 Presupuesto como tabla editable (el
         sombreado de §13 no se conserva; el Gantt de §14 Cronograma de
         actividades queda como imagen). Es un paso mecánico
@@ -1352,14 +1322,14 @@ Fase 7  ──→ [NUEVO] DISPATCHER: aplica el procedimiento de "Refresh del í
         `./build.sh --docx` ni des por cerrada la Fase 7/compuerta hasta que
         el usuario corrija el error o apruebe explícitamente seguir igual.
         [NUEVO] Como último paso de la Fase 7, ya con `main.pdf` ensamblado,
-        corres una pasada de QA visual asesora: `pixelshot proposal/main.pdf
-        -o proposal/pixelshot-out/` y revisas los tiles renderizados en busca
+        corres una pasada de QA visual asesora: `pixelshot redaccion/main.pdf
+        -o redaccion/pixelshot-out/` y revisas los tiles renderizados en busca
         de posición del logo (encabezado UNAL, pie GCPDS/LabIA), desbordes de
         tablas/Gantt, figuras TikZ rotas o ilegibles, y coherencia general de
         maquetación. Es un paso mecánico que corres tú (asistente primario),
         no un agente ni un Task nuevo — sin ronda interactiva adicional. Si
         detectas un hallazgo, agrega una fila a `## Hallazgos de QA visual
-        (pixelshot)` en `proposal/estado_propuesta.md` (crea la sección la
+        (pixelshot)` en `artefactos/estado_propuesta.md` (crea la sección la
         primera vez que se usa), con página, tipo
         (logo/desborde/TikZ-roto/otro) y detalle. Este hallazgo es puramente
         asesor: NUNCA altera el VEREDICTO PASS/FAIL de la auditoría de
@@ -1455,10 +1425,10 @@ estado del arte, diagrama metodológico):
   subagentes especialistas.
 - Tras el veredicto PASS de cada gate, actualiza tú (el dispatcher) el campo
   `gate_status` de `pending` a `pass` en el frontmatter de la(s) nota(s)
-  `vault/secciones/*.md` correspondientes a esa fase — el `revisor` solo tiene
+  `artefactos/vault/secciones/*.md` correspondientes a esa fase — el `revisor` solo tiene
   herramientas de lectura (Read/Grep/Glob) y no puede escribir archivos, así
   que esta responsabilidad es tuya, igual que ya lo es para
-  `proposal/estado_propuesta.md`. En FAIL, deja `gate_status` en `pending` (o
+  `artefactos/estado_propuesta.md`. En FAIL, deja `gate_status` en `pending` (o
   cámbialo a `fail` si el re-despacho vuelve a fallar) hasta que el
   re-despacho apruebe.
 - **PDF en cada compuerta de aprobación de usuario; DOCX solo al final
@@ -1468,12 +1438,12 @@ estado del arte, diagrama metodológico):
   pipeline, no solo Fase 7), el dispatcher ensambla y compila un PDF ANTES
   de presentar el veredicto, para que la aprobación se dé sobre un documento
   real, no solo sobre fragmentos `.tex` o un resumen de texto. Mecánica:
-  genera/actualiza `proposal/main.tex` incluyendo `\input{}` únicamente de
-  las secciones que YA existen en disco en `proposal/sections/` en ese punto
+  genera/actualiza `redaccion/main.tex` incluyendo `\input{}` únicamente de
+  las secciones que YA existen en disco en `redaccion/sections/` en ese punto
   de la corrida (mismo orden documentado en la Fase 7, "Orden del cuerpo" —
   nunca stubs ni placeholders de secciones no escritas todavía), luego
   ejecuta `./build.sh` (nunca `./build.sh --docx` en estas compuertas
-  intermedias) para producir `proposal/main.pdf`. Comparte con el usuario la
+  intermedias) para producir `redaccion/main.pdf`. Comparte con el usuario la
   ruta del PDF junto con el veredicto del revisor (usa `pixelshot` si quieres
   dar un resumen visual además de la ruta). El `.docx` NUNCA se genera en
   estas compuertas intermedias — se produce UNA sola vez, en la Fase 7

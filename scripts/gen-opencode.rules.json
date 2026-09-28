@@ -103,8 +103,8 @@
     {
       "id": "run-root-framework-paths",
       "applies_to": ["propuesta.md"],
-      "find": "relativas a la raíz son las del framework: `.claude/`, `scripts/`,",
-      "replace": "relativas a la raíz son las del framework: `.opencode/`, `scripts/`,",
+      "find": "framework: `.claude/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,",
+      "replace": "framework: `.opencode/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,",
       "literal": true,
       "_note": "The RUN_ROOT block lists the framework-relative paths; in this port the runtime directory is .opencode/, not .claude/."
     },

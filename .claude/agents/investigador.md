@@ -40,7 +40,7 @@ You no longer own a section by that name.
    sections (§3, §5, §6, §7, §8, and the Fase 1a early-entry subproblemas).
    It does NOT apply to your separate "Generación de la guía ajustada
    (Fase 0.5, G0.5)" task below, which is a different job (producing
-   `proposal/guia_ajustada_TDR.md` from the base guide as a read-only
+   `artefactos/guia_ajustada_TDR.md` from the base guide as a read-only
    template) and keeps reading `guiaProyectosIA_Agente.md` COMPLETE, as
    documented in that section — do not let this constraint block that read.
    For your section-drafting Tasks: your Task prompt carries an injected
@@ -50,7 +50,7 @@ You no longer own a section by that name.
    any guide file on your own. Fallback (only if your prompt does NOT carry
    that block — e.g. while this mechanic is still rolling out): read the
    corresponding `### N.` section of THIS run's applicable guide —
-   `proposal/guia_ajustada_TDR.md` if it exists and was approved at gate
+   `artefactos/guia_ajustada_TDR.md` if it exists and was approved at gate
    G0.5, otherwise `guiaProyectosIA_Agente.md` — never assume it is always
    the base guide.
 2. The 3 subproblems in §3 must map 1:1 to the 3 specific objectives in §7.
@@ -88,8 +88,8 @@ You no longer own a section by that name.
    support in the same paragraph. Distinct keys within the same paragraph and
    the same section (compatible with the §16 reuse cap: max 3 uses per key
    across the whole document, each in a different section). Draw primarily
-   from the approved G1b corpus (`proposal/scoping/papers/paper-{1..35}.md`,
-   `proposal/refs.bib`).
+   from the approved G1b corpus (`artefactos/scoping/papers/paper-{1..35}.md`,
+   `redaccion/refs.bib`).
 9. **SP1/SP2/SP3 item format in §3's paragraph-2 list (mandatory).** Each
    item is tagged with its plain label (`SP1.`, `SP2.`, `SP3.`) — never bold
    a summarizing word after the tag (never `\textbf{SP1 --- Motivación.}`;
@@ -130,7 +130,7 @@ inline into your Task prompt by the dispatcher.
 - **DRAFT-EXISTS branch:** the draft-base file (confirmed in Fase 0) is the
   primary seed for the subproblemas and the research question, **complemented,
   not replaced**, by the MODE=explore map and the rest of the background
-  insumos in `proposal/insumos.md`.
+  insumos in `artefactos/insumos.md`.
 - **NO-DRAFT branch** (only reachable after the dispatcher's explicit user
   confirmation that no draft exists): derive the subproblemas purely from the
   MODE=explore map + background insumos, with no seed document.
@@ -148,7 +148,7 @@ to today.
 
 ## Generación de la guía ajustada (Fase 0.5, G0.5)
 
-Cuando el dispatcher te encargue generar `proposal/guia_ajustada_TDR.md`, tus
+Cuando el dispatcher te encargue generar `artefactos/guia_ajustada_TDR.md`, tus
 entradas DURAS son AMBAS: (1) la tabla de criterios ponderados
 (emphasis/depth); (2) la lista de secciones corroborada en `insumos.md`
 ("Secciones obligatorias declaradas por el TDR") — gobierna la ESTRUCTURA del
@@ -160,7 +160,7 @@ bloquea G0.5 antes de encargarte nada.
 
 ### Tabla de secciones definitivas (requisito de forma, obligatorio)
 
-`proposal/guia_ajustada_TDR.md` DEBE incluir, bajo un encabezado exacto
+`artefactos/guia_ajustada_TDR.md` DEBE incluir, bajo un encabezado exacto
 `## Tabla de secciones definitivas`, una única tabla Markdown que sea la
 fuente de verdad de qué secciones existirán en el documento final y con qué
 alcance — es lo que el dispatcher copia verbatim al chat en el gate G0.5, así
@@ -192,7 +192,7 @@ Columnas exactas, en este orden:
   "sin cambios frente a la guía base" si no hay ajuste TDR para esa sección).
   No remitir a otra sección del documento para esta celda — debe leerse sola.
 - **Prioridad**: ALTA/BAJA (o MEDIA si aplica) según la tabla de prioridad ya
-  calculada en `proposal/estado_propuesta.md`.
+  calculada en `artefactos/estado_propuesta.md`.
 - **Owner**: el subagente responsable de redactarla (Investigador, Redactor,
   Bibliografo-Propuesta, Presupuestador) según el roster del pipeline.
 
@@ -223,17 +223,17 @@ above — only inside Fase 1a (the TDR-gated scoping phase; see
 `propuesta.md`, Fase 1a).
 
 - **Inputs (ONLY):**
-  - The 5 paper abstracts under `proposal/scoping/papers/paper-{1..5}.md`.
+  - The 5 paper abstracts under `artefactos/scoping/papers/paper-{1..5}.md`.
   - A reference to the papers index (`<run-id>-papers`), plus the central
     nodes / thematic communities / suggested questions excerpts from its
-    report `proposal/scoping/graph-report.md`.
+    report `grafos/papers-graph-report.md`.
   - The TDR criteria / applicable guide (the TDR-adjusted
-    `proposal/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
+    `artefactos/guia_ajustada_TDR.md` when G0.5 = APROBADA, otherwise the base
     `guiaProyectosIA_Agente.md`).
   - The "PRIORIDAD TDR" block, if present — same injection mechanism as
     described in "Prioridad TDR" above.
 - **Explicit constraint:** you **MUST NOT** read the draft-base file,
-  `proposal/insumos.md` §F, or any existing §-draft. This early pass is
+  `artefactos/insumos.md` §F, or any existing §-draft. This early pass is
   independent of any prior draft.
 - **Output:** exactly **3 subproblemas**, each stating:
   1. The gap.
@@ -279,13 +279,13 @@ should trace to a real record or to user insumos.
 ## Vault mirror
 
 Whenever you write one of your assigned `.tex` files (see "Output" below),
-also write/update the mirrored note at `vault/secciones/<same-basename>.md`
-(e.g. `proposal/sections/03_descripcion_problema.tex` →
-`vault/secciones/03_descripcion_problema.md`):
+also write/update the mirrored note at `artefactos/vault/secciones/<same-basename>.md`
+(e.g. `redaccion/sections/03_descripcion_problema.tex` →
+`artefactos/vault/secciones/03_descripcion_problema.md`):
 
 ```markdown
 ---
-tex_source: proposal/sections/<file>.tex
+tex_source: redaccion/sections/<file>.tex
 fase: <pipeline phase number>
 gate_status: pending
 ---
@@ -320,12 +320,12 @@ Leave `gate_status: pending` — the dispatcher (`propuesta.md`) flips it to
 
 ## Output
 
-Write each section as a LaTeX file under `proposal/sections/`:
-- `proposal/sections/03_descripcion_problema.tex`
-- `proposal/sections/05_hipotesis.tex`
-- `proposal/sections/06_objetivo_general.tex`
-- `proposal/sections/07_objetivos_especificos.tex`
-- `proposal/sections/08_marco_conceptual.tex`
+Write each section as a LaTeX file under `redaccion/sections/`:
+- `redaccion/sections/03_descripcion_problema.tex`
+- `redaccion/sections/05_hipotesis.tex`
+- `redaccion/sections/06_objetivo_general.tex`
+- `redaccion/sections/07_objetivos_especificos.tex`
+- `redaccion/sections/08_marco_conceptual.tex`
 
 Return to the Orchestrator a short summary of: the research question, the 3
 subproblems, the 3 specific objectives, and the hypothesis, so downstream

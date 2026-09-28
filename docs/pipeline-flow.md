@@ -6,8 +6,9 @@ en `.claude/commands/propuesta.md` y `.claude/agents/coordinador-propuesta.md`,
 alineado a las 16 secciones de `guiaProyectosIA_Agente.md`.
 
 - **Antes de la Fase 0**: `/propuesta-init` crea la subcarpeta de la corrida
-  (`proposals/<run-id>/`) y la activa; todas las rutas `proposal/...` y
-  `vault/...` del diagrama se resuelven dentro de ese `RUN_ROOT`.
+  (`proposals/<run-id>/`) y la activa; todas las rutas `docs/...`,
+  `artefactos/...`, `grafos/...` y `redaccion/...` del diagrama se resuelven
+  dentro de ese `RUN_ROOT`.
 - **Casillas amarillas**: compuertas de decisión/aprobación (usuario o `revisor`).
 - **Casillas azules**: las tres vistas de conocimiento — dos índices de
   `codebase-memory` (papers y vault, servidor MCP `codegraph`) más el registro
@@ -182,9 +183,9 @@ flowchart TD
     Fase7 --> End([Propuesta final: PDF + DOCX])
 
     subgraph Grafos["Grafos transversales (3, corren en paralelo al flujo principal)"]
-        GPapers["Indice de papers (codebase-memory)<br/>run-id-papers, reporte proposal/scoping/graph-report.md<br/>seed G1a, refresca en G1b y Fase 2"]
-        GVault["Indice de vault (coherencia, codebase-memory)<br/>run-id-vault, reporte proposal/pipeline/vault-graph-report.md<br/>baseline en G1b, refresh en cada gate Fase 1-7"]
-        GPipeline["Grafo de pipeline (estructura)<br/>proposal/pipeline/NN-fase.md (eventos) + _estado.md<br/>un evento .md por transicion de compuerta, sin indexar (no aporta valor consumido)"]
+        GPapers["Indice de papers (codebase-memory)<br/>run-id-papers sobre artefactos/scoping/papers, reporte grafos/papers-graph-report.md<br/>seed G1a, refresca en G1b y Fase 2"]
+        GVault["Indice de vault (coherencia, codebase-memory)<br/>run-id-vault sobre artefactos/vault, reporte grafos/vault-graph-report.md<br/>baseline en G1b, refresh en cada gate Fase 1-7"]
+        GPipeline["Registro de pipeline (estructura)<br/>artefactos/pipeline/NN-fase.md (eventos) + _estado.md<br/>un evento .md por transicion de compuerta, sin indexar (no aporta valor consumido)"]
     end
 
     classDef gate fill:#fff3cd,stroke:#b8860b,stroke-width:1px
@@ -228,7 +229,7 @@ flowchart TD
   ensamblado/compilación de `main.pdf` — no una única fase combinada.
 - **Bucle de figuras — precheck de overflow y tope de reintentos**: en los 3
   bucles (árbol de problemas, mapa de estado del arte, diagrama
-  metodológico), `tikz-optimizer` compila y `proposal/scripts/compile_tikz.py`
+  metodológico), `tikz-optimizer` compila y `redaccion/scripts/compile_tikz.py`
   detecta determinísticamente `Overfull \hbox` en el log de `pdflatex`
   (token `OVERFULL: <diagrama> <N> occurrence(s)`). Si `N > 0`, el
   dispatcher vuelve directo a `tikz-optimizer` con la línea mapeada,

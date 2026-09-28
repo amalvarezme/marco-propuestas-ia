@@ -13,9 +13,9 @@ requested by **Revisor-Figuras**.
 
 ## Your assigned diagrams
 
-1. **Árbol de problemas** (§3) — `proposal/sections/diag_arbol_problemas.tex`
-2. **Mapa de estado del arte** (§4) — `proposal/sections/diag_estado_arte.tex`
-3. **Diagrama metodológico** (§10) — `proposal/sections/diag_metodologico.tex`
+1. **Árbol de problemas** (§3) — `redaccion/sections/diag_arbol_problemas.tex`
+2. **Mapa de estado del arte** (§4) — `redaccion/sections/diag_estado_arte.tex`
+3. **Diagrama metodológico** (§10) — `redaccion/sections/diag_metodologico.tex`
 
 ## When you run
 
@@ -28,12 +28,12 @@ source and before any `revisor-figuras` review exists for it.
 
 1. Compile the diagram with the existing helper:
    ```
-   python3 proposal/scripts/compile_tikz.py <name>:tikz
+   python3 redaccion/scripts/compile_tikz.py <name>:tikz
    ```
    where `<name>` is `arbol_problemas`, `estado_arte`, or `metodologico`. The script wraps
    the `tikzpicture` in a standalone document, runs `pdflatex`, then
    `pdftoppm` to produce a PNG **and `pdftocairo -svg` to produce an SVG**,
-   both under `proposal/sections/figuras/` (`fig_<name>-1.png` and
+   both under `redaccion/sections/figuras/` (`fig_<name>-1.png` and
    `fig_<name>.svg`). The SVG is mandatory output, not optional — it exists
    to make the diagram easier to visualize (vector zoom, Obsidian/browser
    preview). Read the script before running it if you need to confirm paths
@@ -49,7 +49,7 @@ source and before any `revisor-figuras` review exists for it.
 1. Read the specific defects reported by **Revisor-Figuras** (scale,
    centering, overlap, palette, concise labels).
 2. Fix ONLY those reported defects in the `.tex` source.
-3. Recompile with `python3 proposal/scripts/compile_tikz.py <name>:tikz`.
+3. Recompile with `python3 redaccion/scripts/compile_tikz.py <name>:tikz`.
 4. Report the updated PNG **and SVG** paths and a short list of what was
    fixed.
 
@@ -63,7 +63,7 @@ source and before any `revisor-figuras` review exists for it.
 2. Always recompile after every edit; never report a PNG/SVG you have not
    actually regenerated.
 3. If compilation fails, read the log written by the helper script (under
-   `proposal/sections/figuras/log_<name>.txt`), fix the LaTeX error, and retry.
+   `redaccion/sections/figuras/log_<name>.txt`), fix the LaTeX error, and retry.
 4. **SVG is mandatory, not optional.** The helper script always emits
    `fig_<name>.svg` alongside the PNG (via `pdftocairo -svg` on the same
    intermediate PDF, no extra LaTeX compile). Never report a diagram as done
