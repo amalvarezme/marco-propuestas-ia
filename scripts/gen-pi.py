@@ -16,6 +16,11 @@ __file__):
     python3 scripts/gen-pi.py --check    # dry-run, no writes; non-zero exit
                                          #   if output would change or drift
                                          #   is found
+    python3 scripts/gen-pi.py --root DIR # write DIR/.pi instead of the repo's;
+                                         #   used by `marco init/upgrade` to
+                                         #   generate the port inside a
+                                         #   portable project (sources are
+                                         #   always read from this repo)
 
 Exit codes: 0 ok; 1 usage; 2 source missing; 3 drift found.
 
@@ -36,7 +41,8 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+KIT_ROOT = Path(__file__).resolve().parent.parent   # where the .claude/ sources live
+OUTPUT_ROOT = KIT_ROOT                              # overridden by --root
 RULES_PATH = Path(__file__).resolve().parent / "gen-pi.rules.json"
 
 
@@ -216,7 +222,7 @@ def write_output(
     if relpath.startswith(".claude/") or "/.claude/" in relpath:
         raise GeneratorError(f"refusing to write under .claude/: {relpath}")
 
-    dest = REPO_ROOT / relpath
+    dest = OUTPUT_ROOT / relpath
     previous = dest.read_text(encoding="utf-8") if dest.is_file() else None
     changed = previous != text
 
@@ -235,7 +241,7 @@ def write_output(
 def build_agent(filename: str, rules: dict) -> tuple[str, str]:
     """Return (output_relpath, output_text) for one agent. No writes."""
     paths = rules["paths"]
-    source_path = REPO_ROOT / paths["source_agents_dir"] / filename
+    source_path = KIT_ROOT / paths["source_agents_dir"] / filename
     if not source_path.is_file():
         raise GeneratorError(f"source agent missing: {source_path}")
 
@@ -251,11 +257,20 @@ def build_agent(filename: str, rules: dict) -> tuple[str, str]:
 def build_command(filename: str, rules: dict) -> tuple[str, str]:
     """Return (output_relpath, output_text) for one command. No writes."""
     paths = rules["paths"]
-    source_path = REPO_ROOT / paths["source_commands_dir"] / filename
+    source_path = KIT_ROOT / paths["source_commands_dir"] / filename
     if not source_path.is_file():
         raise GeneratorError(f"source command missing: {source_path}")
 
     text = source_path.read_text(encoding="utf-8")
+
+    # Reference fragments (e.g. `_propuesta-steps.md`) are not slash commands and
+    # carry no frontmatter: they are shared step tables the real commands point
+    # at. Copy them through with substitutions applied and no frontmatter
+    # synthesised, so Pi sees the same fragment the Claude sources reference.
+    if not text.startswith("---\n"):
+        out_body = apply_substitutions(text, filename, rules)
+        return f"{paths['output_commands_dir']}/{filename}", out_body
+
     fm, body = split_frontmatter(text, source_path)
     out_fm = map_command_frontmatter(fm, source_path, rules)
     out_body = apply_substitutions(body, filename, rules)
@@ -270,13 +285,26 @@ def build_command(filename: str, rules: dict) -> tuple[str, str]:
 
 
 def main(argv: list[str]) -> int:
+    global OUTPUT_ROOT
     check = False
-    for arg in argv[1:]:
+    args = argv[1:]
+    i = 0
+    while i < len(args):
+        arg = args[i]
         if arg == "--check":
             check = True
+        elif arg == "--root":
+            if i + 1 >= len(args):
+                print("error: --root requires a directory", file=sys.stderr)
+                return 1
+            OUTPUT_ROOT = Path(args[i + 1]).resolve()
+            i += 1
+        elif arg.startswith("--root="):
+            OUTPUT_ROOT = Path(arg.split("=", 1)[1]).resolve()
         else:
-            print(f"usage: {argv[0]} [--check]", file=sys.stderr)
+            print(f"usage: {argv[0]} [--check] [--root DIR]", file=sys.stderr)
             return 1
+        i += 1
 
     try:
         rules = load_rules()

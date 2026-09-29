@@ -8,10 +8,12 @@
 #   ./build.sh --clean-only Solo limpia artefactos (no compila)
 #   ./build.sh --manual     Usa la secuencia manual pdflatex→bibtex→pdflatex×2
 #   ./build.sh --watch      Recompila automáticamente al detectar cambios
-#   ./build.sh --docx       Exporta a Word (proposal/main.docx) vía pandoc
+#   ./build.sh --docx       Exporta a Word (proposal/main.docx) vía pandoc (acepta opcionalmente --csl <archivo.csl>)
 #   ./build.sh --help       Muestra esta ayuda
 #
-# Requisitos: pdflatex, bibtex, latexmk; para --docx: pandoc, pdftoppm (todos en PATH).
+# Requisitos: pdflatex, bibtex, latexmk; opcional: doi2bib3
+#   (instalable con 'pipx install git+https://github.com/CarlosAndres12/doi2bib3.git');
+#   para --docx: pandoc, pdftoppm (todos en PATH).
 #
 set -euo pipefail
 
@@ -24,6 +26,9 @@ ENGINE="pdflatex"
 # natbib + apalike (citas autor-año), no biblatex/biber: apalike es un .bst
 # clásico procesado por bibtex, no genera el .bcf que biber requiere.
 BIBENGINE="bibtex"
+# doi2bib3 repara/normaliza refs.bib antes de bibtex (ver repair_bib).
+BIB_FILE="refs.bib"
+DOIREPAIR_BIN="doi2bib3"
 
 # Colores (si la terminal los soporta)
 if [[ -t 1 ]]; then
@@ -54,7 +59,40 @@ clean_artifacts() {
     -o -name "*.bcf" -o -name "*.log" -o -name "*.out" -o -name "*.fls" \
     -o -name "*.fdb_latexmk" -o -name "*.run.xml" -o -name "*.synctex.gz" \) \
     -delete 2>/dev/null || true
+  # refs.bib.bak lo escribe doi2bib3 --overwrite_backup; no usar *.bak (no clobberearía operador)
+  rm -f "${SCRIPT_DIR}/refs.bib.bak" 2>/dev/null || true
   ok "Artefactos eliminados."
+}
+
+# --- Reparación de refs.bib (doi2bib3) ---------------------------------------
+repair_bib() {
+  local bib="${SCRIPT_DIR}/${BIB_FILE}"
+  if [[ ! -f "${bib}" ]]; then
+    warn "${BIB_FILE} ausente — salteando reparación DOI (se crea en Fase 2 del pipeline)."
+    return 0
+  fi
+  if ! command -v "${DOIREPAIR_BIN}" >/dev/null 2>&1; then
+    warn "${DOIREPAIR_BIN} no está en PATH. Instalalo con:"
+    warn "  pipx install git+https://github.com/CarlosAndres12/doi2bib3.git"
+    if [[ -t 0 ]]; then
+      # Sesión interactiva: parar y preguntar
+      printf "${C_YLW}[WARN]${C_RST} ¿Continuar compilando SIN reparar refs.bib? [y/N] "
+      local answer=""
+      read -r answer
+      case "${answer,,}" in
+        y|yes|s|si) warn "Continuando SIN reparación DOI." ; return 0 ;;
+        *) err "Abortando por decisión del operador. Instalá doi2bib3 y re-ejecutá." ; exit 1 ;;
+      esac
+    else
+      # No-TTY (CI/pipe): no colgar; continuar sin reparar
+      warn "stdin no es TTY — continuando SIN reparación DOI."
+      return 0
+    fi
+  fi
+  log "Reparando ${BIB_FILE} con ${DOIREPAIR_BIN} (--normalize --overwrite_backup)..."
+  ( cd "${SCRIPT_DIR}" && "${DOIREPAIR_BIN}" repair "${BIB_FILE}" --normalize --overwrite_backup ) \
+    | sed 's/^/  /' || { warn "${DOIREPAIR_BIN} reportó errores; continuando igual." ; return 0 ; }
+  ok "refs.bib reparado."
 }
 
 # --- Verificación de dependencias --------------------------------------------
@@ -176,12 +214,30 @@ build_watch() {
 
 # --- Exportación a Word (.docx vía pandoc) -----------------------------------
 build_docx() {
+  local custom_csl="${1:-}"
   cd "${SCRIPT_DIR}"
 
   # The .docx is derived from the already-compiled PDF: require main.pdf first.
   if [[ ! -f "${PDF}" ]]; then
     err "No existe ${PDF}. Compila primero (./build.sh) antes de --docx."
     exit 1
+  fi
+
+  local csl_path=""
+  if [[ -n "${custom_csl}" ]]; then
+    csl_path="$(realpath "${custom_csl}" 2>/dev/null || echo "${custom_csl}")"
+    if [[ ! -f "${csl_path}" ]]; then
+      err "No existe el archivo CSL especificado: ${custom_csl}"
+      exit 1
+    fi
+  else
+    if [[ -f "${SCRIPT_DIR}/scripts/apa.csl" ]]; then
+      csl_path="${SCRIPT_DIR}/scripts/apa.csl"
+    elif [[ -f "${SCRIPT_DIR}/../scripts/apa.csl" ]]; then
+      csl_path="${SCRIPT_DIR}/../scripts/apa.csl"
+    else
+      warn "No se encontró apa.csl por defecto; pandoc usará el estilo CSL integrado por defecto."
+    fi
   fi
 
   local docx_abs="${SCRIPT_DIR}/main.docx"
@@ -211,18 +267,26 @@ build_docx() {
   fi
 
   # 3) LaTeX -> docx conversion. Surface the known cosmetic limitations at build time.
-  #    IMPORTANT: pandoc resolves bare `\input{...}` relative to the process
-  #    CWD, not --resource-path. We MUST cd into the staging tree so
-  #    `\input{sections/diag_*}` resolves to the substituted image stubs
-  #    there, not to the real (unprocessed, raw-TikZ) proposal/sections/.
   log "Convirtiendo a Word con pandoc..."
   warn "El sombreado de filas (xcolor[table]) de §13 NO se preserva en .docx;"
   warn "la tabla conserva estructura, datos y totales. El Gantt de §14 va como imagen."
-  if (cd "${stage}" && pandoc "main.tex" \
-      --from=latex \
-      --reference-doc="${ref_abs}" \
-      --citeproc --bibliography="refs.bib" \
-      -o "${docx_abs}"); then
+
+  local pandoc_args=(
+    "main.tex"
+    --from=latex
+    --reference-doc="${ref_abs}"
+    --citeproc
+    --bibliography="refs.bib"
+  )
+
+  if [[ -n "${csl_path}" ]]; then
+    log "Usando estilo de citas CSL: ${csl_path}"
+    pandoc_args+=(--csl="${csl_path}")
+  fi
+
+  pandoc_args+=(-o "${docx_abs}")
+
+  if (cd "${stage}" && pandoc "${pandoc_args[@]}"); then
     local size; size=$(du -h "${docx_abs}" | cut -f1)
     ok "Exportación exitosa: main.docx (${size})"
   else
@@ -241,6 +305,7 @@ show_help() {
 main() {
   local mode="latexmk"
   local do_clean=false
+  local csl_file=""
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -249,6 +314,15 @@ main() {
       --manual)       mode="manual" ;;
       --watch)        mode="watch" ;;
       --docx)         mode="docx" ;;
+      --csl)
+        shift
+        if [[ $# -eq 0 ]]; then
+          err "Falta la ruta del archivo CSL para --csl."
+          exit 1
+        fi
+        csl_file="$1"
+        ;;
+      --csl=*)        csl_file="${1#*=}" ;;
       --help|-h)      show_help; exit 0 ;;
       *) err "Opción desconocida: $1"; show_help; exit 1 ;;
     esac
@@ -261,11 +335,13 @@ main() {
     clean_artifacts
   fi
 
+  repair_bib   # normaliza refs.bib antes de cualquier pase bibtex/citeproc
+
   case "${mode}" in
     latexmk) build_latexmk ;;
     manual)  build_manual ;;
     watch)   build_watch ;;
-    docx)    build_docx ;;
+    docx)    build_docx "${csl_file}" ;;
   esac
 }
 

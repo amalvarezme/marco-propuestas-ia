@@ -5,12 +5,41 @@ de redacción de propuestas.
 
 **Runtime canónico: Claude Code.** El **asistente primario de Claude Code**
 es el dispatcher real del pipeline: usa la herramienta `Task` para despachar
-cada fase al subagente correspondiente definido en `.claude/agents/`, siguiendo
-el comando `/propuesta` (`.claude/commands/propuesta.md`). El archivo
+cada fase al subagente correspondiente definido en `.claude/agents/`.
+
+**Slash commands:**
+
+| Comando | Rol |
+|---------|-----|
+| `/propuesta-init` | Crea y activa la carpeta de la corrida (`proposals/<run-id>/`) |
+| `/propuesta-insumos` | Zonas de depósito dentro de `insumos/` (incl. `ideas/`) |
+| `/propuesta-analizar` | Intake (Fase 0 + G0.5); idea desde args o `ideas/`; para antes de scoping |
+| `/propuesta-continuar` | Una unidad del pipeline (`next_step`); imprime el siguiente comando |
+| `/propuesta` | Pipeline completo en una sesión (gates) |
+| `/propuesta-limpiar` | Cierra la corrida activa |
+
+Cuerpo del pipeline: `.claude/commands/propuesta.md`. Tabla de unidades y
+control de ejecución: `.claude/commands/_propuesta-steps.md`. El archivo
 `.claude/agents/coordinador-propuesta.md` es la **referencia canónica** del
 pipeline y de las dependencias de despacho —no es un subagente activo, porque
 los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
 **Revisor** valida en cada **puerta de revisión (gate)** antes de avanzar.
+
+## Proyecto portable
+
+Cuando el CWD contiene `.marco/version`, el runtime está dentro de un
+proyecto portable creado con `marco init`. En ese modo:
+
+- **`RUN_ROOT` se resuelve igual que en el repo** (ver regla 7): el proyecto
+  portable trae su propio `plantilla/`, `scripts/init-run.sh` y `proposals/`,
+  así que las corridas viven en `proposals/<run-id>/` con las mismas cuatro
+  subcarpetas. Los agentes no necesitan reescritura de rutas.
+- **`/propuesta-init`** crea la corrida ahí igual que en el repo, y
+  **`/propuesta-insumos`** re-siembra las zonas de depósito dentro de
+  `insumos/`. Usá `marco init` solo para crear el proyecto portable en sí.
+
+Referencia completa del CLI (comandos, flags, entorno, manifest) en
+[`docs/marco-cli.md`](docs/marco-cli.md).
 
 ## Reglas globales
 
@@ -19,9 +48,11 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
 2. **Insumos:** La propuesta se construye desde un prompt/idea del usuario más
    PDFs, papers, enlaces o información relevante que este aporte. Los archivos
    fuente (PDFs, papers, propuestas previas, documentos de referencia) se
-   guardan en `insumos/` de la corrida (ver regla 7). El agente
-   **Insumos-Observador** los lee desde ahí y extrae/estructura esos insumos en
-   un contexto compartido.
+   guardan en `insumos/` de la corrida (ver regla 7), planos o repartidos en
+   zonas de depósito (`tdr/`, `draft/`, `background/`, `doc-secciones/`,
+   `ideas/`) que `/propuesta-insumos` prepara. El agente
+   **Insumos-Observador** los descubre de forma recursiva y extrae/estructura
+   esos insumos en un contexto compartido (`idea-seed` para notas en `ideas/`).
 3. **Enfoque:** Productos/servicios de IA con innovación investigativa,
    transferencia tecnológica clara, productos tangibles con **TRL 6 o 7**.
 4. **Estructura:** Sigue rigurosamente las 16 secciones de la
@@ -116,7 +147,7 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
 
 ## Roster de agentes (`.claude/agents/`) y modelos por defecto
 
-El marco tiene **10 agentes**, todos definidos en `.claude/agents/` (fuente de
+El marco tiene **11 agentes**, todos definidos en `.claude/agents/` (fuente de
 verdad):
 
 | Agente | Modelo por defecto | Rol |
@@ -124,6 +155,7 @@ verdad):
 | `coordinador-propuesta` | sonnet | Referencia canónica del pipeline (no despachable como subagente activo) |
 | `investigador` | opus | Subproblemas, pregunta, objetivos, hipótesis, marco conceptual |
 | `redactor` | opus | Secciones narrativas (§1, §2, §9–§12, §14–§15) |
+| `grant-flow-auditor` | sonnet | Auditoría micro-estilística de prosa: cadencia, voz activa, transiciones y fricción en secciones, subsecciones o secciones modificadas |
 | `insumos-observador` | sonnet | Ingesta y estructuración de insumos del usuario |
 | `bibliografo-propuesta` | sonnet | Bibliografía (§4, §16) |
 | `revisor` | sonnet | Validación de coherencia/calidad en cada gate |
@@ -198,7 +230,8 @@ El **asistente primario de Claude Code** puede despachar directamente
 cualquier subagente de propuesta para tareas puntuales —arreglar figuras,
 revisar una sección, actualizar bibliografía, refinar objetivos— **sin pasar
 por el pipeline completo de `coordinador-propuesta`**. El pipeline completo de
-16 secciones con gates sigue el comando `/propuesta`.
+16 secciones con gates sigue `/propuesta` o el
+flujo stepped `/propuesta-analizar` + `/propuesta-continuar`.
 
 | Agente | Cuándo despacharlo directamente |
 |--------|--------------------------------|
@@ -254,16 +287,21 @@ por su cuenta, salvo la auditoría final de Fase 7. Resumen de asignación:
 | Coordinación del pipeline de propuesta | Coordinador-Propuesta |
 
 > **Runtime canónico:** Claude Code (`.claude/agents/` +
-> `.claude/commands/propuesta.md`) es la **fuente de verdad** de este marco.
+> `.claude/commands/`) es la **fuente de verdad** de este marco.
 > El asistente primario de Claude Code despacha el pipeline completo vía
-> `/propuesta` y puede además despachar directamente cualquier subagente de
-> propuesta para tareas puntuales (ver sección "Dispatch directo" arriba).
-> **OpenCode** y **Pi** son runtimes secundarios soportados, ambos generados de
-> forma determinista y zero-LLM a partir de las fuentes de Claude Code:
-> `.opencode/agents/` + `.opencode/commands/*.md` con `scripts/gen-opencode.py`
-> (+ `gen-opencode.rules.json`), y `.pi/agents/` + `.pi/prompts/*.md` con
-> `scripts/gen-pi.py` (+ `gen-pi.rules.json`, ver también `.pi/README.md`).
-> Cada generador acepta `--check` (dry-run, exit≠ 0 si el puerto quedó desfasado
-> o si hay drift de menciones específicas de Claude). El comportamiento de
-> Claude Code no cambia por esto; los archivos `.claude/` siguen siendo la
-> única fuente editada a mano.
+> `/propuesta`, o por unidades con el flujo por pasos
+> (`/propuesta-analizar` → `/propuesta-continuar`), y puede además despachar
+> directamente cualquier subagente de propuesta para tareas puntuales (ver
+> sección "Dispatch directo" arriba).
+> **OpenCode**, **Pi** y **Google Antigravity** son runtimes secundarios
+> soportados, todos generados de forma determinista y zero-LLM desde las
+> fuentes de Claude Code:
+> - OpenCode: `scripts/gen-opencode.py` → `.opencode/agents/` + commands
+> - Pi: `scripts/gen-pi.py` → `.pi/agents/` (subagentes despachables con
+>   `subagent_run`; verificado con `subagent_list_agents`) + `.pi/prompts/`
+> - Antigravity: `scripts/gen-antigravity.py` → `.agent/skills/` + workflows
+>
+> `gen-opencode.py` y `gen-pi.py` aceptan `--check` (dry-run, exit≠ 0 si el
+> puerto quedó desfasado o si hay drift de menciones específicas de Claude).
+> Los archivos `.claude/` siguen siendo la única fuente editada a mano; tras
+> cambiar agentes o comandos, correr los generadores y su `--check`.

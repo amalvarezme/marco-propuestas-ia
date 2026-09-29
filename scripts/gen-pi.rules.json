@@ -8,7 +8,9 @@
     "source_commands_dir": ".claude/commands",
     "output_agents_dir": ".pi/agents",
     "output_commands_dir": ".pi/prompts",
-    "excluded_agents": ["coordinador-propuesta.md"],
+    "excluded_agents": [
+      "coordinador-propuesta.md"
+    ],
     "agent_files": [
       "bibliografo-propuesta.md",
       "disenador-tikz.md",
@@ -20,11 +22,28 @@
       "revisor.md",
       "tikz-optimizer.md"
     ],
-    "command_files": ["propuesta.md", "propuesta-init.md", "propuesta-limpiar.md"]
+    "command_files": [
+      "propuesta.md",
+      "propuesta-init.md",
+      "propuesta-insumos.md",
+      "propuesta-analizar.md",
+      "propuesta-continuar.md",
+      "propuesta-limpiar.md",
+      "_propuesta-steps.md"
+    ]
   },
   "frontmatter": {
-    "agent_key_order": ["name", "description", "model", "thinking", "tools"],
-    "command_key_order": ["description", "argument-hint"],
+    "agent_key_order": [
+      "name",
+      "description",
+      "model",
+      "thinking",
+      "tools"
+    ],
+    "command_key_order": [
+      "description",
+      "argument-hint"
+    ],
     "_note_keys": "Pi keeps `name` (the subagent id used by subagent_run) and keeps `argument-hint` on prompt templates (Pi supports it natively, unlike OpenCode markdown commands). `$ARGUMENTS`/`$1` substitution works in Pi prompt templates as-is, so no rewrite is needed."
   },
   "model_map": {
@@ -46,7 +65,9 @@
   "substitutions": [
     {
       "id": "propuesta-interactive-session-note",
-      "applies_to": ["propuesta.md"],
+      "applies_to": [
+        "propuesta.md"
+      ],
       "find": "El usuario quiere redactar una propuesta de investigación en IA siguiendo el",
       "replace": "**Nota de ejecución (solo Pi):** los gates de aprobación de este pipeline (\"NO avances sin aprobación\") requieren una sesión interactiva de Pi que se mantenga viva entre fases -- el usuario responde en cada gate y el pipeline continúa en la misma sesión (`pi`, o `pi -c` para retomarla). El modo no interactivo (`pi -p`) NO sirve para este comando: no puede detenerse a esperar la aprobación humana en cada gate.\n\nEl usuario quiere redactar una propuesta de investigación en IA siguiendo el",
       "literal": true,
@@ -54,7 +75,9 @@
     },
     {
       "id": "propuesta-framing-claude-to-pi",
-      "applies_to": ["propuesta.md"],
+      "applies_to": [
+        "propuesta.md"
+      ],
       "find": "de Claude Code no pueden invocar a otros subagentes. Usa la herramienta `Task`",
       "replace": "de Pi no pueden invocar a otros subagentes. Usa la herramienta `subagent_run`",
       "literal": true,
@@ -62,14 +85,18 @@
     },
     {
       "id": "propuesta-dispatch-path",
-      "applies_to": ["propuesta.md"],
+      "applies_to": [
+        "propuesta.md"
+      ],
       "find": "para despachar cada fase al subagente correspondiente en `.claude/agents/`.",
       "replace": "para despachar cada fase al subagente correspondiente en `.pi/agents/`.",
       "literal": true
     },
     {
       "id": "propuesta-coordinador-ref",
-      "applies_to": ["propuesta.md"],
+      "applies_to": [
+        "propuesta.md"
+      ],
       "find": "`.claude/agents/coordinador-propuesta.md`",
       "replace": "`coordinador-propuesta.md` (documento de referencia del pipeline, no incluido en este puerto)",
       "literal": true,
@@ -77,14 +104,18 @@
     },
     {
       "id": "propuesta-roster-heading",
-      "applies_to": ["propuesta.md"],
+      "applies_to": [
+        "propuesta.md"
+      ],
       "find": "## Roster de subagentes (`.claude/agents/`)",
       "replace": "## Roster de subagentes (`.pi/agents/`)",
       "literal": true
     },
     {
       "id": "run-root-framework-paths",
-      "applies_to": ["propuesta.md"],
+      "applies_to": [
+        "propuesta.md"
+      ],
       "find": "framework: `.claude/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,",
       "replace": "framework: `.pi/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,",
       "literal": true,
@@ -92,7 +123,15 @@
     },
     {
       "id": "propuesta-task-tool-name",
-      "applies_to": ["propuesta.md", "propuesta-init.md", "propuesta-limpiar.md"],
+      "applies_to": [
+        "propuesta.md",
+        "propuesta-init.md",
+        "propuesta-insumos.md",
+        "propuesta-analizar.md",
+        "propuesta-continuar.md",
+        "propuesta-limpiar.md",
+        "_propuesta-steps.md"
+      ],
       "find": "`Task`",
       "replace": "`subagent_run`",
       "literal": true,
@@ -100,7 +139,11 @@
     },
     {
       "id": "task-prompt-wording",
-      "applies_to": ["investigador.md", "revisor.md", "presupuestador.md"],
+      "applies_to": [
+        "investigador.md",
+        "revisor.md",
+        "presupuestador.md"
+      ],
       "find": "Task prompt",
       "replace": "dispatch prompt",
       "literal": true,
@@ -108,7 +151,11 @@
     },
     {
       "id": "readonly-tool-names-slash",
-      "applies_to": ["revisor.md", "revisor-figuras.md", "propuesta.md"],
+      "applies_to": [
+        "revisor.md",
+        "revisor-figuras.md",
+        "propuesta.md"
+      ],
       "find": "Read/Grep/Glob",
       "replace": "read/grep/find",
       "literal": true,
@@ -116,18 +163,49 @@
     },
     {
       "id": "readonly-tool-names-comma",
-      "applies_to": ["revisor.md", "revisor-figuras.md", "presupuestador.md", "propuesta.md"],
+      "applies_to": [
+        "revisor.md",
+        "revisor-figuras.md",
+        "presupuestador.md",
+        "propuesta.md"
+      ],
       "find": "Read, Grep, Glob",
       "replace": "read, grep, find",
       "literal": true
     },
     {
       "id": "read-tool-mention",
-      "applies_to": ["insumos-observador.md"],
+      "applies_to": [
+        "insumos-observador.md"
+      ],
       "find": "El Read tool de Claude Code no puede leer archivos `.docx` binarios",
       "replace": "El tool `read` no puede leer archivos `.docx` binarios de forma nativa en todos los runtimes (comportamiento no verificado caso por caso)",
       "literal": true,
       "_note": "Pi's own .docx read behavior is UNVERIFIED here, so this takes the same tool-neutral rephrase the OpenCode port uses rather than asserting a specific corrected capability claim. The textutil/unzip conversion fallback prose that follows is already tool-neutral and is left unchanged."
+    },
+    {
+      "id": "steps-commands-path",
+      "applies_to": [
+        "_propuesta-steps.md",
+        "propuesta-analizar.md",
+        "propuesta-continuar.md"
+      ],
+      "find": "`.claude/commands/",
+      "replace": "`.pi/prompts/",
+      "literal": true,
+      "_note": "The stepped commands cross-reference each other and the pipeline body by path; in this port they live under .pi/prompts/."
+    },
+    {
+      "id": "steps-agents-path",
+      "applies_to": [
+        "_propuesta-steps.md",
+        "propuesta-analizar.md",
+        "propuesta-continuar.md"
+      ],
+      "find": "`.claude/agents/",
+      "replace": "`.pi/agents/",
+      "literal": true,
+      "_note": "Same for agent references inside the stepped commands."
     }
   ],
   "drift_patterns": [

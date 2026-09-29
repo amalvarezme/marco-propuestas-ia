@@ -1,0 +1,60 @@
+{
+  "_comment": "Kit manifest for marco portable project CLI. JSON format chosen over YAML to keep marco_cli.py stdlib-only (zero external deps). Version is the kit version, bumped independently of the proposal framework. kit_paths are SOURCE paths in this repo (the LaTeX skeleton lives in plantilla/, which init-run.sh copies into each run's redaccion/). Unlisted files MUST NOT be installed. preserve_paths is everything an upgrade must never overwrite: the whole proposals/ tree (runs, local registry, pointer) plus project-local config.",
+  "version": "0.3.0",
+  "kit_paths": [
+    ".claude/agents/bibliografo-propuesta.md",
+    ".claude/agents/coordinador-propuesta.md",
+    ".claude/agents/disenador-tikz.md",
+    ".claude/agents/grant-flow-auditor.md",
+    ".claude/agents/insumos-observador.md",
+    ".claude/agents/investigador.md",
+    ".claude/agents/presupuestador.md",
+    ".claude/agents/redactor.md",
+    ".claude/agents/revisor-figuras.md",
+    ".claude/agents/revisor.md",
+    ".claude/agents/tikz-optimizer.md",
+    ".claude/commands/_propuesta-steps.md",
+    ".claude/commands/propuesta-analizar.md",
+    ".claude/commands/propuesta-continuar.md",
+    ".claude/commands/propuesta-init.md",
+    ".claude/commands/propuesta-insumos.md",
+    ".claude/commands/propuesta-limpiar.md",
+    ".claude/commands/propuesta.md",
+    ".gitignore",
+    ".mcp.json",
+    "AGENTS.md",
+    "guiaProyectosIA_Agente.md",
+    "plantilla/build.sh",
+    "plantilla/logos/logo_labIA.png",
+    "plantilla/logos/logo_unal.png",
+    "plantilla/logos/logogcpds.png",
+    "plantilla/scripts/compile_tikz.py",
+    "plantilla/scripts/prep_docx.py",
+    "plantilla/scripts/split_latex_section.py",
+    "plantilla/templates/README.md",
+    "plantilla/templates/reference.docx",
+    "requirements.txt",
+    "scripts/apa.csl",
+    "scripts/gen-antigravity.py",
+    "scripts/gen-antigravity.rules.json",
+    "scripts/init-run.sh",
+    "scripts/marco_cli.py"
+  ],
+  "preserve_paths": [
+    "proposals/**",
+    "DECISIONS.md",
+    "journal/**",
+    ".marco/config.json"
+  ],
+  "drop_zones": [
+    "tdr",
+    "draft",
+    "background",
+    "doc-secciones",
+    "ideas"
+  ],
+  "vault_subdirs": [
+    "insumos",
+    "secciones"
+  ]
+}

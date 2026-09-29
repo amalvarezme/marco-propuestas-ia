@@ -29,15 +29,15 @@ se resuelve contra esa raíz (`RUN_ROOT`). Dos corridas nunca se pisan, y
 archivar una es solo un cambio de estado: la carpeta ya **es** el archivo.
 
 **Runtime canónico: Claude Code** (`.claude/agents/` + `.claude/commands/`, la
-única fuente editada a mano). **OpenCode** y **Pi** son runtimes secundarios
-soportados: `.opencode/agents/` + `.opencode/commands/` y `.pi/agents/` +
+única fuente editada a mano). **OpenCode**, **Pi** y **Google Antigravity** son runtimes
+secundarios soportados: `.opencode/agents/` + `.opencode/commands/` y `.pi/agents/` +
 `.pi/prompts/` se generan de forma determinista y zero-LLM desde las fuentes de
-Claude Code (`python3 scripts/gen-opencode.py`, `python3 scripts/gen-pi.py`;
-ambos aceptan `--check` — ver `AGENTS.md` y `.pi/README.md` para el detalle).
+Claude Code (`python3 scripts/gen-opencode.py`, `python3 scripts/gen-pi.py`,
+`python3 scripts/gen-antigravity.py`; los dos primeros aceptan `--check` — ver `AGENTS.md` y `.pi/README.md` para el detalle).
 El asistente primario despacha 9 subagentes de dominio — `investigador`,
 `redactor`, `revisor`, `bibliografo-propuesta`, `presupuestador`,
 `insumos-observador`, `disenador-tikz`, `tikz-optimizer`, `revisor-figuras` —
-usando el comando `/propuesta` (`.claude/commands/propuesta.md`), siguiendo la
+usando los comandos `/propuesta` o `/propuesta-continuar` (`.claude/commands/`), siguiendo la
 referencia canónica del pipeline en `.claude/agents/coordinador-propuesta.md`
 (el 10º archivo de `.claude/agents/`, no se despacha como subagente sino que
 documenta el pipeline), avanzando por fases con puertas de revisión (gates).
@@ -85,8 +85,14 @@ agota — nunca reintentan sin límite.
 │                                     #   init-run.sh — scaffolding de proposals/<run-id>/ (RUN_ROOT)
 │                                     #   gen-opencode.py + .rules.json — puerto Claude Code → OpenCode
 │                                     #   gen-pi.py + .rules.json — puerto Claude Code → Pi
+│                                     #   gen-antigravity.py + .rules.json — puerto → .agent/
+│                                     #   marco_cli.py — CLI portable (marco init/upgrade/status)
+│                                     #   convert_to_word.py + apa.csl — export directo a Word
 ├── .claude/                         # Runtime canónico — única fuente editada a mano
 │   ├── agents/                      # 10 archivos: 9 subagentes + coordinador-propuesta
+│   └── commands/                    # /propuesta-* + _propuesta-steps.md
+├── .opencode/                       # GENERADO (gen-opencode.py) — no editar a mano
+│   ├── agents/
 │   └── commands/
 │       ├── propuesta.md             # Comando /propuesta
 │       ├── propuesta-init.md        # Comando /propuesta-init (crea y activa la corrida)
@@ -141,29 +147,83 @@ segundo es específico del
 build LaTeX/DOCX de una corrida (compilación de diagramas TikZ, export a
 Word) y solo tiene sentido una vez `redaccion/sections/` de la corrida existe.
 
+## Inicio rápido: proyecto portable
+
+El entrypoint recomendado para corridas reales es `marco init`, que crea
+una carpeta de proyecto autocontenida y copiable:
+
+```bash
+marco init ~/propuestas/mi-proyecto --title "Título del proyecto"
+```
+
+**Cheat-sheet de comandos:**
+
+```bash
+marco init <dir> --title "Título de la propuesta"
+marco guide <dir>
+marco status <dir>
+marco upgrade <dir>
+marco --help
+```
+
+Para el detalle completo de flags, entorno, manifest y flujo, ver
+[`docs/marco-cli.md`](docs/marco-cli.md).
+
+> El flujo de trabajar en la raíz del monorepo queda como **demo / dev kit
+> workspace**; para corridas reales usá `marco init`.
+
 ## Uso
 
-1. `/propuesta-init <idea>` — crea y activa la subcarpeta de la corrida
-   (`proposals/<run-id>/`) con todos sus artefactos dentro. Delega en
-   `scripts/init-run.sh`, que es determinista e idempotente y también puede
-   correrse a mano: `scripts/init-run.sh <run-id> "<idea breve>"`.
-2. `/propuesta <idea>` — el asistente primario despacha la Fase 0
-   (`insumos-observador` ingiere insumos) y avanza fase por fase,
-   deteniéndose en cada gate para aprobación del usuario.
+1. `/propuesta-init <idea>` — crea y activa la carpeta de la corrida
+   (`proposals/<run-id>/`) con sus cuatro subcarpetas. Delega en
+   `scripts/init-run.sh`, determinista e idempotente, que también corre a mano:
+   `scripts/init-run.sh <run-id> "<idea breve>"`.
+2. `/propuesta-insumos [slug]` — prepara zonas de depósito dentro de
+   `insumos/` de la corrida (`tdr/`, `draft/`, `background/`, `doc-secciones/`,
+   `ideas/`). No asigna run-id ni despacha agentes: solo ordena dónde dejás los
+   archivos.
+3. Elegí un modo de ejecución:
 
-Los mismos comandos están disponibles en OpenCode
-(`.opencode/commands/`) y en Pi (`.pi/prompts/`), generados desde las fuentes
-de Claude Code. En los tres runtimes hace falta una sesión interactiva: las
-compuertas de aprobación no funcionan en modo headless (`opencode run`,
-`pi -p`).
+**Flujo por pasos (recomendado para operadores):**
 
-`/propuesta-limpiar` cierra la corrida activa (si existe) sin tener que
-arrancar `/propuesta` primero: con una subcarpeta por corrida es un cambio de
-estado en `_run.md` + el registro local, y deja `proposals/<run-id>/` intacta en
-disco. Ejecuta el mismo procedimiento de archivado que
-`/propuesta` dispara automáticamente al detectar una corrida sin terminar
-(Fase 0, bloque ARCHIVADO-Y-REINICIO), pero de forma standalone y con
-confirmación explícita del usuario antes de vaciar el árbol activo.
+```text
+/propuesta-analizar [idea]       # intake: clasificación, checklist, TDR/draft, G0.5
+/propuesta-continuar             # una unidad por vez; imprime el siguiente comando
+```
+
+**Flujo completo (una sesión):** `/propuesta <idea>` — el asistente primario
+despacha la Fase 0 y avanza fase por fase, deteniéndose en cada gate.
+
+| Comando | Rol |
+|---------|-----|
+| `/propuesta-init` | Crea y activa `proposals/<run-id>/` (RUN_ROOT) |
+| `/propuesta-insumos` | Zonas `tdr/` `draft/` `background/` `doc-secciones/` `ideas/` |
+| `/propuesta-analizar` | Intake + clasificación (idea: args o `ideas/`) |
+| `/propuesta-continuar` | Siguiente unidad del pipeline |
+| `/propuesta` | Pipeline completo en una sesión |
+| `/propuesta-limpiar` | Cierra la corrida activa |
+
+Los mismos comandos se generan para OpenCode (`.opencode/commands/`), Pi
+(`.pi/prompts/`) y Google Antigravity (`.agent/workflows/` + skills).
+Regenerar tras editar las fuentes de Claude:
+
+```bash
+python3 scripts/gen-opencode.py && python3 scripts/gen-pi.py && python3 scripts/gen-antigravity.py
+```
+
+Todos requieren sesión **interactiva**: las compuertas de aprobación no
+funcionan en modo headless (`opencode run`, `pi -p`). No hay ejecución
+desatendida sin gates.
+
+`/propuesta-limpiar` cierra la corrida activa sin tener que arrancar
+`/propuesta` primero: con una carpeta por corrida es un cambio de estado en
+`_run.md` + el registro local, y deja `proposals/<run-id>/` intacta en disco.
+
+**Guía de operador:** [`docs/usage-modes.md`](docs/usage-modes.md) (modos TDR /
+borrador, por pasos vs. completo). "Continuar" un **borrador** (draft-base) es
+semilla + reescritura completa, no reanudar `redaccion/sections/` a medias;
+`/propuesta-continuar` avanza el **siguiente paso del pipeline**, no un resume
+arbitrario a mitad de unidad.
 
 ## Flujo del pipeline
 
@@ -200,6 +260,8 @@ lectura en [`docs/pipeline-flow.md`](docs/pipeline-flow.md).
   capa de grafo del pipeline; requerido porque el servidor MCP `codegraph` de
   `.mcp.json` invoca este binario (`codegraph serve --mcp`). Reemplaza al
   `graphify` que usó este marco hasta ahora.
+- **Google Antigravity** (opcional) — `python3 scripts/gen-antigravity.py`
+  → `.agent/skills/` + `.agent/workflows/`.
 - **engram** (`brew install gentleman-programming/tap/engram`) — memoria persistente; requerido porque el servidor MCP `engram` de `.mcp.json` invoca este binario directamente.
 - **gentle-ai** (recomendado, `brew install gentleman-programming/tap/gentle-ai`) — orquestación del workflow SDD (`/sdd-*`), registro de skills y asignación de modelos por fase.
 - LaTeX (pdflatex + bibtex, estilo `natbib`/`apalike`) para compilar `redaccion/main.tex`.
@@ -217,9 +279,18 @@ completarla y luego:
 ```bash
 cd proposals/<run-id>/redaccion
 ./build.sh           # o: ./build.sh --manual (pdflatex→bibtex→pdflatex×2)
-./build.sh --docx    # exporta a Word vía pandoc
+./build.sh --docx    # exporta a Word vía pandoc (acepta opcionalmente --csl <estilo.csl>)
 ```
 
 `redaccion/build.sh` y `redaccion/scripts/compile_tikz.py` resuelven el proyecto LaTeX como el
 directorio que los contiene, sin ninguna ruta fija, así que funcionan en la
 carpeta de cualquier corrida sin configuración.
+
+## Pruebas del framework (e2e)
+
+Para verificar la integridad del manifest, comandos del CLI `marco`, generadores de runtime y flags de compilación:
+
+```bash
+python3 -m unittest discover -s tests -p "test_*.py"
+```
+

@@ -14,11 +14,11 @@
 # graphify-out/ is legacy leftover from the retired graphify tooling.
 graphify-out/
 
-# Active-run pointer written by scripts/init-run.sh (local state, not content)
-
-# Python bytecode cache
+# Python bytecode cache / local virtualenv / build residue
 __pycache__/
 *.pyc
+*.egg-info/
+.venv/
 
 # LaTeX build artifacts
 **/*.aux

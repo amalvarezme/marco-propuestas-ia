@@ -1,4 +1,4 @@
-# Flujo del pipeline `/propuesta`
+# Flujo del pipeline `/propuesta-*`
 
 Diagrama tipo BPMN (fases, compuertas de aprobación, bucles de corrección y las
 tres vistas de conocimiento transversales) del pipeline multi-agente descrito
@@ -111,7 +111,8 @@ flowchart TD
     Fase2 --> Fase3
 
     subgraph Fase3["Fase 3 — Justificacion y pertinencia (sec 2)"]
-        Redactor3["Task: redactor sec 2<br/>6+ parrafos, 10+ refs Q1/Q2"] --> Gate3{GATE revisor}
+        Redactor3["Task: redactor sec 2<br/>6+ parrafos, 10+ refs Q1/Q2"] --> FlowAudit3["Task: grant-flow-auditor<br/>auditoria micro-estilistica de prosa"]
+        FlowAudit3 --> Gate3{GATE revisor}
         Gate3 -->|FAIL| Redactor3
     end
     Fase3 --> Fase4
@@ -124,7 +125,8 @@ flowchart TD
 
     subgraph Fase5["Fase 5 — Marco conceptual + Equipo de trabajo (sec 8, 9)"]
         Invest5[Task: investigador sec 8<br/>marco conceptual] --> Redactor5a["Task: redactor sec 9<br/>equipo de trabajo (roles desde sec 7)"]
-        Redactor5a --> Gate5{GATE revisor<br/>+ evidencia de grafo}
+        Redactor5a --> FlowAudit5["Task: grant-flow-auditor<br/>auditoria micro-estilistica de prosa"]
+        FlowAudit5 --> Gate5{GATE revisor<br/>+ evidencia de grafo}
         Gate5 -->|FAIL| Invest5
         Gate5 -->|aprobado| PDF5[Dispatcher: ensambla/compila<br/>main.tex a main.pdf]
     end
@@ -139,7 +141,8 @@ flowchart TD
         RevFig5 -->|FAIL| Cap5
         Cap5 -->|no, +1 intento| Opt5
         Cap5 -->|si, agotado| Escal5[Escala a usuario:<br/>diagrama, 4/4 intentos, ultimo hallazgo]
-        RevFig5 -->|PASS| Gate55{GATE revisor<br/>+ evidencia de grafo}
+        RevFig5 -->|PASS| FlowAudit55["Task: grant-flow-auditor<br/>auditoria micro-estilistica de prosa"]
+        FlowAudit55 --> Gate55{GATE revisor<br/>+ evidencia de grafo}
         Gate55 -->|FAIL| Redactor5b
         Gate55 -->|aprobado| PDF55[Dispatcher: ensambla/compila<br/>main.tex a main.pdf]
     end
@@ -168,7 +171,8 @@ flowchart TD
     Fase645 --> Fase65
 
     subgraph Fase65["Fase 6.5 — Front-matter (Resumen, Resumen ejecutivo, Palabras clave)"]
-        Redactor65[Task: redactor<br/>sintesis del documento completo, sec 1-16 aprobadas] --> Gate65{GATE revisor}
+        Redactor65[Task: redactor<br/>sintesis del documento completo, sec 1-16 aprobadas] --> FlowAudit65["Task: grant-flow-auditor<br/>auditoria micro-estilistica de prosa"]
+        FlowAudit65 --> Gate65{GATE revisor}
         Gate65 -->|FAIL| Redactor65
     end
     Fase65 --> Fase7

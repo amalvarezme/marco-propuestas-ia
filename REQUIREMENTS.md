@@ -17,6 +17,7 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 | **gentle-ai** (recommended) | 1.43+ | SDD workflow orchestration, skill registry, model-assignment dispatch for `/sdd-*` commands | `brew install gentleman-programming/tap/gentle-ai` |
 | **OpenCode** (optional) | — | Secondary runtime for `.opencode/agents/` + `.opencode/commands/propuesta.md` (generated from `.claude/` via `scripts/gen-opencode.py`, stdlib-only, no new Python deps); interactive session required — gates don't work under `opencode run` headless | see [opencode.ai](https://opencode.ai) |
 | **Pi** (optional) | 0.87+ | Secondary runtime for `.pi/agents/` + `.pi/prompts/propuesta.md` (generated from `.claude/` via `scripts/gen-pi.py`); interactive session required for the approval gates | `npm i -g @earendil-works/pi-coding-agent` |
+| **Google Antigravity** (optional) | — | Secondary runtime for `.agent/skills/` + `.agent/workflows/` (generated from `.claude/` via `scripts/gen-antigravity.py`) | see [antigravity.google](https://antigravity.google) |
 
 ## 2. Python packages (`requirements.txt`)
 
@@ -127,14 +128,12 @@ deterministically with `Grep`.
 ├── AGENTS.md                 # Framework playbook
 ├── guiaProyectosIA_Agente.md # Section-by-section writing guide
 ├── logos/                    # Repo/README branding logos (LabIA, UNAL, GCPDS)
-├── scripts/                  # Repo tooling (NOT proposal-run-specific): gen-opencode.py +
-│                              #   gen-opencode.rules.json — Claude Code → OpenCode agent-portability generator
+├── scripts/                  # Repo tooling: gen-opencode.py, gen-pi.py + rules JSON
 ├── .claude/                  # CANONICAL runtime — single source of truth, hand-edited
-│   ├── agents/                # 10 files: 9 dispatchable subagents (investigador, redactor,
-│   │                           #   insumos-observador, bibliografo-propuesta, presupuestador,
-│   │                           #   revisor, disenador-tikz, revisor-figuras, tikz-optimizer)
-│   │                           #   + coordinador-propuesta (canonical pipeline reference,
-│   │                           #   never dispatched — Claude Code subagents can't invoke subagents)
+│   ├── agents/                # 10 agent markdown files
+│   └── commands/              # /propuesta-* dispatchers + _propuesta-steps.md
+├── .opencode/                 # Secondary — GENERATED (gen-opencode.py), never hand-edited
+│   ├── agents/
 │   └── commands/
 │       └── propuesta.md      # Comando /propuesta — dispatcher real del pipeline
 ├── .opencode/                 # Secondary runtime — GENERATED from .claude/, never hand-edited

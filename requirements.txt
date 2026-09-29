@@ -13,8 +13,9 @@
 # plus `textutil` are not enough. Nothing in the pipeline imports them.
 
 # PDF parsing (convocatoria PDFs, papers)
-pypdf>=4.0
+pymupdf4llm>=0.0.17
 markdownify>=0.13
 
-# Office document parsing (DOCX proposals)
+# Office document parsing (DOCX, PPTX, XLSX proposals)
+markitdown>=0.0.1a4
 python-docx>=1.1

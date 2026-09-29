@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "marco"
+version = "0.1.0"
+description = "Portable project CLI for the marco-propuestas-ia framework"
+requires-python = ">=3.9"
+
+[project.scripts]
+marco = "marco_cli:main"
+
+[tool.setuptools]
+py-modules = ["marco_cli"]
+package-dir = {"" = "scripts"}
+
+# Note: marco_cli.py lives in scripts/ -- the console_script above resolves
+# from the installed package.  Operators can also run it directly:
+#
+#   pip install -e .            # from the repo root (marco-propuestas-ia/)
+#   python3 scripts/marco_cli.py init /tmp/p1
+#
+# When installing via pip, the `marco` command becomes available system-wide.
+# If you get "module not found", ensure CWD includes scripts/ in sys.path or
+# run: PYTHONPATH=scripts python3 -m marco_cli
