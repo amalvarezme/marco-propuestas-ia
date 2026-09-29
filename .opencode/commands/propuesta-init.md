@@ -64,7 +64,8 @@ $ARGUMENTS
 
    El script además activa la corrida escribiendo el run-id en
    `proposals/.current-run` (el puntero que el dispatcher lee para resolver
-   `RUN_ROOT`) y agrega una fila a `proposals/registry.md`.
+   `RUN_ROOT`) y agrega una fila al registro LOCAL `proposals/registry.md`,
+   creándolo con su encabezado si falta (nada de `proposals/` se versiona).
 
 4. **Llevá los insumos a `insumos/`.** Si el usuario mencionó archivos en el
    mensaje o los tiene en otra ruta, preguntá si los copiás (`cp`, no `mv`,
@@ -73,11 +74,10 @@ $ARGUMENTS
    llena el usuario. Si una corrida archivada tiene insumos reutilizables
    (`proposals/<otro-run-id>/insumos/`), copiarlos desde ahí es válido.
 
-5. **Commit del registro, nada más.** `proposals/*/` está en `.gitignore`: el
-   contenido de la corrida nunca se sincroniza con GitHub. Commiteá
-   únicamente `proposals/registry.md`:
-   `chore(proposals): register run <run-id>`. Nunca uses `git add -f` sobre
-   nada bajo `proposals/<run-id>/`.
+5. **No commitees nada.** `proposals/` entero está en `.gitignore` —corridas,
+   registro local y puntero incluidos—, así que crear una corrida no produce
+   ningún cambio versionado. Nunca uses `git add -f` sobre nada bajo
+   `proposals/`.
 
 6. **Cerrá informando**: run-id, `RUN_ROOT`, las cuatro subcarpetas, los dos
    nombres de índice de `codebase-memory` que usará la corrida
@@ -89,7 +89,7 @@ $ARGUMENTS
 
 - No despacha ningún subagente ni arranca el pipeline. Eso es `/propuesta`.
 - No borra ni copia contenido de corridas anteriores. Archivar es un cambio de
-  estado en `_run.md` + `registry.md`.
+  estado en `_run.md` + el registro local.
 - No crea índices de `codebase-memory`. Los crea el dispatcher en las Fases
   1a/1b, con `repo_path` absoluto al corpus (ver "Cómo usar `codebase-memory`"
   en `propuesta.md`).

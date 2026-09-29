@@ -15,7 +15,6 @@
 graphify-out/
 
 # Active-run pointer written by scripts/init-run.sh (local state, not content)
-proposals/.current-run
 
 # Python bytecode cache
 __pycache__/
@@ -36,13 +35,12 @@ __pycache__/
 **/*.lof
 **/*.lot
 
-# --- Contenido de las corridas de /propuesta ------------------------------
+# --- Corridas de /propuesta (nada de esto se versiona) --------------------
 # El repo solo versiona el esqueleto del framework (`plantilla/`: build.sh,
 # scripts/, logos/, templates/) más agentes, comandos y guía. TODO lo que una
-# corrida produce vive dentro de su propia carpeta `proposals/<run-id>/`
-# (`insumos/`, `artefactos/`, `grafos/`, `redaccion/`), y esa carpeta entera se
-# descarta acá: una sola regla en vez de una lista por artefacto, porque la
-# raíz del repo ya no recibe nada de una corrida. Se conserva versionado
-# `proposals/registry.md` (solo metadatos: run-id, fechas, idea breve, ruta
-# local) y se ignora el puntero local de corrida activa.
-proposals/*/
+# corrida produce vive dentro de `proposals/<run-id>/` (`insumos/`,
+# `artefactos/`, `grafos/`, `redaccion/`), y se descarta con una sola regla que
+# cubre la carpeta entera: las corridas, el registro local `registry.md` y el
+# puntero `.current-run`. `scripts/init-run.sh` recrea lo que necesite si falta,
+# así que borrar `proposals/` es seguro y repetible.
+proposals/

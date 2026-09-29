@@ -33,7 +33,8 @@ En TODO este documento, cualquier ruta que empiece por `insumos/`, `artefactos/`
 `grafos/` o `redaccion/` se resuelve **dentro de `RUN_ROOT`**, no en la raíz
 del repo. Las únicas rutas literalmente relativas a la raíz son las del
 framework: `.opencode/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,
-`proposals/registry.md` y `proposals/.current-run`. Ninguno de los cuatro
+`plantilla/` y `proposals/` (esta última contiene las corridas, su registro
+local y el puntero de corrida activa, y no se versiona). Ninguno de los cuatro
 nombres de subcarpeta colisiona con un directorio del repo, así que una ruta de
 corrida nunca es ambigua.
 
@@ -402,9 +403,10 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): si
         `artefactos/estado_propuesta.md` ("## Identidad de la corrida
         (run-id)": `run_id`, `slug_source` [auto|user], `idea`, `creada`
         [YYYY-MM-DD], `estado` [activa]) y agrega una fila a
-        `proposals/registry.md` (crea el archivo con su tabla de encabezado
-        si no existe: `| run-id | creada | cerrada | estado | idea (breve) |
-        archivo | commit |`).
+        `proposals/registry.md`, el registro LOCAL de corridas (no se
+        versiona). `scripts/init-run.sh` ya lo crea con su encabezado y agrega
+        la fila al hacer `/propuesta-init`, así que acá normalmente solo
+        verificás que la fila exista.
         ──→ GUARDIA DE CORRIDA ACTIVA: lee el `_run.md` de la corrida
         apuntada por `proposals/.current-run`. Si su `estado` es `activa` y
         NO es la corrida que estás arrancando, DETENTE y exige confirmación
@@ -425,13 +427,11 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): si
           3. Descarta sus índices de `codebase-memory` para no dejar índices
              huérfanos: `delete_project("<run-id-previo>-papers")` y
              `delete_project("<run-id-previo>-vault")`.
-          4. Commit **solo** de `proposals/registry.md` (el contenido de la
-             corrida está gitignored y nunca se sincroniza):
-             `chore(proposals): record archive of run <run-id-previo>`. No
-             hay `git add -f`/force-add de nada bajo
-             `proposals/<run-id-previo>/` — si algún archivo ahí quedara
-             trackeado por error, es un bug a corregir en `.gitignore`, no un
-             caso para forzar el add.
+          4. NO hay commit en este paso: `proposals/` entero está
+             gitignored, registro incluido, así que cerrar una corrida no
+             produce ningún cambio versionado. Nunca uses `git add -f` para
+             meter contenido de una corrida en git; si algo bajo `proposals/`
+             apareciera trackeado, es un bug a corregir en `.gitignore`.
         Nunca vacíes ni "reinicies" la carpeta de la corrida previa: la
         corrida nueva nace en su propia carpeta vía `/propuesta-init`.
         ──→ SIN CORRIDA PREVIA: si no existe una corrida anterior, omite

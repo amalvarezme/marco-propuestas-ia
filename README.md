@@ -98,12 +98,11 @@ agota — nunca reintentan sin límite.
 │   ├── agents/                      # 9 subagentes portados (dispatch con subagent_run)
 │   ├── prompts/                     # los 3 comandos portados (slash commands de Pi)
 │   └── README.md                    # Único archivo de .pi/ escrito a mano
-├── proposals/                       # Una subcarpeta por corrida + índice (local, no en GitHub)
-│   ├── registry.md                  # Único archivo versionado: tabla append-only de metadatos
-│   │                                 #   (run-id, estado, ruta local)
-│   ├── .current-run                 # Puntero a la corrida activa (local, gitignored)
-│   └── <run-id>/                    # RUN_ROOT: _run.md + insumos/ + artefactos/ + grafos/
-│                                     #   + redaccion/ (todo gitignored)
+├── proposals/                       # Corridas — NADA de esto se versiona; init la crea
+│   ├── registry.md                  #   Registro local: tabla append-only de metadatos
+│   ├── .current-run                 #   Puntero a la corrida activa
+│   └── <run-id>/                    #   RUN_ROOT: _run.md + insumos/ + artefactos/
+│                                     #     + grafos/ + redaccion/
 └── plantilla/                       # Esqueleto LaTeX versionado; init lo copia a cada
                                      #   RUN_ROOT como redaccion/. Único origen; la raíz
                                      #   nunca recibe artefactos de una corrida.
@@ -123,15 +122,17 @@ comandos (`.claude/commands/`, `.opencode/commands/`, `.pi/prompts/`),
 tooling (`scripts/`,
 `plantilla/scripts/`, `plantilla/build.sh`), plantillas/logos
 (`plantilla/templates/`, `plantilla/logos/`), la guía
-(`guiaProyectosIA_Agente.md`) y `proposals/registry.md` (solo metadatos:
-run-id, fechas, idea breve, ruta local — nunca contenido de la propuesta).
+y la guía (`guiaProyectosIA_Agente.md`). **Nada bajo `proposals/` se versiona**,
+ni siquiera el registro local: `scripts/init-run.sh` lo recrea si falta, así que
+borrar `proposals/` es seguro.
 
 **Nunca** se sincroniza el contenido de una propuesta, ni de la corrida
 activa ni de las archivadas: `proposals/<run-id>/` completo está en
 `.gitignore`, con sus cuatro subcarpetas, igual que el puntero
 `proposals/.current-run`. Archivar no copia nada: `/propuesta-limpiar` (§Uso)
-marca la corrida como archivada en su `_run.md` y en `proposals/registry.md`, y
-la siguiente arranca con `/propuesta-init` en su propia carpeta limpia.
+marca la corrida como archivada en su `_run.md` y en el registro local, sin
+producir ningún cambio en git, y la siguiente arranca con `/propuesta-init` en
+su propia carpeta limpia.
 
 `scripts/` (raíz) y `plantilla/scripts/` son intencionalmente distintos: el
 primero es tooling del repo (scaffolding de corridas y portabilidad de agentes
@@ -158,8 +159,8 @@ compuertas de aprobación no funcionan en modo headless (`opencode run`,
 
 `/propuesta-limpiar` cierra la corrida activa (si existe) sin tener que
 arrancar `/propuesta` primero: con una subcarpeta por corrida es un cambio de
-estado en `_run.md` + `proposals/registry.md`; en el layout heredado archiva a
-`proposals/<run-id>/` intacta en disco local. Ejecuta el mismo procedimiento de archivado que
+estado en `_run.md` + el registro local, y deja `proposals/<run-id>/` intacta en
+disco. Ejecuta el mismo procedimiento de archivado que
 `/propuesta` dispara automáticamente al detectar una corrida sin terminar
 (Fase 0, bloque ARCHIVADO-Y-REINICIO), pero de forma standalone y con
 confirmación explícita del usuario antes de vaciar el árbol activo.
@@ -219,6 +220,6 @@ cd proposals/<run-id>/redaccion
 ./build.sh --docx    # exporta a Word vía pandoc
 ```
 
-`build.sh` y `scripts/compile_tikz.py` resuelven el proyecto LaTeX como el
+`redaccion/build.sh` y `redaccion/scripts/compile_tikz.py` resuelven el proyecto LaTeX como el
 directorio que los contiene, sin ninguna ruta fija, así que funcionan en la
 carpeta de cualquier corrida sin configuración.

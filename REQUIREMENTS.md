@@ -140,9 +140,9 @@ deterministically with `Grep`.
 ├── .opencode/                 # Secondary runtime — GENERATED from .claude/, never hand-edited
 │   ├── agents/                 # 9 ported subagents (1:1 with .claude/agents/, no coordinador)
 │   └── commands/propuesta.md   # Ported /propuesta command
-├── proposals/                 # One subfolder per run + the registry
-│   ├── registry.md             # Append-only table: run-id, estado, archivo, commit
-│   ├── .current-run            # Active run-id pointer (local, gitignored)
+├── proposals/                 # Runs — nothing here is versioned; init creates it
+│   ├── registry.md             # Local append-only table: run-id, estado, archivo
+│   ├── .current-run            # Active run-id pointer
 │   └── <run-id>/               # RUN_ROOT — every run artifact lives here (gitignored):
 │                               #   _run.md + insumos/ + artefactos/ + grafos/ + redaccion/
 ├── plantilla/                # LaTeX skeleton committed to git, copied into each RUN_ROOT

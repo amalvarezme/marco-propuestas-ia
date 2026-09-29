@@ -72,11 +72,14 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
    **dentro de `RUN_ROOT`**, nunca en la raíz del repo; las únicas rutas
    relativas a la raíz son las del framework (`.claude/`, `.opencode/`,
    `.pi/`, `scripts/`, `guiaProyectosIA_Agente.md`, `AGENTS.md`,
-   `proposals/registry.md`). Ninguno de los cuatro nombres de subcarpeta
+   `plantilla/`, `proposals/`). Ninguno de los cuatro nombres de subcarpeta
    colisiona con un directorio del repo, así que una ruta de corrida nunca es
-   ambigua. Archivar una corrida es solo un cambio de estado en su `_run.md` y en
-   `proposals/registry.md`: la carpeta ya **es** el archivo, no se copia ni se
-   borra contenido. El esqueleto LaTeX versionado vive en `plantilla/` y es lo
+   ambigua. Archivar una corrida es solo un cambio de estado en su `_run.md` y en el
+   registro local `proposals/registry.md`: la carpeta ya **es** el archivo, no
+   se copia ni se borra contenido. **Nada bajo `proposals/` se versiona**
+   —corridas, registro y puntero incluidos—, así que ni crear ni cerrar una
+   corrida produce cambios en git; `scripts/init-run.sh` recrea lo que falte,
+   por lo que borrar `proposals/` es seguro. El esqueleto LaTeX versionado vive en `plantilla/` y es lo
    único que `init` copia a `redaccion/`; la raíz del repo nunca recibe
    artefactos de una corrida.
 8. **Salida LaTeX:** Cada sección se escribe como archivo `.tex` en

@@ -35,7 +35,7 @@ terminada.
       artefactos (secciones, referencias, papers del corpus, notas del vault) y
       el SHA-256 corto de los entregables, para que el archivo sea auditable sin
       abrirlo.
-   2. En `proposals/registry.md`: misma fila a `archivada`, con `cerrada` y
+   2. En el registro local `proposals/registry.md`: misma fila a `archivada`, con `cerrada` y
       `archivo` (ruta local `proposals/<run-id>/`, nunca una URL de GitHub). Si
       hubiera más de una fila con ese run-id (corridas previas canceladas que
       reusaron el slug), actualizá **solo** la que corresponde a esta carpeta y
@@ -43,9 +43,9 @@ terminada.
    3. `delete_project("<run-id>-papers")` y `delete_project("<run-id>-vault")`
       para no dejar índices de `codebase-memory` huérfanos. Si la corrida nunca
       llegó a indexar, es un no-op: seguí sin error.
-   4. Commit **solo** de `proposals/registry.md`:
-      `chore(proposals): record archive of run <run-id>`. Sin `git add -f` de
-      nada bajo `proposals/<run-id>/`.
+   4. No hay commit: `proposals/` entero está gitignored, registro incluido,
+      así que cerrar una corrida no produce ningún cambio versionado. Sin
+      `git add -f` de nada bajo `proposals/`.
 
 4. **Borrá el puntero** `proposals/.current-run` (ya no hay corrida activa).
 
@@ -59,10 +59,11 @@ terminada.
   solo en disco local (nunca en GitHub: `proposals/*/` está gitignored a
   propósito). Tampoco toca las corridas ya archivadas.
 - Nunca hace `git add -f`/force-add de contenido de la propuesta (activa o
-  archivada) para meterlo en git — solo `proposals/registry.md` se versiona.
+  archivada) para meterlo en git — nada bajo `proposals/` se versiona, tampoco
+  el registro local.
 - Nunca toca el esqueleto del framework (`plantilla/`), la guía
   (`guiaProyectosIA_Agente.md`), ni ningún archivo fuera de la corrida que está
-  cerrando y `proposals/registry.md`.
-- Nunca hace `git push` — el commit de `proposals/registry.md` queda local
-  hasta que el usuario decida pushearlo explícitamente.
+  cerrando y su fila en el registro local.
+- Nunca hace `git commit` ni `git push`: no hay nada versionado que cambiar al
+  cerrar una corrida.
 - Nunca se ejecuta sin la confirmación explícita del paso 2.

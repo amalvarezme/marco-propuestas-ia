@@ -25,6 +25,11 @@
 # only what is missing and never truncates an existing file. It writes nothing
 # outside proposals/<run-id>/, proposals/.current-run and proposals/registry.md.
 #
+# Nothing under proposals/ is versioned — not even the registry. The repo holds
+# only the framework, so this script bootstraps the whole runs root from scratch
+# (directory + registry header) when it is absent. Deleting proposals/ is always
+# safe: the next run recreates what it needs.
+#
 # Usage (from anywhere; the repo root is resolved from this file's location):
 #
 #   scripts/init-run.sh <run-id> ["idea breve"]   # create/refresh + activate
@@ -163,16 +168,34 @@ las cuatro subcarpetas:
 | \`grafos/\` | reportes de \`codebase-memory\` (\`papers-graph-report.md\`, \`vault-graph-report.md\`) | el dispatcher |
 | \`redaccion/\` | \`main.tex\`, \`sections/\`, \`refs.bib\`, \`main.pdf\`, \`main.docx\`, \`build.sh\`, \`scripts/\`, \`logos/\`, \`templates/\` | el pipeline |
 
-Nada de esto se versiona (\`.gitignore\`: \`proposals/*/\`); solo
-\`proposals/registry.md\` lo hace.
+Nada de esto se versiona (\`.gitignore\`: \`proposals/\`), ni el registro local
+\`proposals/registry.md\`. El repo solo aloja el esqueleto del framework.
 
 Índices de \`codebase-memory\` de esta corrida: \`$run_id-papers\`
 (\`artefactos/scoping/papers\`) y \`$run_id-vault\` (\`artefactos/vault\`).
 EOF
 fi
 
-# --- registry row ----------------------------------------------------------
-if [ -f "$REGISTRY" ] && ! grep -q "\`$run_id\`" "$REGISTRY"; then
+# --- registry (bootstrapped if absent; never versioned) --------------------
+# Guarding the append on `[ -f $REGISTRY ]` alone would silently skip recording
+# the run whenever the registry is missing, so the header is written first.
+if [ ! -f "$REGISTRY" ]; then
+  cat > "$REGISTRY" <<'EOF'
+# Registro local de corridas de `/propuesta`
+
+Tabla append-only que mantiene el dispatcher (`propuesta.md`, Fase 0). Cada
+corrida agrega una fila al crearse; el dispatcher actualiza `cerrada`/`estado`
+al archivarla. **Este archivo no se versiona**: vive solo en el disco de quien
+corre el pipeline, igual que el contenido de las corridas. `scripts/init-run.sh`
+lo recrea con este encabezado si falta, así que borrar `proposals/` es seguro.
+El registro de cada corrida en particular vive además en su propio
+`proposals/<run-id>/_run.md`.
+
+| run-id | creada | cerrada | estado | idea (breve) | archivo | commit |
+|---|---|---|---|---|---|---|
+EOF
+fi
+if ! grep -q "\`$run_id\`" "$REGISTRY"; then
   printf '| `%s` | %s | — | activa | %s | `proposals/%s/` (local) | — |\n' \
     "$run_id" "$today" "${idea:-—}" "$run_id" >> "$REGISTRY"
 fi
