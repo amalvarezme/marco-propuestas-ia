@@ -48,11 +48,6 @@ Resolución de `RUN_ROOT`, en este orden exacto:
    describe la Fase 0) y solo después continúa con la Fase 0. Nunca improvises
    una carpeta de corrida a mano ni escribas artefactos en la raíz del repo.
 
-Sobre el layout heredado (corridas anteriores a estas subcarpetas, con
-`proposal/` y `vault/` planos en la raíz del repo): no se migra ni se continúa
-desde acá. Lo único soportado es archivarlo con `/propuesta-limpiar`; ver
-"LAYOUT HEREDADO" en la Fase 0.
-
 Cuando una llamada MCP de `codebase-memory` pide un `repo_path` absoluto,
 `<RUN_ROOT>` es la ruta absoluta de esa carpeta (p. ej.
 `/ruta/al/repo/proposals/2026-09-siun-alianzas`), y los dos corpus son
@@ -440,16 +435,6 @@ Fase 0  ──→ RESOLUCIÓN DE RUN-ID (identidad de la corrida): si
              caso para forzar el add.
         Nunca vacíes ni "reinicies" la carpeta de la corrida previa: la
         corrida nueva nace en su propia carpeta vía `/propuesta-init`.
-        ──→ LAYOUT HEREDADO (corridas anteriores a las subcarpetas por
-        corrida): si no hay puntero y en la raíz del repo hay un
-        `proposal/estado_propuesta.md` con `estado: activa`, esa corrida vive
-        en el árbol plano de la raíz (`proposal/` + `vault/`) y **no** se
-        migra a mitad de camino. Lo único soportado sobre ella es archivarla
-        con `/propuesta-limpiar`, que copia ese árbol a
-        `proposals/<run-id>/` y lo deja en scaffolding limpio; ese comando es
-        la fuente de verdad del procedimiento heredado y no se duplica acá.
-        Tras archivarla, toda corrida nueva usa el layout de cuatro
-        subcarpetas.
         ──→ SIN CORRIDA PREVIA: si no existe una corrida anterior, omite
         GUARDIA DE CORRIDA ACTIVA y CIERRE DE LA CORRIDA PREVIA por
         completo; continúa directo con el resto de la Fase 0.

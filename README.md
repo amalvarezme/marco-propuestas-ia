@@ -63,7 +63,7 @@ a la tríada habitual (resumen, veredicto, aprobación), y la Fase 7 cierra con
 una tabla resumen de una fila por fase.
 
 **Bucle de figuras: precheck de overflow y tope de reintentos.** Antes de la
-revisión visual de `revisor-figuras`, `proposal/scripts/compile_tikz.py`
+revisión visual de `revisor-figuras`, `redaccion/scripts/compile_tikz.py`
 detecta determinísticamente `Overfull \hbox` en el log de `pdflatex` y lo
 mapea a la línea del `.tex` fuente (token `OVERFULL: <diagrama> <N>
 occurrence(s)`); si `N > 0`, el dispatcher reenvía directo a
@@ -80,8 +80,6 @@ agota — nunca reintentan sin límite.
 ├── AGENTS.md                        # Playbook / reglas globales
 ├── guiaProyectosIA_Agente.md        # Guía autoritativa sección por sección
 ├── .mcp.json                        # Config de MCP servers
-├── info_data/                       # LEGACY: entrega de insumos previa al layout por corrida
-│                                     #   (las corridas nuevas usan proposals/<run-id>/insumos/)
 ├── logos/                           # Logos institucionales (branding del repo/README)
 ├── scripts/                         # Tooling del REPO (no de la propuesta):
 │                                     #   init-run.sh — scaffolding de proposals/<run-id>/ (RUN_ROOT)
@@ -100,18 +98,15 @@ agota — nunca reintentan sin límite.
 │   ├── agents/                      # 9 subagentes portados (dispatch con subagent_run)
 │   ├── prompts/                     # los 3 comandos portados (slash commands de Pi)
 │   └── README.md                    # Único archivo de .pi/ escrito a mano
-├── vault/                           # LEGACY: mirror Obsidian de la corrida plana de la raíz
-│   ├── secciones/                   # Una nota por sección
-│   ├── insumos/                     # Una nota por insumo/referencia
-│   └── .cbmignore                   # Exclusiones del índice de codebase-memory (.obsidian/)
 ├── proposals/                       # Una subcarpeta por corrida + índice (local, no en GitHub)
 │   ├── registry.md                  # Único archivo versionado: tabla append-only de metadatos
 │   │                                 #   (run-id, estado, ruta local)
 │   ├── .current-run                 # Puntero a la corrida activa (local, gitignored)
 │   └── <run-id>/                    # RUN_ROOT: _run.md + insumos/ + artefactos/ + grafos/
 │                                     #   + redaccion/ (todo gitignored)
-└── proposal/                        # Esqueleto LaTeX versionado; init lo copia a cada RUN_ROOT
-                                     #   como redaccion/ (y es el árbol de la corrida heredada)
+└── plantilla/                       # Esqueleto LaTeX versionado; init lo copia a cada
+                                     #   RUN_ROOT como redaccion/. Único origen; la raíz
+                                     #   nunca recibe artefactos de una corrida.
     ├── build.sh                     # Compilación PDF/DOCX
     ├── scripts/                     # compile_tikz.py, prep_docx.py — específico del build LaTeX/DOCX
     ├── logos/                       # Logos institucionales embebidos en el PDF (header/footer)
@@ -126,24 +121,19 @@ El repo remoto solo contiene lo necesario para **correr el pipeline en
 local**: agentes (`.claude/agents/`, `.opencode/agents/`, `.pi/agents/`),
 comandos (`.claude/commands/`, `.opencode/commands/`, `.pi/prompts/`),
 tooling (`scripts/`,
-`proposal/scripts/`, `proposal/build.sh`), plantillas/logos
-(`proposal/templates/`, `proposal/logos/`), la guía
+`plantilla/scripts/`, `plantilla/build.sh`), plantillas/logos
+(`plantilla/templates/`, `plantilla/logos/`), la guía
 (`guiaProyectosIA_Agente.md`) y `proposals/registry.md` (solo metadatos:
 run-id, fechas, idea breve, ruta local — nunca contenido de la propuesta).
 
 **Nunca** se sincroniza el contenido de una propuesta, ni de la corrida
 activa ni de las archivadas: `proposals/<run-id>/` completo está en
-`.gitignore` —con sus cuatro subcarpetas— igual que el puntero
-`proposals/.current-run` y el árbol heredado de la raíz (`proposal/sections/`,
-`proposal/refs.bib`, `proposal/main.tex/.pdf/.docx`, `vault/secciones/`,
-`vault/insumos/`, `info_data/`). Con una subcarpeta por corrida, archivar
-no copia nada: `/propuesta-limpiar` (§Uso) marca la corrida como archivada en
-su `_run.md` y en `proposals/registry.md`, y la siguiente corrida arranca con
-`/propuesta-init` en su propia carpeta limpia. En el layout heredado (corrida
-en la raíz del repo) ese mismo comando conserva su comportamiento anterior:
-copia a `proposals/<run-id>/` y resetea `proposal/` y `vault/` de la raíz.
+`.gitignore`, con sus cuatro subcarpetas, igual que el puntero
+`proposals/.current-run`. Archivar no copia nada: `/propuesta-limpiar` (§Uso)
+marca la corrida como archivada en su `_run.md` y en `proposals/registry.md`, y
+la siguiente arranca con `/propuesta-init` en su propia carpeta limpia.
 
-`scripts/` (raíz) y `proposal/scripts/` son intencionalmente distintos: el
+`scripts/` (raíz) y `plantilla/scripts/` son intencionalmente distintos: el
 primero es tooling del repo (scaffolding de corridas y portabilidad de agentes
 Claude Code → OpenCode/Pi, no depende de una corrida de `/propuesta`); el
 segundo es específico del
@@ -169,8 +159,7 @@ compuertas de aprobación no funcionan en modo headless (`opencode run`,
 `/propuesta-limpiar` cierra la corrida activa (si existe) sin tener que
 arrancar `/propuesta` primero: con una subcarpeta por corrida es un cambio de
 estado en `_run.md` + `proposals/registry.md`; en el layout heredado archiva a
-`proposals/<run-id>/` en disco local y deja `proposal/` y `vault/` de la raíz
-en scaffolding limpio. Ejecuta el mismo procedimiento de archivado que
+`proposals/<run-id>/` intacta en disco local. Ejecuta el mismo procedimiento de archivado que
 `/propuesta` dispara automáticamente al detectar una corrida sin terminar
 (Fase 0, bloque ARCHIVADO-Y-REINICIO), pero de forma standalone y con
 confirmación explícita del usuario antes de vaciar el árbol activo.
@@ -231,5 +220,5 @@ cd proposals/<run-id>/redaccion
 ```
 
 `build.sh` y `scripts/compile_tikz.py` resuelven el proyecto LaTeX como el
-directorio que los contiene, sin ninguna ruta fija, así que funcionan igual ahí
-y en el árbol heredado de la raíz (`cd proposal`).
+directorio que los contiene, sin ninguna ruta fija, así que funcionan en la
+carpeta de cualquier corrida sin configuración.

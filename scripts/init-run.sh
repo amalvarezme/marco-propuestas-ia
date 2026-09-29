@@ -16,9 +16,10 @@
 #
 # Only _run.md sits at the run root, because it describes the folder itself.
 #
-# redaccion/ is a copy of the repo's proposal/ skeleton, so its internal relative
-# layout (sections/, logos/, templates/, scripts/) is unchanged and build.sh and
-# scripts/compile_tikz.py work there without modification.
+# redaccion/ is a copy of the repo's plantilla/ skeleton, so its internal
+# relative layout (sections/, logos/, templates/, scripts/) is fixed and
+# build.sh and scripts/compile_tikz.py work there without modification: both
+# resolve the LaTeX project as the parent of their own directory.
 #
 # Deterministic and idempotent: re-running it on an existing run folder creates
 # only what is missing and never truncates an existing file. It writes nothing
@@ -41,7 +42,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUNS_DIR="$REPO_ROOT/proposals"
 POINTER="$RUNS_DIR/.current-run"
 REGISTRY="$RUNS_DIR/registry.md"
-SKELETON="$REPO_ROOT/proposal"
+SKELETON="$REPO_ROOT/plantilla"
 
 die() { printf 'error: %s\n' "$1" >&2; exit 1; }
 

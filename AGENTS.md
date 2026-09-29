@@ -76,9 +76,9 @@ los subagentes de Claude Code no pueden invocar a otros subagentes. El agente
    colisiona con un directorio del repo, así que una ruta de corrida nunca es
    ambigua. Archivar una corrida es solo un cambio de estado en su `_run.md` y en
    `proposals/registry.md`: la carpeta ya **es** el archivo, no se copia ni se
-   borra contenido. El layout heredado (corridas previas, con `proposal/` y
-   `vault/` planos en la raíz) no se migra ni se continúa: lo único soportado
-   sobre él es archivarlo con `/propuesta-limpiar`.
+   borra contenido. El esqueleto LaTeX versionado vive en `plantilla/` y es lo
+   único que `init` copia a `redaccion/`; la raíz del repo nunca recibe
+   artefactos de una corrida.
 8. **Salida LaTeX:** Cada sección se escribe como archivo `.tex` en
    `redaccion/sections/`; referencias en `redaccion/refs.bib`; ensamblaje en
    `redaccion/main.tex`. El template `main.tex` incluye un footer con los

@@ -32,10 +32,6 @@ $ARGUMENTS
    únicamente editar su `_run.md` (`estado: archivada`, `cerrada:
    <YYYY-MM-DD>`) y su fila en `proposals/registry.md` — **nunca** se copia ni
    se borra contenido: la carpeta de esa corrida ya lo conserva todo.
-   Si además existe una corrida heredada en la raíz del repo (`proposal/` y
-   `vault/` planos, esquema previo a las subcarpetas por corrida), no la
-   toques: avisá que quedó ahí y que `/propuesta-limpiar` es el camino para
-   archivarla.
 
 3. **Creá la carpeta con el script determinista** (no lo hagas a mano, no
    reimplementes el scaffolding):
@@ -70,11 +66,12 @@ $ARGUMENTS
    `proposals/.current-run` (el puntero que el dispatcher lee para resolver
    `RUN_ROOT`) y agrega una fila a `proposals/registry.md`.
 
-4. **Llevá los insumos a `insumos/`.** Si el usuario ya dejó archivos en el
-   `info_data/` de la raíz o los mencionó en el mensaje, preguntá si los
-   copiás (`cp`, no `mv`, salvo que pida moverlos) a
-   `proposals/<run-id>/insumos/`. Los insumos de una corrida viven dentro de su
-   corrida; `insumos/` es la única subcarpeta que llena el usuario.
+4. **Llevá los insumos a `insumos/`.** Si el usuario mencionó archivos en el
+   mensaje o los tiene en otra ruta, preguntá si los copiás (`cp`, no `mv`,
+   salvo que pida moverlos) a `proposals/<run-id>/insumos/`. Los insumos de una
+   corrida viven dentro de su corrida; `insumos/` es la única subcarpeta que
+   llena el usuario. Si una corrida archivada tiene insumos reutilizables
+   (`proposals/<otro-run-id>/insumos/`), copiarlos desde ahí es válido.
 
 5. **Commit del registro, nada más.** `proposals/*/` está en `.gitignore`: el
    contenido de la corrida nunca se sincroniza con GitHub. Commiteá

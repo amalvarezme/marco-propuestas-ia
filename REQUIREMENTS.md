@@ -32,8 +32,8 @@ Optional extras, only for manual local conversion of a run's `insumos/` inputs:
 **Scope note:** the pipeline itself needs **no** Python packages. The
 knowledge-graph layer is `codebase-memory` (the `codegraph` MCP server, a Node
 binary — see section 1), not a Python library. Every framework script is
-stdlib-only: `proposal/scripts/compile_tikz.py`,
-`proposal/scripts/prep_docx.py`, `scripts/gen-opencode.py`, and
+stdlib-only: `plantilla/scripts/compile_tikz.py`,
+`plantilla/scripts/prep_docx.py`, `scripts/gen-opencode.py`, and
 `scripts/gen-pi.py` import nothing from this file.
 
 ## 3. Node.js / MCP servers
@@ -140,19 +140,13 @@ deterministically with `Grep`.
 ├── .opencode/                 # Secondary runtime — GENERATED from .claude/, never hand-edited
 │   ├── agents/                 # 9 ported subagents (1:1 with .claude/agents/, no coordinador)
 │   └── commands/propuesta.md   # Ported /propuesta command
-├── info_data/                # LEGACY user-input drop (pre-per-run layout); new runs use
-│                              #   proposals/<run-id>/insumos/ instead
-├── vault/                     # LEGACY root Obsidian mirror (belongs to the legacy flat run;
-│   │                           #   new runs mirror into artefactos/vault/)
-│   ├── secciones/              # One note per section
-│   └── insumos/                # One note per input/reference
 ├── proposals/                 # One subfolder per run + the registry
 │   ├── registry.md             # Append-only table: run-id, estado, archivo, commit
 │   ├── .current-run            # Active run-id pointer (local, gitignored)
 │   └── <run-id>/               # RUN_ROOT — every run artifact lives here (gitignored):
 │                               #   _run.md + insumos/ + artefactos/ + grafos/ + redaccion/
-├── proposal/                 # LaTeX skeleton committed to git, copied into each RUN_ROOT
-│                              #   as redaccion/ (also the legacy flat run's tree):
+├── plantilla/                # LaTeX skeleton committed to git, copied into each RUN_ROOT
+│                              #   as redaccion/. The repo root never holds run artifacts.
 │   ├── build.sh              # Compilación PDF/DOCX (logos header/footer)
 │   ├── scripts/               # compile_tikz.py, prep_docx.py — LaTeX/DOCX build-specific,
 │   │                           #   distinct from the root-level scripts/ (repo tooling)
