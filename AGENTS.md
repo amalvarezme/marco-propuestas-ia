@@ -241,6 +241,7 @@ flujo stepped `/propuesta-analizar` + `/propuesta-continuar`.
 | `investigador` | Definir/refinar subproblemas, pregunta, objetivos, hipótesis, marco conceptual |
 | `redactor` | Redactar o revisar secciones narrativas (§1, §2, §9–§12, §14–§15) |
 | `revisor` | Validar coherencia y calidad de secciones ya redactadas |
+| `grant-flow-auditor` | Auditar micro-estilo de prosa ya redactada (cadencia, voz activa, transiciones) antes del `revisor` |
 | `bibliografo-propuesta` | Construir o actualizar la bibliografía (§4, §16) |
 | `insumos-observador` | Ingerir y estructurar insumos del usuario (PDFs, papers) |
 | `presupuestador` | Construir o ajustar el presupuesto (§13): rubros, montos, cofinanciación |

@@ -1,7 +1,7 @@
 # templates/
 
 Holds `reference.docx`, the pandoc `--reference-doc` template used by
-`build_docx()` (`proposal/build.sh --docx`) to brand `proposal/main.docx`
+`build_docx()` (`redaccion/build.sh --docx`) to brand `redaccion/main.docx`
 with the same institutional logos as `main.pdf` (UNAL top-right header,
 GCPDS bottom-left footer, LabIA bottom-right footer).
 

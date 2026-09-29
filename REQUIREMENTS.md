@@ -21,21 +21,31 @@ All dependencies needed to run the multi-agent framework, build the knowledge gr
 
 ## 2. Python packages (`requirements.txt`)
 
-Install (all optional):
+Install:
 ```bash
 pip install -r requirements.txt
 ```
 
-Optional extras, only for manual local conversion of a run's `insumos/` inputs:
-- `pypdf` + `markdownify` — PDF parsing (convocatoria, papers)
-- `python-docx` — DOCX parsing (Anexo 2 proposal)
+These are the extraction toolchain `insumos-observador` uses to read the files
+dropped into a run's `insumos/`:
 
-**Scope note:** the pipeline itself needs **no** Python packages. The
+| Package | Used for | Fallback if absent |
+|---------|----------|--------------------|
+| `pymupdf4llm` | PDF → Markdown preserving tables and structure | none; PDF intake degrades badly |
+| `markitdown` | Office documents (`.docx`, `.pptx`, `.xlsx`) | `textutil -convert txt` / `unzip -p ... word/document.xml` on macOS |
+| `markdownify` | HTML → Markdown for web-sourced inputs | none |
+| `python-docx` | DOCX structure when Markdown is not enough | same as `markitdown` |
+
+Skip them only if you never feed PDFs or Office documents to a run:
+`insumos-observador` names them as its primary path and the documented
+fallbacks are macOS-only.
+
+**Scope note:** nothing *else* in the pipeline needs Python packages. The
 knowledge-graph layer is `codebase-memory` (the `codegraph` MCP server, a Node
-binary — see section 1), not a Python library. Every framework script is
+binary — see section 1), not a Python library, and every framework script is
 stdlib-only: `plantilla/scripts/compile_tikz.py`,
-`plantilla/scripts/prep_docx.py`, `scripts/gen-opencode.py`, and
-`scripts/gen-pi.py` import nothing from this file.
+`plantilla/scripts/prep_docx.py`, `scripts/marco_cli.py`, and the three
+runtime generators import nothing from this file.
 
 ## 3. Node.js / MCP servers
 

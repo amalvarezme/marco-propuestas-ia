@@ -3,13 +3,13 @@
 # Python >= 3.11 recommended.
 #
 # Scope note: the framework's own Python scripts are stdlib-only
-# (proposal/scripts/compile_tikz.py, proposal/scripts/prep_docx.py,
+# (plantilla/scripts/compile_tikz.py, plantilla/scripts/prep_docx.py,
 # scripts/gen-opencode.py, scripts/gen-pi.py). The knowledge-graph layer is
 # NOT Python anymore: it is codebase-memory, the `codegraph` MCP server
 # (npm: @colbymchenry/codegraph), see REQUIREMENTS.md section 1.
 #
 # Everything below is OPTIONAL and only useful for local, manual conversion of
-# user inputs dropped into info_data/ (PDF/DOCX) when the agent's own Read tool
+# user inputs dropped into a run's insumos/ (PDF/DOCX) when the agent's own Read tool
 # plus `textutil` are not enough. Nothing in the pipeline imports them.
 
 # PDF parsing (convocatoria PDFs, papers)

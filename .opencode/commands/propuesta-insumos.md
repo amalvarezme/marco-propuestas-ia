@@ -135,7 +135,7 @@ Cerrá siempre el reporte de respuesta con la sección estandarizada:
 
 - No escribe `artefactos/estado_propuesta.md` ni run-id.
 - No despacha `insumos-observador` ni ningún otro subagente.
-- No modifica `proposal/`, `artefactos/vault/`, ni `proposals/`.
+- No modifica `redaccion/`, `artefactos/`, `grafos/`, ni ninguna otra corrida.
 - No borra archivos que el usuario ya haya puesto en las drop zones (solo
   crea directorios, siembra `idea.md` si falta, y refresca el README).
 - **Nunca** sobrescribe un `ideas/idea.md` existente.

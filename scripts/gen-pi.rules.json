@@ -188,12 +188,13 @@
       "applies_to": [
         "_propuesta-steps.md",
         "propuesta-analizar.md",
-        "propuesta-continuar.md"
+        "propuesta-continuar.md",
+        "propuesta.md"
       ],
       "find": "`.claude/commands/",
       "replace": "`.pi/prompts/",
       "literal": true,
-      "_note": "The stepped commands cross-reference each other and the pipeline body by path; in this port they live under .pi/prompts/."
+      "_note": "The stepped commands cross-reference each other, and propuesta.md now points at the shared step table too; in this port they all live under .pi/prompts/."
     },
     {
       "id": "steps-agents-path",

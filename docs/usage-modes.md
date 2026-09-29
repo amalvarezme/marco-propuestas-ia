@@ -167,7 +167,7 @@ Sin override, el run-id se auto-deriva como `<YYYY-MM>-<slug>` desde la idea.
 ```
 
 Archiva la corrida activa a `proposals/<run-id>/` (solo disco local) y resetea
-`proposal/` + `artefactos/vault/` a scaffolding limpio (incluye control `next_step`), con
+la corrida como `archivada` sin tocar su contenido (incluye control `next_step`), con
 confirmación explícita.
 
 ### 2.4 Qué hace el dispatcher
@@ -234,7 +234,7 @@ prioridad de secciones; el draft siembra el encuadre científico.
 
 ### 2.8 Dos propuestas distintas (separación de contexto)
 
-Solo hay **un** workspace activo: `proposal/` + `artefactos/vault/`.
+Solo hay **una** corrida activa a la vez, la que apunta `proposals/.current-run`.
 
 | Qué | Cómo se separa |
 |-----|----------------|
@@ -247,7 +247,7 @@ Flujo típico A → B:
 
 ```text
 1. /propuesta run-id=...-proyecto-a <idea A>   # termina o pausa
-2. /propuesta-limpiar                          # archiva A, vacía proposal/
+2. /propuesta-limpiar                          # cierra A (su carpeta queda intacta)
 3. Reemplaza insumos/ con insumos de B
 4. Nueva sesión de chat (recomendado)
 5. /propuesta run-id=...-proyecto-b <idea B>
@@ -345,7 +345,7 @@ python3 scripts/gen-pi.py --check
 
 - OpenCode rules: `scripts/gen-opencode.rules.json`
 - pi rules: `scripts/gen-pi.rules.json` (prompts = slash `/propuesta-*`;
-  roles en `.pi/references/agents/`; skill `marco-propuestas`)
+  subagentes despachables en `.pi/agents/`)
 
 **pi:** abrí el repo en `pi`, confiá el proyecto para cargar `.pi/`, usá los
 mismos nombres de comando. No hay subagentes anidados: el primario lee las
@@ -366,7 +366,7 @@ depurar:
 ```bash
 # Compilar un diagrama TikZ (requiere pdflatex, pdftoppm, pdftocairo)
 python3 redaccion/scripts/compile_tikz.py
-# (lee diagramas bajo proposal/ según el script; ver cabecera del archivo)
+# (lee diagramas bajo redaccion/sections/; ver cabecera del archivo)
 
 # Preparar staging docx-safe antes de pandoc
 python3 redaccion/scripts/prep_docx.py --stage /tmp/docx-stage

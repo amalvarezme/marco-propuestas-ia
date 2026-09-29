@@ -5,14 +5,15 @@ directory except this file is generated, deterministically and with zero LLM
 calls, from the canonical Claude Code sources under `.claude/`:
 
 ```bash
-python3 scripts/gen-pi.py          # write .pi/
-python3 scripts/gen-pi.py --check  # dry-run; non-zero exit on drift or diff
+python3 scripts/gen-pi.py            # write .pi/
+python3 scripts/gen-pi.py --check    # dry-run; non-zero exit on drift or diff
+python3 scripts/gen-pi.py --root DIR # write DIR/.pi (used by `marco init`)
 ```
 
 | Path | Generated from | Pi role |
 |---|---|---|
 | `.pi/agents/*.md` (9 files) | `.claude/agents/*.md` | Project subagents, dispatched with `subagent_run` |
-| `.pi/prompts/*.md` (3 files) | `.claude/commands/*.md` | Prompt templates exposed as `/propuesta`, `/propuesta-init`, `/propuesta-limpiar` |
+| `.pi/prompts/*.md` (7 files) | `.claude/commands/*.md` | Prompt templates exposed as `/propuesta`, `/propuesta-init`, `/propuesta-insumos`, `/propuesta-analizar`, `/propuesta-continuar`, `/propuesta-limpiar`, plus the frontmatter-less `_propuesta-steps.md` step table they reference |
 
 Both paths are Pi's documented project-level resource directories
 (`docs/configuration.md`: "Project `.pi` directory"), so no setup step and no

@@ -24,7 +24,7 @@ Every run that uses analizar / continuar / auto MUST maintain:
 
 | Field | Meaning |
 |-------|---------|
-| `mode` | `stepped` after `/propuesta-analizar` or when using continuar; `auto` for `/propuesta` / `/propuesta` |
+| `mode` | `stepped` after `/propuesta-analizar` or when using continuar; `auto` for `/propuesta` (single-session full pipeline) |
 | `next_step` | Unit id to run next (see table below) |
 | `next_command` | Usually `/propuesta-continuar` in stepped mode; `(none)` when `done` or in pure auto mid-session |
 | `last_completed` | Last finished unit or gate |
@@ -86,7 +86,7 @@ Format:
 ```markdown
 ## 🎯 NEXT STEPS
 - **Phase Completed**: [Phase / Step Name]
-- **Files Modified**: `proposal/...`, `vault/...`
+- **Files Modified**: `redaccion/...`, `artefactos/...`, `grafos/...`
 - **Action Required**: Review changes or provide gate approval
 - **Next Command**: `/propuesta-continuar` (or compilation instructions if done)
 ```

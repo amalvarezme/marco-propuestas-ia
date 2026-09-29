@@ -1404,6 +1404,23 @@ estado del arte, diagrama metodológico):
 - Tras cada gate, presenta el veredicto PASS/FAIL del revisor correspondiente
   y espera aprobación explícita del usuario antes de despachar la siguiente
   fase. **Tras cada gate, NO avances sin aprobación.**
+- **Mantené el bloque `## Control de ejecución`** en
+  `artefactos/estado_propuesta.md` en CADA transición de unidad, con el
+  formato y los campos que define `.claude/commands/_propuesta-steps.md`
+  (fuente única): `mode`, `next_step`, `next_command`, `last_completed`,
+  `intake_complete`, más `idea`/`idea_source`. En este comando `mode: auto`,
+  y `next_step` apunta a la unidad siguiente de la tabla de pasos. No es
+  opcional: `/propuesta-continuar` lee exactamente ese `next_step` para saber
+  qué sigue, así que una corrida arrancada con `/propuesta` queda reanudable
+  por pasos solo si el bloque está al día. Al terminar la Fase 7,
+  `next_step: done` y `next_command: (none)`.
+- **Auditoría de prosa antes del gate (`grant-flow-auditor`).** Cuando la
+  unidad produjo o editó secciones narrativas (`redactor` o `investigador`),
+  despachá `grant-flow-auditor` sobre esas secciones ANTES del `revisor`:
+  audita micro-estilo (cadencia, voz activa, transiciones, fricción para el
+  evaluador), no cumplimiento. El `revisor` sigue siendo la autoridad del
+  veredicto PASS/FAIL; el auditor no lo reemplaza ni lo bloquea. No aplica a
+  unidades sin prosa nueva (bucles de figura, presupuesto, bibliografía).
 - En FAIL, vuelve a despachar con `Task` al agente responsable de la sección
   con las correcciones exactas del revisor, y repite el gate.
 - No reescribas contenido de sección tú mismo; ese trabajo es de los

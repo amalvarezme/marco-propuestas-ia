@@ -49,7 +49,7 @@ marco init <dir> [--title TITLE] [--tools TOOLS] [--lang CODE] [--model-preset N
 ```
 
 Crea una carpeta de proyecto autocontenida en `<dir>` con el kit completo
-de agentes, comandos, guía, drop zones, esqueleto de `proposal/`, mirror
+de agentes, comandos, guía, esqueleto LaTeX en `plantilla/`, mirror
 `artefactos/vault/`, `DECISIONS.md`, `journal/`, `.marco/` (version + manifest + config)
 y la configuración de idioma y modelo.
 
@@ -74,12 +74,12 @@ y la configuración de idioma y modelo.
 5. Escribe `.marco/version`, `.marco/manifest.json` con checksums SHA-256,
    y `.marco/config.json` con `language`, `model_preset`, `agent_models`,
    `created_at` y `updated_at`.
-6. Crea las drop zones bajo `insumos/` (`tdr`, `draft`, `background`,
-   `doc-secciones`, `ideas`).
-7. Crea los subdirectorios del vault (`artefactos/vault/insumos/`, `artefactos/vault/secciones/`).
-8. Crea los esqueletos de `redaccion/sections/`, `artefactos/pipeline/` y
-   `artefactos/scoping/` (vacíos, con `.gitkeep`).
-9. Si no existe, siembra `insumos/ideas/idea.md` con la plantilla de idea
+6. **No** crea contenido de corrida en la raíz del proyecto: las corridas las
+   crea `scripts/init-run.sh` (vía `/propuesta-init`) en `proposals/<run-id>/`
+   con sus cuatro subcarpetas, y las zonas de depósito las siembra
+   `/propuesta-insumos` dentro del `insumos/` de esa corrida. `drop_zones` y
+   `vault_subdirs` siguen en el manifest porque esos comandos los consumen.
+7. Si no existe, siembra `idea.md` en la raíz del proyecto con la plantilla de idea
    en el idioma configurado.
 10. Si no existe, siembra `DECISIONS.md` con la plantilla de registro de
     decisiones en el idioma configurado.
@@ -92,7 +92,7 @@ y la configuración de idioma y modelo.
 15. Si `--tools` incluye `pi`, ejecuta `gen-pi.py --root <dir>`.
 
 **Idempotencia:** si `<dir>` ya existe y contiene `DECISIONS.md` o
-`insumos/ideas/idea.md`, esos archivos **no se sobrescriben** (solo se
+`idea.md`, esos archivos **no se sobrescriben** (solo se
 siembran si faltan). Los archivos del kit se refrescan siempre.
 
 **Ejemplos:**
@@ -141,7 +141,7 @@ Nunca toca el contenido del operador.
 
 **Preserve-list** (nunca se modifican): `insumos/**`,
 `redaccion/sections/**`, `redaccion/main.tex`, `redaccion/refs.bib`,
-`artefactos/pipeline/**`, `artefactos/scoping/**`, `proposal/estado_*.md`,
+`proposals/**` (corridas, registro local y puntero),
 `vault/**`, `DECISIONS.md`, `journal/**`.
 
 **Idempotente:** ejecutar `upgrade` dos veces seguidas sin cambios en el
@@ -259,25 +259,25 @@ Lista en consola todos los presets de modelos incorporados (`claude`, `gpt`, `op
 ├── insumos/
 │   ├── tdr/                         # Drop zone: términos de referencia
 │   ├── draft/                       # Drop zone: borradores previos
-│   ├── background/                  # Drop zone: papers y notas de apoyo
-│   ├── doc-secciones/               # Drop zone: lista explícita de secciones
-│   └── ideas/
-│       └── idea.md                  # Plantilla de idea (sembrada si no existe)
-├── proposal/
+├── plantilla/                       # Esqueleto LaTeX versionado (copiado a redaccion/)
 │   ├── build.sh                     # Script de compilación LaTeX/DOCX
 │   ├── scripts/
 │   │   ├── compile_tikz.py          # Compilación de diagramas TikZ
-│   │   └── prep_docx.py             # Preparación para exportar a DOCX
+│   │   ├── prep_docx.py             # Preparación para exportar a DOCX
+│   │   └── split_latex_section.py   # Shim del splitter (skill de usuario)
 │   ├── logos/                       # Logos institucionales (LabIA, UNAL, GCPDS)
-│   ├── templates/
-│   │   ├── README.md
-│   │   └── reference.docx           # Plantilla pandoc para DOCX
-│   ├── sections/                    # VACÍO (contenido generado por /propuesta)
-│   ├── pipeline/                    # VACÍO (estado del pipeline)
-│   └── scoping/                     # VACÍO (papers analizados)
-├── vault/
-│   ├── insumos/                     # Mirror de insumos (vacío inicialmente)
-│   └── secciones/                   # Mirror Markdown de secciones (vacío)
+│   └── templates/
+│       ├── README.md
+│       └── reference.docx           # Plantilla pandoc para DOCX
+├── scripts/
+│   ├── init-run.sh                  # Crea proposals/<run-id>/ (4 subcarpetas)
+│   ├── marco_cli.py                 # Este CLI
+│   └── apa.csl                      # Estilo APA para el export a Word
+├── proposals/                       # Corridas — lo crea init-run.sh, nada versionado
+│   ├── registry.md                  #   Registro local de corridas
+│   ├── .current-run                 #   Puntero a la corrida activa
+│   └── <run-id>/                    #   insumos/ artefactos/ grafos/ redaccion/
+├── idea.md                          # Nota de idea (sembrada si no existe)
 ├── DECISIONS.md                     # Registro en vivo de decisiones
 ├── journal/
 │   └── README.md                    # Convención de entradas append-only
@@ -286,7 +286,6 @@ Lista en consola todos los presets de modelos incorporados (`claude`, `gpt`, `op
 ├── README.md                        # README del proyecto portable
 ├── requirements.txt                 # Dependencias Python
 ├── .gitignore
-├── .cbmignore
 └── .mcp.json                        # Configuración de MCP servers
 ```
 
@@ -295,8 +294,8 @@ Lista en consola todos los presets de modelos incorporados (`claude`, `gpt`, `op
 durante la corrida.
 
 > **Nota sobre estructura y desambiguación:**
-> - **`proposal/` vs `proposals/`**: `proposal/` es el espacio activo de trabajo de la corrida actual (fuente LaTeX en `redaccion/sections/` y estado en `artefactos/estado_propuesta.md`). `proposals/` contiene el registro e índice local de corridas archivadas (`proposals/registry.md`).
-> - **`scripts/` vs `redaccion/scripts/`**: `scripts/` (en la raíz) contiene el tooling del repositorio/CLI (`marco_cli.py`, generadores de runtime `gen-opencode.py` y `gen-pi.py`); `redaccion/scripts/` contiene scripts exclusivos de compilación y post-procesamiento LaTeX/TikZ/DOCX (`compile_tikz.py`, `prep_docx.py`).
+> - **`plantilla/` vs `proposals/`**: `plantilla/` es el esqueleto LaTeX versionado, y es lo único que `init-run.sh` copia al `redaccion/` de cada corrida. `proposals/` contiene las corridas en sí (`proposals/<run-id>/` con `insumos/`, `artefactos/`, `grafos/`, `redaccion/`), el registro local y el puntero de corrida activa; nada de eso se versiona.
+> - **`scripts/` vs `redaccion/scripts/`**: `scripts/` (en la raíz) contiene el tooling del repositorio/CLI (`marco_cli.py`, `init-run.sh`, y los generadores de runtime `gen-opencode.py`, `gen-pi.py` y `gen-antigravity.py`); `redaccion/scripts/` contiene scripts exclusivos de compilación y post-procesamiento LaTeX/TikZ/DOCX (`compile_tikz.py`, `prep_docx.py`).
 
 ---
 
@@ -402,7 +401,7 @@ marco init ~/propuestas/mi-propuesta --title "Título del proyecto"
 
 # 2. Copiar insumos (TDR, borradores, papers)
 cp /ruta/TDR.pdf ~/propuestas/mi-propuesta/insumos/tdr/
-$EDITOR ~/propuestas/mi-propuesta/insumos/ideas/idea.md
+$EDITOR ~/propuestas/mi-propuesta/idea.md
 
 # 3. Abrir el runtime con CWD = la carpeta del proyecto
 cd ~/propuestas/mi-propuesta
@@ -411,7 +410,8 @@ cd ~/propuestas/mi-propuesta
 #   pi:          pi .
 
 # 4. Usar los slash commands del pipeline
-# /propuesta-init    → re-siembra drop zones (portable: no recrea el proyecto)
+# /propuesta-init    → crea y activa proposals/<run-id>/ (4 subcarpetas)
+# /propuesta-insumos  → zonas de depósito dentro del insumos/ de la corrida
 # /propuesta-analizar → intake + clasificación
 # /propuesta-continuar → una unidad del pipeline (stepped, recomendado)
 # /propuesta    → pipeline completo en una sesión
@@ -510,7 +510,7 @@ nada en disco.
   `marco upgrade` apunten los generadores al proyecto portable sin romper
   el uso directo desde el monorepo.
 - **`init` idempotente:** si el directorio destino ya existe, `init` no
-  sobrescribe `DECISIONS.md` ni `insumos/ideas/idea.md`. Los archivos del
+  sobrescribe `DECISIONS.md` ni `idea.md`. Los archivos del
   kit se refrescan siempre.
 - **`upgrade` idempotente:** ejecutar `upgrade` dos veces seguidas sin
   cambios en el kit deja el árbol exactamente igual y termina con código 0.

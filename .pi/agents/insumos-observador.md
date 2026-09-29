@@ -310,8 +310,9 @@ Skip this extraction entirely when no file is classified as TDR.
 
 La extracción normal de la tabla de criterios ponderados (arriba) y del
 marco presupuestal (`## Marco presupuestal (TDR)`) usa siempre extracción
-de texto estándar (pypdf/markdownify para PDF, python-docx vía
-`textutil`/`unzip` para `.docx` — ver "Lectura de insumos .docx" abajo).
+de texto estándar (`pymupdf4llm` para PDF, `markitdown` para Office, con
+`textutil`/`unzip` como fallback en macOS — ver "Lectura de insumos" abajo
+para los comandos exactos).
 Ese es el camino primario y no se reemplaza por defecto.
 
 Si, y SOLO si, esa extracción produce un resultado claramente malformado o

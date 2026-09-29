@@ -34,9 +34,9 @@ HERE = pathlib.Path(__file__).resolve().parent
 # independent on purpose: <RUN_ROOT>/redaccion in the per-run layout,
 # <repo>/proposal in the legacy flat layout, with no hardcoded directory name.
 PROP = HERE.parent
-# Same location compile_tikz.py writes to — proposal/sections/figuras/, not
+# Same location compile_tikz.py writes to — <project>/sections/figuras/, not
 # /tmp (hidden/inconvenient in Finder, OS-specific). Already covered by the
-# blanket proposal/sections/ .gitignore entry.
+# run folder being gitignored as a whole.
 WORK = PROP / "sections" / "figuras"
 
 # diag_<name>.tex -> (compile_tikz name, kind)

@@ -8,7 +8,7 @@
 #   ./build.sh --clean-only Solo limpia artefactos (no compila)
 #   ./build.sh --manual     Usa la secuencia manual pdflatex→bibtex→pdflatex×2
 #   ./build.sh --watch      Recompila automáticamente al detectar cambios
-#   ./build.sh --docx       Exporta a Word (proposal/main.docx) vía pandoc (acepta opcionalmente --csl <archivo.csl>)
+#   ./build.sh --docx       Exporta a Word (main.docx, junto a main.tex) vía pandoc (acepta opcionalmente --csl <archivo.csl>)
 #   ./build.sh --help       Muestra esta ayuda
 #
 # Requisitos: pdflatex, bibtex, latexmk; opcional: doi2bib3
