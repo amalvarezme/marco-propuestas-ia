@@ -47,3 +47,8 @@ proposals/
 
 # Configuración de editor local de cada máquina (no es framework).
 .vscode/
+
+# Los PDFs bajo docs/ son insumos (TDR, papers): viven en
+# proposals/<run-id>/insumos/ y el repo nunca versiona contenido de una
+# propuesta. Los .md de docs/ sí son framework.
+docs/*.pdf
