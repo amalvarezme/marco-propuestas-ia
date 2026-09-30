@@ -30,10 +30,9 @@ Requisitos que impone la guía ajustada al TDR (`artefactos/guia_ajustada_TDR.md
 - [x] T1 Reunir el contexto: guía ajustada §2, directrices generales,
       convenciones LaTeX, contrato del redactor, contrato del bibliógrafo
 - [x] T2 **Cerrar el vacío de referencias institucionales** (ver abajo)
-- [ ] T3 Construir el acervo de referencias de §2 (bibliógrafo) — en curso,
-      tarea `muolxpta-1-hw5r`
+- [x] T3 Construir el acervo de referencias de §2 (bibliógrafo)
 - [ ] T4 Despachar al redactor para `redaccion/sections/02_justificacion.tex` +
-      mirror del vault
+      mirror del vault — en curso, tarea `muoomcvi-2-73tb`
 - [ ] T5 Guardia: re-indexar el vault solo si
       `artefactos/vault/secciones/02_justificacion.md` cambió; armar e inyectar
       el bloque `EVIDENCIA DE GRAFO`
@@ -72,6 +71,60 @@ los archivos del proyecto y no depende de la memoria de nadie.
 
 Es un vacío recurrente, no de esta corrida: **toda** propuesta tiene que
 alinear su §2 con los ODS, el PND y los organismos multilaterales.
+
+## Decisiones del operador (2026-09-30)
+
+Las dos estaban señaladas como pendientes en `insumos/ideas/idea.md` y ninguna se
+podía resolver sin él.
+
+**1. TRL objetivo: 6.** El cierre (b) de §2 lo nombra explícitamente como
+prototipo validado en entorno relevante. El razonamiento que sostiene la decisión:
+la línea del equipo ya está validada en un benchmark (DAIC-WOZ), y lo que aporta
+el proyecto es su extensión al dominio del desastre y su despliegue portable con
+estudiantes reales de la Sede Manizales. Se descartó TRL 7 porque el criterio de
+evaluación *Alcance del proyecto* (15 pts) castiga prometer lo que 12 meses no
+sostienen.
+
+**2. Enfoque territorial: que el bibliógrafo busque y verifique fuentes
+oficiales.** El criterio vale 20 puntos y exige que el proyecto se desarrolle en
+los territorios afectados, pero el epicentro fue San José del Palmar (Chocó) y la
+sede es Manizales. §2 lo resuelve con datos verificados y **sin exagerar el
+vínculo local**.
+
+## T3 — Acervo construido (bibliógrafo, `muolxpta-1-hw5r`)
+
+`refs.bib` pasó de 51 a **79 entradas**, con 79 claves únicas y sin duplicados.
+Las 28 nuevas se reparten en 65 `@article`, 1 `@inproceedings`, 9 `@misc` y 4
+`@techreport`, estas últimas la clase institucional recién admitida.
+
+- **15 referencias Q1/Q2 nuevas**, por encima del piso de 13.
+- **13 instrumentos institucionales** con URL oficial confirmada y fecha de
+  consulta: ODS 3 (meta 3.4) y el informe mundial de salud mental de la OMS, PND
+  2022-2026 (Ley 2294 de 2023) y el Plan de Desarrollo de Caldas (Ordenanza 974
+de 2024) con su Plan Territorial de Salud, OCDE *Health at a Glance LAC 2023* y
+  OPS, más los instrumentos del sismo (SGC, Decreto 1171 de 2026, SITREP 4).
+- Trazabilidad completa: `artefactos/scoping/papers/paper-51.md` a `paper-78.md`
+  con su bloque `## Verificación`, y 28 notas espejo en
+  `artefactos/vault/insumos/`.
+
+**Evidencia territorial encontrada**, que era el punto crítico: 2.130 personas
+caracterizadas en Caldas con **5,25 % que requiere acompañamiento psicológico**
+(`ucaldas2026_caracterizacion`), sedes de la UNAL Manizales afectadas
+(`mineducacion2026_unal`) y daño hospitalario en el eje cafetero
+(`paho2026_sitrep`). El bibliógrafo separó deliberadamente lo que sostiene
+afectación **local** de lo que solo sostiene afectación **nacional o de otras
+regiones**, y el redactor recibió esa distinción explícita.
+
+**Lo que el bibliógrafo se negó a inventar** (y por qué es la conducta correcta):
+no pudo verificar texto en mano un eje o meta del PND específica de salud mental,
+no encontró un lema propio del plan de Caldas, y descartó cifras de daño que
+venían de una fuente no gubernamental. Todo eso quedó reportado como pendiente en
+lugar de rellenarse.
+
+**Gap preexistente detectado:** `artefactos/vault/insumos/` tiene 29 notas contra
+79 entradas de `refs.bib`. Las notas del corpus semilla (las 51 originales) nunca
+se escribieron. No es de esta fase, pero conviene cerrarlo antes de la auditoría
+final de Fase 7.
 
 ## Notas de ensamble
 
