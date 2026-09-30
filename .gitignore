@@ -44,3 +44,6 @@ __pycache__/
 # puntero `.current-run`. `scripts/init-run.sh` recrea lo que necesite si falta,
 # así que borrar `proposals/` es seguro y repetible.
 proposals/
+
+# Configuración de editor local de cada máquina (no es framework).
+.vscode/
