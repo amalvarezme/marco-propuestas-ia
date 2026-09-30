@@ -87,6 +87,15 @@ def figure_size_cm(figdir: pathlib.Path, name: str) -> tuple[float, float] | Non
     return round(width_px * cm_per_px, 2), round(height_px * cm_per_px, 2)
 
 
+# A figure whose smallest text is below this prints as a caption-sized smear. The
+# project's own audited canonical scale bottoms out at 7 pt (`rama` in the árbol
+# de problemas), so the floor sits just under it: a regression to 6 pt text must
+# fail, but the canonical minimum must not.
+MIN_LEGIBLE_PT = 6.5
+
+FONTSIZE_RE = re.compile(r"\\fontsize\s*\{([0-9.]+)\}")
+
+
 def _check(report: list[dict], name: str, ok: bool, detail: str, blocking: bool = True):
     report.append({"id": name, "ok": bool(ok), "detail": detail, "blocking": blocking})
 
@@ -149,13 +158,18 @@ def audit(
         if page_fit is not None:
             max_w, max_h = page_fit
             fits = width_cm <= max_w and height_cm <= max_h
-            _check(
-                report,
-                "fits_page",
-                fits,
-                f"{width_cm} x {height_cm} cm vs presupuesto {max_w} x {max_h} cm"
-                + ("" if fits else "; acorta el texto, baja la densidad o divide la figura"),
-            )
+            detail = f"{width_cm} x {height_cm} cm vs presupuesto {max_w} x {max_h} cm"
+            if fits:
+                detail += "; entra a tamaño natural, sin escalar"
+            else:
+                # A resizebox to fit the page shrinks every glyph by this factor,
+                # which is how a 12 pt canonical size ends up printing at ~9 pt.
+                scale = min(max_w / width_cm, max_h / height_cm)
+                detail += (
+                    f"; requeriría escalar al {scale * 100:.0f} % para caber "
+                    "(acorta el texto, baja la densidad o divide la figura)"
+                )
+            _check(report, "fits_page", fits, detail)
 
     if not tex_path.is_file():
         _check(report, "tex_present", False, f"no existe {tex_path}")
@@ -197,6 +211,23 @@ def audit(
         bool(explicit),
         f"{len(explicit)} declaraciones \\fontsize explícitas",
     )
+
+    # 5b. Legibility proxy: the printed point size of the SMALLEST text in the
+    #     figure. This is the mechanical half of the visual review's "escala y
+    #     legibilidad" criterion -- the failure the operator actually hit was a
+    #     map scaled to 74 %, which printed audited 12/14 pt type at ~9 pt. Read
+    #     from the generated source so it reflects what will really be typeset.
+    sizes = [float(value) for value in FONTSIZE_RE.findall(text)]
+    if sizes:
+        smallest = min(sizes)
+        _check(
+            report,
+            "legibility_min_font_pt",
+            smallest >= MIN_LEGIBLE_PT,
+            f"texto más pequeño = {smallest:.1f} pt "
+            f"(mínimo legible {MIN_LEGIBLE_PT} pt; aumenta el tamaño en la spec "
+            "o divide la figura)",
+        )
 
     # 6. Palette: only the institutional colours, no ad-hoc hex outside them.
     defined = DEFINE_COLOR_RE.findall(text)

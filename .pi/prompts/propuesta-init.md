@@ -54,12 +54,13 @@ $ARGUMENTS
 **Mecanismo en Pi (paso 0).** El runtime es Pi y estos son los cuatro comandos/archivos exactos:
 
 ```bash
-pi --list-models                      # 1) modelos realmente alcanzables
-cat scripts/agent-models.json         # 2) fuente de verdad de modelos del marco
-cat ~/.pi/gentle-ai/profiles.json     # 3) perfil activo del usuario
+# Verificacion completa en un comando: cruza la fuente de verdad del marco
+# (scripts/agent-models.json), los dos artefactos generados (.pi/agents/*.md y
+# .pi/subagents.json), la alcanzabilidad real de cada modelo y el perfil activo.
+python3 scripts/check-agent-models.py
 ```
 
-El paso 3 se resuelve así: leé la clave `active` de `profiles.json`, tomá ese perfil, y contrastá cada `tiers[].model` de `agent-models.json` contra (a) la lista de `pi --list-models` y (b) la política de proveedor del perfil activo (`profiles.json[active]`). Si el perfil activo es Pi-nativo (p. ej. `andres_nan`, todos los agentes en un proveedor Pi-nativo), la tabla del marco debe quedarse en ese mismo proveedor: **nunca** escribas un modelo de puente a otro agente de código externo, porque eso reintroduce una dependencia de otro runtime dentro de una sesión de Pi. `scripts/gen-pi.py` **falla** si una tier apunta a un modelo de puente y `allow_claude_bridge` no está en `true`, así que un descuido no pasa silencioso.
+El paso 3 se resuelve con `python3 scripts/check-agent-models.py --json`, que cruza las tres tablas de modelos (la fuente de verdad `scripts/agent-models.json`, el frontmatter de `.pi/agents/*.md` y `.pi/subagents.json`), la alcanzabilidad real vía `pi --list-models` y la política de proveedor del perfil activo de `~/.pi/gentle-ai/profiles.json`. Reporta PASS/FAIL con la lista de problemas y sale con código distinto de cero si algo no cuadra; si `pi --list-models` no está disponible deja la alcanzabilidad como **no verificada** en vez de asumirla. Si el perfil activo es Pi-nativo (p. ej. `andres_nan`, todos los agentes en un proveedor Pi-nativo), la tabla del marco debe quedarse en ese mismo proveedor: **nunca** escribas un modelo de puente a otro agente de código externo, porque eso reintroduce una dependencia de otro runtime dentro de una sesión de Pi. `scripts/gen-pi.py` **falla** si una tier apunta a un modelo de puente y `allow_claude_bridge` no está en `true`, así que un descuido no pasa silencioso.
 
 El paso 5 se resuelve así: editá `scripts/agent-models.json` (tiers y/o el mapa `agents`), actualizá su bloque `reconciled_against` con el nombre del perfil activo y la fecha, y corré:
 

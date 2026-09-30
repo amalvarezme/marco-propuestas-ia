@@ -47,6 +47,7 @@
     "requirements.txt",
     "scripts/agent-models.json",
     "scripts/apa.csl",
+    "scripts/check-agent-models.py",
     "scripts/convert_to_word.py",
     "scripts/gen-antigravity.py",
     "scripts/gen-antigravity.rules.json",

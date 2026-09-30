@@ -261,11 +261,26 @@ python3 scripts/figura.py <name> --spec specs/<name>.spec.json
 
 Ese único comando hace render → compilación a PNG/SVG/preview → autofix
 determinista de `Overfull \hbox` → auditoría mecánica, y sale con código
-distinto de cero si supera su presupuesto de 180 s. Después, `revisor-figuras`
-emite el juicio que un script no puede dar (escala, centrado, armonía,
-etiquetas) sobre `fig_<name>-preview.png`. Si algo falla, `tikz-optimizer`
-corrige **la spec**, nunca el `.tex` — el `.tex` es salida generada y se
-sobrescribe en el siguiente render.
+distinto de cero si supera su presupuesto de 180 s.
+
+**El bucle es determinista y el veredicto visual queda fuera de él.** Un fallo
+mecánico (spec inválida, autofix que no converge, compilación, auditoría) se
+corrige con `tikz-optimizer`, que edita **la spec** —nunca el `.tex`, que es
+salida generada y se sobrescribe en el siguiente render— y consume uno de los 4
+intentos por diagrama. Cuando el bucle cierra con PASS, se pide **una sola vez**
+el juicio que un script no puede dar (escala, centrado, armonía, etiquetas)
+sobre `fig_<name>-preview.png`; un FAIL ahí no reabre el bucle: dispara una
+remediación acotada y, si esa también falla, escala al usuario. Y si esa llamada
+no devuelve reporte o supera 240 s, no se re-despacha: se registra el PASS
+determinista y se deja constancia de que el veredicto visual **no se obtuvo**
+(nunca se asume verificado).
+
+Esto es deliberado: la auditoría mecánica cubre 17 criterios en milisegundos,
+incluida una medición de legibilidad (el tamaño impreso del texto más pequeño) y
+el tamaño físico de la figura, de modo que la única llamada a modelo del bucle
+sea corta y acotada. En la corrida de referencia, un `revisor-figuras` que leía
+el raster de 200 DPI y re-derivaba los criterios mecánicos tardó 4,2 min y
+consumió 10 tool-uses.
 
 El procedimiento completo y el contador de intentos (4 por diagrama, por
 corrida) están definidos **una sola vez** en la sección "Bucle de figuras

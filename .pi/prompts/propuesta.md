@@ -1348,27 +1348,50 @@ anterior costaba **~28,8 min por figura** (tres despachos y tres fallos de
    Cualquier re-despacho a `tikz-optimizer` cuenta como un intento mas
    (paso 5) y vuelve al paso 2.
 
-4. Task -> revisor-figuras
-   Inyecta inline el reporte de auditoria completo (los chequeos mecanicos ya
-   resueltos) y pidele SOLO los 4 criterios visuales sobre
-   `redaccion/sections/figuras/fig_<name>-preview.png`. PASS -> el diagrama esta
-   listo; FAIL -> Task -> tikz-optimizer con sus `CORRECCIONES` verbatim
-   (paso 5) y vuelve al paso 2.
+4. Contador de intentos: POR DIAGRAMA y POR CORRIDA (nunca global, nunca
+   persiste entre corridas). Cuenta SOLO fallos deterministas (spec invalida,
+   autofix que no converge, compile, auditoria): son los unicos que el
+   dispatcher puede resolver sin criterio humano. El despacho inicial de
+   `disenador-tikz` es el intento 1; cada re-despacho a `tikz-optimizer` suma
+   uno mas. Tope = 4 intentos por diagrama (1 inicial + 3 remediaciones). Al
+   llegar al 4.o fallo el dispatcher DETIENE el bucle -- no despacha un 5.o
+   intento -- y escala al usuario con: (1) nombre del diagrama y su fase/§,
+   (2) intentos usados vs. tope ("4/4 intentos"), (3) el mensaje de
+   `figura.py` verbatim, (4) pedido explicito de guia al usuario. Nunca
+   reintenta en silencio mas alla del tope ni abandona en silencio; no avanza a
+   la siguiente fase sin la guia del usuario.
 
-5. Contador de intentos: POR DIAGRAMA y POR CORRIDA (nunca global, nunca
-   persiste entre corridas). Es COMPARTIDO entre los fallos deterministas
-   (spec invalida, autofix, compile, auditoria) y los fallos visuales de
-   `revisor-figuras` -- ambos cuentan como "este diagrama todavia no esta
-   bien". El despacho inicial de `disenador-tikz` es el intento 1; cada
-   re-despacho a `tikz-optimizer` suma uno mas.
-   Tope = 4 intentos por diagrama (1 inicial + 3 remediaciones). Al llegar al
-   4.o fallo (de cualquier tipo) el dispatcher DETIENE el bucle -- no despacha
-   un 5.o intento -- y escala al usuario con: (1) nombre del diagrama y su
-   fase/§, (2) intentos usados vs. tope ("4/4 intentos"), (3) el ultimo
-   hallazgo conocido verbatim (el mensaje de `figura.py` o los items
-   `CORRECCIONES` de `revisor-figuras`), (4) pedido explicito de guia al
-   usuario. Nunca reintenta en silencio mas alla del tope ni abandona en
-   silencio; no avanza a la siguiente fase sin la guia del usuario.
+5. Task -> revisor-figuras (UNA sola vez por figura, FUERA del bucle)
+   El bucle cierra con el PASS determinista del paso 3; recien ahi se pide el
+   veredicto visual. Es la unica llamada a modelo de todo el bucle de figuras y
+   esta acotada a proposito:
+
+   - Una llamada por figura. Nunca se re-despacha dentro del bucle, asi que no
+     se multiplica por los intentos. La version anterior lo metia dentro: hasta
+     4 llamadas visuales por diagrama, y una de ellas midio 4,2 min
+     (`artefactos/pipeline/30-fase2.md`, despacho #7).
+   - Inyecta el reporte de auditoria completo (los chequeos mecanicos ya
+     resueltos) y la RUTA EXACTA del unico archivo a leer:
+     `redaccion/sections/figuras/fig_<name>-preview.png`. El preview esta
+     limitado a 1400 px de lado mayor justamente para acotar la entrada.
+   - Pidele SOLO los 4 criterios visuales. Los criterios mecanicos ya estan
+     resueltos y no se re-evaluan.
+   - PASS -> el diagrama esta listo.
+   - FAIL -> NO reabre el bucle ni suma intentos. Corre UNA remediacion
+     acotada: Task -> tikz-optimizer con las `CORRECCIONES` verbatim, un
+     re-render y una re-verdicto. Si esa segunda verdicto tambien es FAIL, el
+     dispatcher se detiene y escala al usuario. Nunca hay una tercera.
+   - Si la Task vuelve sin reporte o supera 240 s de reloj, NO la re-despaches:
+     registra el PASS determinista, deja el veredicto visual como
+     `no obtenido` en el evento de la fase y dilo explicitamente al usuario.
+     El estado por defecto ante un fallo del revisor visual es "no verificado",
+     nunca "verificado".
+
+   Regla de presupuesto: el presupuesto de 180 s de `figura.py` cubre el bucle
+   DETERMINISTA. El veredicto visual se mide aparte (bloque `<usage>` del
+   despacho, columna `Duracion` del `## Desglose por despacho`) y, sumado al
+   determinista, no debe superar 240 s por figura. Un diagrama que lo exceda se
+   reporta como degradado en el evento de la fase.
 ```
 
 Presupuesto de reloj: `figura.py` sale con codigo distinto de cero si el bucle

@@ -345,6 +345,51 @@ class TestFigurePipelineBudget(unittest.TestCase, ProjectFixtureMixin):
             )
             self.assertIn("x", size)
 
+    def test_legibility_proxy_reports_the_smallest_printed_size(self):
+        """The audit measures legibility instead of leaving it to a model.
+
+        The failure the operator hit was a map scaled to 74 %, which printed
+        audited 12/14 pt type at ~9 pt. That is a number, so it is checked.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            project = self.make_project(tmp)
+            self.write_spec(project, "arbol_problemas", arbol_spec())
+            res = self._run_figura(project, "arbol_problemas")
+            report = json.loads(res.stdout)
+            check = next(
+                c for c in report["audit"]["checks"] if c["id"] == "legibility_min_font_pt"
+            )
+            self.assertTrue(check["ok"], check["detail"])
+            self.assertIn("pt", check["detail"])
+
+    def test_legibility_floor_fails_below_the_canonical_minimum(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = self.make_project(tmp)
+            spec = arbol_spec()
+            spec["fonts"] = {"rama": [4, 5]}
+            self.write_spec(project, "arbol_problemas", spec)
+            res = self._run_figura(project, "arbol_problemas")
+            self.assertNotEqual(res.returncode, 0)
+            report = json.loads(res.stdout)
+            self.assertIn("legibility_min_font_pt", report["audit"]["failed"])
+
+    def test_page_fit_detail_quantifies_the_required_scale(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = self.make_project(tmp)
+            self.write_spec(project, "arbol_problemas", arbol_spec())
+            res = subprocess.run(
+                [sys.executable, str(project / "scripts" / "figura.py"),
+                 "arbol_problemas", "--spec",
+                 str(project / "specs" / "arbol_problemas.spec.json"),
+                 "--project", str(project), "--page-fit", "4x4", "--json"],
+                capture_output=True, text=True, cwd=str(project),
+            )
+            report = json.loads(res.stdout)
+            detail = next(
+                c["detail"] for c in report["audit"]["checks"] if c["id"] == "fits_page"
+            )
+            self.assertIn("escalar al", detail)
+
     def test_a_hand_edit_of_the_tex_is_overwritten_by_the_next_render(self):
         """The spec is the only authoring surface; `.tex` is generated output.
 
@@ -487,6 +532,120 @@ class TestPiModelPolicy(unittest.TestCase):
                        "plantilla/scripts/audit_tikz.py",
                        "plantilla/scripts/figura.py"):
             self.assertIn(script, kit)
+
+
+class TestAgentModelReconciliation(unittest.TestCase):
+    """The three model tables must agree and match the ACTIVE gentle profile.
+
+    They did not: the port pinned every agent to `claude-bridge/*` while the
+    active profile was Pi-native, and nothing detected it. These tests pin the
+    checker that now runs at `/propuesta-init`.
+    """
+
+    CHECKER = REPO_ROOT / "scripts" / "check-agent-models.py"
+
+    def _run(self, project: Path, profiles: Path):
+        return subprocess.run(
+            [sys.executable, str(self.CHECKER), "--project", str(project),
+             "--profiles", str(profiles), "--json"],
+            capture_output=True, text=True,
+        )
+
+    def _fixture(self, tmp: str) -> tuple[Path, Path]:
+        """A minimal project tree: SSOT + the two generated artifacts."""
+        project = Path(tmp) / "proj"
+        (project / "scripts").mkdir(parents=True)
+        (project / ".pi" / "agents").mkdir(parents=True)
+        shutil.copy2(REPO_ROOT / "scripts" / "agent-models.json",
+                     project / "scripts" / "agent-models.json")
+        shutil.copy2(REPO_ROOT / ".pi" / "subagents.json",
+                     project / ".pi" / "subagents.json")
+        for ported in (REPO_ROOT / ".pi" / "agents").glob("*.md"):
+            shutil.copy2(ported, project / ".pi" / "agents" / ported.name)
+        profiles = Path(tmp) / "profiles.json"
+        profiles.write_text(json.dumps({
+            "kind": "gentle-pi.agent_model_profiles", "version": 1, "active": "test",
+            "profiles": {"test": {
+                "orchestrator": {"model": "nan/deepseek-v4-flash", "thinking": "high"},
+                "sdd-spec": {"model": "nan/glm5.3-flash", "thinking": "high"},
+            }},
+        }, indent=2) + "\n", encoding="utf-8")
+        return project, profiles
+
+    def test_the_real_repository_reconciles(self):
+        res = subprocess.run(
+            [sys.executable, str(self.CHECKER), "--project", str(REPO_ROOT),
+             "--json"],
+            capture_output=True, text=True,
+        )
+        report = json.loads(res.stdout)
+        self.assertEqual(res.returncode, 0, report["problems"])
+        self.assertEqual(report["verdict"], "PASS")
+        self.assertEqual(report["framework_providers"],
+                         report["active_profile_providers"])
+
+    def test_a_frontmatter_that_disagrees_with_the_source_of_truth_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project, profiles = self._fixture(tmp)
+            target = project / ".pi" / "agents" / "revisor.md"
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "model: nan/glm5.3-flash", "model: claude-bridge/claude-sonnet-5"
+                ),
+                encoding="utf-8",
+            )
+            res = self._run(project, profiles)
+            self.assertNotEqual(res.returncode, 0)
+            report = json.loads(res.stdout)
+            self.assertTrue(
+                any("frontmatter" in problem for problem in report["problems"]),
+                report["problems"],
+            )
+
+    def test_a_provider_the_active_profile_does_not_use_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project, profiles = self._fixture(tmp)
+            source = json.loads(
+                (project / "scripts" / "agent-models.json").read_text(encoding="utf-8")
+            )
+            source["tiers"]["reasoning"]["model"] = "openai-codex/gpt-5.6-luna"
+            (project / "scripts" / "agent-models.json").write_text(
+                json.dumps(source, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+            )
+            res = self._run(project, profiles)
+            self.assertNotEqual(res.returncode, 0)
+            report = json.loads(res.stdout)
+            self.assertTrue(
+                any("proveedor" in problem for problem in report["problems"]),
+                report["problems"],
+            )
+
+    def test_an_agent_without_a_tier_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project, profiles = self._fixture(tmp)
+            source = json.loads(
+                (project / "scripts" / "agent-models.json").read_text(encoding="utf-8")
+            )
+            del source["agents"]["revisor"]
+            (project / "scripts" / "agent-models.json").write_text(
+                json.dumps(source, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+            )
+            res = self._run(project, profiles)
+            self.assertNotEqual(res.returncode, 0)
+            report = json.loads(res.stdout)
+            self.assertTrue(
+                any("sin tier" in problem for problem in report["problems"]),
+                report["problems"],
+            )
+
+    def test_a_missing_profile_store_is_a_note_not_a_failure(self):
+        """A machine without `gentle:profiles` must not block the pipeline."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project, _ = self._fixture(tmp)
+            res = self._run(project, Path(tmp) / "no-existe.json")
+            report = json.loads(res.stdout)
+            self.assertEqual(report["verdict"], "PASS")
+            self.assertTrue(any("perfil activo" in note for note in report["notes"]))
 
 
 class TestNoExternalMemoryDependency(unittest.TestCase):
