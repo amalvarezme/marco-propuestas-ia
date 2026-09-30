@@ -31,12 +31,14 @@ Requisitos que impone la guía ajustada al TDR (`artefactos/guia_ajustada_TDR.md
       convenciones LaTeX, contrato del redactor, contrato del bibliógrafo
 - [x] T2 **Cerrar el vacío de referencias institucionales** (ver abajo)
 - [x] T3 Construir el acervo de referencias de §2 (bibliógrafo)
-- [ ] T4 Despachar al redactor para `redaccion/sections/02_justificacion.tex` +
-      mirror del vault — en curso, tarea `muoomcvi-2-73tb`
-- [ ] T5 Guardia: re-indexar el vault solo si
-      `artefactos/vault/secciones/02_justificacion.md` cambió; armar e inyectar
-      el bloque `EVIDENCIA DE GRAFO`
-- [ ] T6 Despachar al revisor y presentar el GATE G3 al usuario
+- [x] T4 Despachar al redactor para `redaccion/sections/02_justificacion.tex` +
+      mirror del vault
+- [x] T5 Guardia: re-indexar el vault y armar el bloque `EVIDENCIA DE GRAFO`
+- [x] T5b Auditar los campos bibliográficos de las 16 entradas nuevas con DOI
+- [ ] T5c Auditar la prosa con `grant-flow-auditor` — en curso, tarea
+      `muoq0mq1-4-syjf` (ver la desviación de proceso abajo)
+- [ ] T6 Re-despachar al revisor sobre el texto ya pulido y presentar el GATE G3
+      al usuario
 - [ ] T7 Registrar `artefactos/pipeline/40-fase3.md` y la telemetría en
       `artefactos/pipeline/_estado.md`
 
@@ -125,6 +127,34 @@ lugar de rellenarse.
 79 entradas de `refs.bib`. Las notas del corpus semilla (las 51 originales) nunca
 se escribieron. No es de esta fase, pero conviene cerrarlo antes de la auditoría
 final de Fase 7.
+
+## Desviación de proceso en G3 (2026-09-30)
+
+**Qué pasó.** Despaché al `revisor` sin haber despachado antes al
+`grant-flow-auditor`. La regla del pipeline es explícita: cuando la unidad
+produjo o editó secciones narrativas —`redactor` o `investigador`— el auditor de
+prosa va **antes** que el revisor, y la auditoría incluye como paso propio el
+pulido de la skill `estilo-natural-es`.
+
+**Por qué importó.** El revisor devolvió PASS, pero entre sus observaciones
+—marcadas como no bloqueantes— dejó constancia de dos repeticiones entre §3 y §2:
+el cierre re-cita el par de AUC del habla (0,89 / 0,91) que §3 ya reporta con un
+encuadre casi idéntico, y el párrafo 6 reutiliza la fórmula "déficits de
+fidelidad, usabilidad y adaptación cultural" casi verbatim de §3. Eso es
+exactamente la clase de fricción que el auditor existe para eliminar. El revisor
+lo vio y lo anotó, pero su mandato es el cumplimiento, no el micro-estilo.
+
+**Cómo se corrigió.** Se despachó al `grant-flow-auditor` sobre §2 con la ruta
+exacta de la skill y con esos dos casos señalados como objetivos concretos. Como
+el auditor **edita** el `.tex`, el veredicto PASS del revisor deja de aplicar al
+texto final: hay que re-despachar al revisor sobre la versión pulida y solo
+después presentar la compuerta. Un PASS obtenido antes de una edición posterior
+del archivo no es un PASS válido.
+
+**Regla para no repetirlo.** En cualquier unidad que produzca prosa nueva, el
+orden es `redactor`/`investigador` → `grant-flow-auditor` → `revisor` → usuario. Si
+por alguna razón el revisor corre primero y PASSa, y después se toca el texto, el
+PASS queda invalidado y hay que repetir la revisión.
 
 ## Notas de ensamble
 
