@@ -305,6 +305,46 @@ class TestFigurePipelineBudget(unittest.TestCase, ProjectFixtureMixin):
             )
             self.assertGreater(overrides["widths"]["raiz"], 0.9)
 
+    def test_page_fit_is_reported_but_not_enforced_by_default(self):
+        """The size is always reported; the budget is opt-in.
+
+        Enforcing it by default would fail every figure that `main.tex`
+        legitimately scales with a resizebox, which is a supported (if
+        suboptimal) assembly choice.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            project = self.make_project(tmp)
+            self.write_spec(project, "arbol_problemas", arbol_spec())
+            res = self._run_figura(project, "arbol_problemas")
+            report = json.loads(res.stdout)
+            self.assertEqual(report["verdict"], "PASS")
+            check_ids = {c["id"] for c in report["audit"]["checks"]}
+            self.assertIn("figure_size", check_ids)
+            self.assertNotIn("fits_page", check_ids)
+            self.assertIsNone(report["page_fit_cm"])
+
+    def test_an_impossible_page_budget_fails_with_a_named_check(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = self.make_project(tmp)
+            self.write_spec(project, "arbol_problemas", arbol_spec())
+            res = subprocess.run(
+                [sys.executable, str(project / "scripts" / "figura.py"),
+                 "arbol_problemas", "--spec",
+                 str(project / "specs" / "arbol_problemas.spec.json"),
+                 "--project", str(project), "--page-fit", "2x2", "--json"],
+                capture_output=True, text=True, cwd=str(project),
+            )
+            self.assertNotEqual(res.returncode, 0)
+            report = json.loads(res.stdout)
+            self.assertEqual(report["verdict"], "FAIL")
+            self.assertIn("fits_page", report["audit"]["failed"])
+            self.assertEqual(report["page_fit_cm"], [2.0, 2.0])
+            # The size is still reported, so the fix is a number, not a guess.
+            size = next(
+                c["detail"] for c in report["audit"]["checks"] if c["id"] == "figure_size"
+            )
+            self.assertIn("x", size)
+
     def test_a_hand_edit_of_the_tex_is_overwritten_by_the_next_render(self):
         """The spec is the only authoring surface; `.tex` is generated output.
 

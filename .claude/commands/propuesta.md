@@ -964,7 +964,9 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte.
         Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
         Directrices Generales + §5 (Hipótesis) + Convenciones técnicas de
         LaTeX y lo inyecta inline al inicio del prompt.
-        ──→ luego bucle de figura `<name>` = `estado_arte`, solo después de
+        ──→ luego bucle de figura `<name>` = `estado_arte` (o `estado_arte_a`
+        y `estado_arte_b` si el mapa no cabe en A4 a tamaño natural: ver "Tamaño
+        de página de las figuras"), solo después de
         que la Task de §4 complete (necesita el bloque comentado con el
         contenido del diagrama), procedimiento canónico completo en
         "Bucle de figuras (canónico)". Contenido autorizado: el bloque
@@ -1370,6 +1372,30 @@ anterior costaba **~28,8 min por figura** (tres despachos y tres fallos de
 Presupuesto de reloj: `figura.py` sale con codigo distinto de cero si el bucle
 completo supera `--budget-s` (180 s por defecto). Un diagrama que exceda los 3
 minutos es un fallo del pipeline, no un caso a tolerar.
+
+### Tamano de pagina de las figuras
+
+`figura.py` **reporta siempre** el tamano fisico de la figura en cm (el raster de
+200 DPI son 78,74 px/cm) y solo lo **exige** con `--page-fit WxH`. La plantilla
+A4 de `main.tex` usa `margin=2.4cm`, asi que el presupuesto real de una figura
+que deba entrar a tamano natural es `--page-fit 16.2x24`.
+
+Regla: un diagrama entra a **tamano natural** o la corrida lo justifica por
+escrito. Escalar con `\resizebox` no es gratis: en la corrida
+`2026-09-tept-depresion-ia-portable` el mapa de 25 papers media 17,0 x 31,3 cm y
+`main.tex` lo imprimia al ~74 %, de modo que los tamanos auditados se veian a
+~9 pt reales.
+
+Cuando un diagrama **no cabe** y no puede caber sin recortar contenido, la
+salida es **partirlo en dos figuras** con nombres `<base>_a`, `<base>_b`, cada
+una con su propia spec y su propia entrada en `main.tex`. Es lo que se hizo con
+el mapa de estado del arte: 5 clusters x 5 papers son ~28,5 cm de alto a
+cualquier tamano legible, asi que se entrego como `estado_arte_a` (grupos 1-3,
+15,5 x 12,6 cm) y `estado_arte_b` (grupos 4-5 + cierre, 9,5 x 15,6 cm). El
+dispatcher debe (a) partir el bloque de contenido autorizado entre las dos
+specs, (b) correr el bucle de figuras una vez por cada una, y (c) pedir al
+ensamblador de `main.tex` las dos entradas `\begin{figure}` con dos captions y
+dos `\label`, y actualizar en §4 la referencia cruzada a ambas.
 
 Nota de artefactos: `specs/<name>.spec.json` es la **unica fuente autoral** del
 diagrama; `sections/diag_<name>.tex` es salida generada y **nunca se edita a

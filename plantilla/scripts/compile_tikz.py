@@ -21,9 +21,10 @@ zoom without loss, Obsidian/browser preview), plus a compact
 `fig_<name>-preview.png` (longest side 1400 px) for the model-assisted visual
 review. The SVG and the preview come from the same intermediate PDF as the PNG
 via `pdftocairo -svg` / `pdftoppm -scale-to`, no second LaTeX compile. This
-applies to all four diagrams (árbol de problemas, mapa de estado del arte,
-diagrama metodológico, Gantt de §14) and is runtime-agnostic (Claude
-Code/OpenCode both call this same script).
+applies to every diagram (árbol de problemas, mapa de estado del arte —que
+puede entregarse partido en `estado_arte_a` y `estado_arte_b` para que cada
+mitad quepa a tamaño natural en A4—, diagrama metodológico y Gantt de §14) and
+is runtime-agnostic (every supported runtime calls this same script).
 
 Requires: pdflatex, pdftoppm, pdftocairo in PATH (all three ship with a
 standard poppler install alongside pdftoppm, already a prerequisite).

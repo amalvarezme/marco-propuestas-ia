@@ -170,24 +170,34 @@ Fuera de alcance: cualquier ruta bajo `proposals/<run-id>/redaccion/` salvo la T
   `04_estado_arte.tex` (5 clústeres × 5 papers, 16 aristas internas declaradas, limitante por
   clúster). Medición antes → después: **17,0 × 31,3 cm → 17,78 × 28,54 cm**, PASS en 1,1 s.
 
-## Blocker / decisión abierta del operador
+## Decisión del operador (resuelta el 2026-09-30)
 
-La figura del mapa de estado del arte **no cabe en A4 a tamaño natural** (17,78 × 28,54 cm frente
-a 16 × 22 cm útiles) y no puede caber sin recortar contenido: 25 tarjetas de paper con autor-año
-más frase-concepto, 5 títulos de clúster y 5 limitantes son ~26 cm de alto a cualquier tamaño
-legible. Se midió y se descartaron: `cols=2` (20,9 × 35,0 cm), nodo de paper en una sola línea
-(no ayuda: la cadena autor+concepto vuelve a partirse en dos líneas a 3 columnas), subir el
-tamaño de fuente, y reducir huecos. Mejoras aplicadas y verificadas: enrutado de las aristas que
-saltan nodos (detour acotado en el margen), enlaces entre clústeres solo entre vecinos de la
-misma fila (los que cruzaban filas envolvían la figura: +7,4 cm medidos), frase de cierre
-centrada sobre toda la figura y con su ancho real, y centrado de la fila parcial.
+Ante el blocker de página, el operador eligió **dos figuras**. Ejecutado:
 
-Opciones para el operador, ninguna decidida por el agente:
-1. **Dos figuras** (clústeres 1-3 y 4-5): cada una ~16 × 13 cm, cabe a tamaño natural.
-2. **Mantener una figura escalada** en `main.tex` (lo que ya hace hoy `\resizebox`), con la
-   composición ya más armónica: la escala sube de ~0,7 a ~0,9.
-3. **3 papers por clúster** en la figura (los otros 2 citados en §4): entra a tamaño natural.
+- El mapa se partió en `specs/estado_arte_a.spec.json` (clústeres 1-3, `cols=3`) y
+  `specs/estado_arte_b.spec.json` (clústeres 4-5 + cierre transversal, `cols=2`).
+  La spec monolítica `specs/estado_arte.spec.json` se retiró.
+- Tamaños medidos a tamaño natural, con `--page-fit 16.2x24` (el `\textwidth` real
+  de la plantilla A4 es 16,26 cm con `margin=2.4cm`):
 
-`figura.py` con `--page-fit 16x22` deja la figura en FAIL mientras el operador no elija. Por
-defecto el tamaño se **reporta** pero no se exige, porque con la opción 2 un FAIL sería un falso
-positivo.
+  | figura | tamaño | cabe |
+  |---|---|---|
+  | `arbol_problemas` | 15,71 × 19,08 cm | sí |
+  | `estado_arte_a` (grupos 1-3) | 15,53 × 12,62 cm | sí |
+  | `estado_arte_b` (grupos 4-5) | 9,47 × 15,57 cm | sí |
+
+- `main.tex`: se eliminó el `\resizebox{!}{0.92\textheight}` y se pusieron dos
+  entradas `\begin{figure}` con dos captions y dos `\label`
+  (`fig:estado_arte_a`, `fig:estado_arte_b`).
+- §4 (`04_estado_arte.tex`): la referencia cruzada pasó de
+  `\Cref{fig:estado_arte}` a `\Cref{fig:estado_arte_a,fig:estado_arte_b}`.
+- `main.pdf` recompilado desde cero: **15 páginas, 0 `Overfull \hbox`, 0
+  referencias indefinidas, 3 figuras**. Los tamaños canónicos se imprimen ahora
+  a su valor real en lugar de al ~74 %.
+
+Además, `figura.py` permite `--page-fit WxH` (por defecto `none`): reporta
+siempre el tamaño físico y solo lo exige cuando el operador pide que la figura
+entre a tamaño natural. La convención quedó documentada en la sección "Tamaño de
+página de las figuras" de `propuesta.md`, con la regla de partir en `<base>_a` /
+`<base>_b` cuando un diagrama no cabe sin recortar contenido. El árbol de
+problemas también se ajustó para entrar en `\textwidth` sin `resizebox`.

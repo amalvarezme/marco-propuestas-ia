@@ -113,7 +113,12 @@ def _rel(path: pathlib.Path, project: pathlib.Path) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("name", help="arbol_problemas | estado_arte | metodologico")
+    ap.add_argument(
+        "name",
+        help="id del diagrama: coincide con specs/<name>.spec.json y produce "
+             "sections/diag_<name>.tex + figuras/fig_<name>-*.png. Convención: "
+             "arbol_problemas, estado_arte[_a|_b], metodologico",
+    )
     ap.add_argument("--spec", type=pathlib.Path, required=False, help="spec JSON de la figura")
     ap.add_argument("--project", type=pathlib.Path, help="raíz del proyecto LaTeX (por defecto: cwd)")
     ap.add_argument("--kind", default="tikz", help="kind del compilador: tikz (por defecto) o gantt")

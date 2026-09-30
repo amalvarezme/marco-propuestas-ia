@@ -210,8 +210,9 @@ Fase 1  Investigador → §3 descripción del problema + pregunta, luego el bucl
         ──→ GATE Revisor ──→ user
 Fase 2  Bibliografo-Propuesta → §4 estado del arte (paralelo)
         Investigador → §5 hipótesis, luego el mismo bucle de figura con
-        `<name>` = `estado_arte` (contenido autorizado: el bloque comentado al
-        final de `04_estado_arte.tex`) ──→ GATE Revisor ──→ user
+        `<name>` = `estado_arte` (o `estado_arte_a` + `estado_arte_b` cuando el
+        mapa no cabe en A4 a tamaño natural); contenido autorizado: el bloque
+        comentado al final de `04_estado_arte.tex` ──→ GATE Revisor ──→ user
 Fase 3  Redactor → §2 justificación y pertinencia ──→ GATE Revisor ──→ user
 Fase 4  Investigador → §6 objetivo general + §7 objetivos específicos ──→ GATE Revisor
         (subproblema↔objetivo específico; también valida hipótesis↔objetivo general) ──→ user

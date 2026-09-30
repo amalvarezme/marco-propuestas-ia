@@ -85,11 +85,11 @@ _INNER_SEP_CM = 0.13
 # visual review approved); the fit computation only ever raises it, when the
 # longest unbreakable word would not fit.
 WIDTH_CLAMP = {
-    "raiz": (4.2, 5.8),
+    "raiz": (3.9, 5.8),
     "rama": (3.1, 4.4),
     "tronco": (12.0, 16.0),
     "copa": (12.0, 16.0),
-    "gtitulo": (4.5, 5.8),
+    "gtitulo": (3.9, 5.8),
     "paper": (3.3, 5.0),
     "paperlinea": (3.3, 5.6),
     # The floors for ctitulo/limitex were inherited from the first 12 pt design;
@@ -102,9 +102,9 @@ WIDTH_CLAMP = {
 }
 
 # Horizontal gap between sibling columns (cm).
-COL_GAP_CM = 0.7
+COL_GAP_CM = 0.6
 # Horizontal gap between the level-label column and its neighbours (cm).
-LABEL_COL_CM = 0.85
+LABEL_COL_CM = 0.55
 
 FONT = {
     # role: (fontsize pt, baselineskip pt)
@@ -668,8 +668,8 @@ def build_estado_arte(spec: dict, over: dict) -> tuple[str, list[int], dict[int,
             for a, b in (tuple(pair) for pair in cluster.get("arrows", []))
         )
 
-    extra = 0.9 if any(_far_arrow(c) for c in clusters) else 0.0
-    col_step = round(max(w_paper, w_ctitulo, w_limitex) + 0.75 + extra, 2)
+    extra = 0.55 if any(_far_arrow(c) for c in clusters) else 0.0
+    col_step = round(max(w_paper, w_ctitulo, w_limitex) + 0.5 + extra, 2)
 
     widths = {
         "W_PAPER": w_paper,
