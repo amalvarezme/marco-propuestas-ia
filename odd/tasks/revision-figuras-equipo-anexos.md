@@ -39,7 +39,7 @@ Apply the operator's revision round after G2:
 - [x] T4 Actualizar el encabezado de `main.tex` (IP, LIA, GCPDS, Semillero)
 - [x] T5 Registrar el equipo en `artefactos/equipo.md` (fuente para §9 y para los anexos)
 - [x] T6 Redactar los anexos del §8.6 en `artefactos/anexos/`
-- [ ] T7 Crear la carpeta en Drive (`proyectos unal`) y subir los anexos
+- [x] T7 Crear la carpeta en Drive y subir los anexos — **hecho el 2026-09-30**: `SIUN Emergencias 2026 — Anexos postulación` en `Proyectos Activos`, con los 9 PDF en la raíz y `borradores/` con los 9 `.md`. 20/20 archivos verificados por tamaño contra el origen
 - [ ] T8 Recompilar `main.pdf` y presentar la ronda al usuario
 
 ## Evidence
@@ -72,23 +72,41 @@ Apply the operator's revision round after G2:
   por línea — sin esa extensión pandoc los une en un párrafo corrido y la carta
   deja de parecer una carta.
 
-**Bloqueado:** el MCP `google-drive` exige OAuth y el flujo no completa. Diagnóstico:
-el almacén de tokens (`~/.pi/agent/mcp-oauth/`) **no existe**, así que ninguna
-autorización se ha guardado nunca en esta máquina; `GOOGLE_MCP_CLIENT_SECRET` sí
-está definido. Quedan dos causas posibles: (a) el paso del navegador no se
-completó —es lo más probable, porque requiere un login humano—, o (b) el
-`redirect_uri` `http://127.0.0.1:8123/callback` no está registrado en el cliente
-OAuth de Google Cloud.
+**Hecho el 2026-09-30.** La carpeta existe en `Proyectos Activos` con los 9 PDF
+en la raíz y `borradores/` con los 9 `.md`, y cada archivo se verificó por tamaño
+contra el original (20/20 coinciden).
 
-**Decisión del operador (tomada):** la carpeta se llamará
-`SIUN Emergencias 2026 — Anexos postulación` y se creará dentro de
-`Mi unidad / UNAL / GCPDS_main / Proyectos Activos`, con una subcarpeta
-`borradores/` para los `.md` editables.
+El camino no fue el previsto. `google-drive_create_file` no acepta rutas locales
+—solo `textContent` o `base64Content`— y la salida de `bash` se trunca a 50 KB,
+así que subir 9 PDF de 28-49 KB habría exigido teclear ~38 KB de base64 a mano
+por archivo; el intento falló con `not a valid base64 string`. Se buscó entonces
+el token OAuth del adaptador en el llavero (`pi-mcp-adapter.oauth`): existe, pero
+las entradas de Google no tienen refresh token y la de Sheets, que es la única con
+scope `drive`, ya estaba expirada. La salida fue **Google Drive para escritorio**,
+que está montado en `~/Library/CloudStorage/GoogleDrive-amalvarezme@unal.edu.co`:
+copiar a esa ruta es subir.
 
-**Salida manual mientras tanto:** crear la carpeta con ese nombre en
-`Proyectos Activos` y arrastrar los 9 archivos de
-`artefactos/anexos/pdf/`, más los 9 `.md` de `artefactos/anexos/` en
-`borradores/`.
+Dos obstáculos aparecieron en el montaje, y conviene recordarlos:
+
+- La carpeta creada **por la API** quedó corrupta en el índice local de DriveFS:
+cualquier acceso a ella o a su subárbol devolvía `Resource deadlock avoided`
+(`EDEADLK`), incluso tras reiniciar la aplicación. Se descartaron como causa el
+guion em y los acentos (se probaron carpetas con y sin ellos: ambas sanas) y el
+reinicio de Drive. Se resolvió con `rm -rf`, que sí funcionó y **propagó la
+eliminación al servidor**, y recreando la carpeta **localmente** —las carpetas
+creadas localmente sincronizan sanas— para poblar todo con `cp`.
+- `google-drive_copy_file` se cuelga (>240 s) y no copia nada, así que la
+combinación «subir a una carpeta puente y copiar con la API» no es viable.
+
+El puente temporal `_carga_anexos_tmp` se eliminó y se verificó que no quedan
+residuos ni carpetas duplicadas. Como el run es anterior al script de anexos,
+se instaló `anexos_a_pdf.sh` en `redaccion/scripts/` de la corrida para que la
+invocación documentada en el `LEEME.md` sea cierta; se probó en un directorio
+aislado y produce un PDF válido con el membrete `BORRADOR`.
+
+**Decisión del operador (aplicada):** carpeta `SIUN Emergencias 2026 — Anexos
+postulación` dentro de `Mi unidad / UNAL / GCPDS_main / Proyectos Activos`, con
+subcarpeta `borradores/` para los `.md` editables.
 
 ## Blocker
 
@@ -100,7 +118,7 @@ el destino real es `Mi unidad / UNAL / GCPDS_main / Proyectos Activos`
 `951Geotermia_UTP_UNAL`, `Orquídeas No. 112721-216-2025- Minciencias`,
 `MATERNO_TERMOGRAFIA` y `Proyecto_Luker_UNAL_BIOS`.
 
-Dos decisiones siguen abiertas para T7, antes de escribir en Drive: (a) nombre exacto
-de la carpeta nueva y si se crea dentro de `Proyectos Activos` o como hermana; (b)
-formato de subida — los anexos son borradores Markdown y el §8.6 exige PDF de máximo
-2 MB por archivo.
+Ambas decisiones quedaron cerradas: la carpeta se llama
+`SIUN Emergencias 2026 — Anexos postulación` y va dentro de `Proyectos Activos`;
+y el formato de subida son los PDF (con los `.md` en `borradores/` como fuente
+editable).
