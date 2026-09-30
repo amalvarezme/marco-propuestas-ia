@@ -35,10 +35,13 @@ Requisitos que impone la guía ajustada al TDR (`artefactos/guia_ajustada_TDR.md
       mirror del vault
 - [x] T5 Guardia: re-indexar el vault y armar el bloque `EVIDENCIA DE GRAFO`
 - [x] T5b Auditar los campos bibliográficos de las 16 entradas nuevas con DOI
-- [ ] T5c Auditar la prosa con `grant-flow-auditor` — en curso, tarea
-      `muoq0mq1-4-syjf` (ver la desviación de proceso abajo)
-- [ ] T6 Re-despachar al revisor sobre el texto ya pulido y presentar el GATE G3
+- [x] T5c Auditar la prosa con `grant-flow-auditor` (94/100, tres cambios)
+- [x] T5d Arreglar el enlace clave↔nota de paper (28 notas) y apuntar el vault al
+      registro canónico (28 notas)
+- [ ] T6 Re-despachar al revisor sobre el texto pulido y presentar el GATE G3
       al usuario
+- [ ] T8 (antes de Fase 7) Completar el bloque `## Verificación` en las 50 notas
+      del corpus semilla — ver el hallazgo abajo
 - [ ] T7 Registrar `artefactos/pipeline/40-fase3.md` y la telemetría en
       `artefactos/pipeline/_estado.md`
 
@@ -155,6 +158,54 @@ del archivo no es un PASS válido.
 orden es `redactor`/`investigador` → `grant-flow-auditor` → `revisor` → usuario. Si
 por alguna razón el revisor corre primero y PASSa, y después se toca el texto, el
 PASS queda invalidado y hay que repetir la revisión.
+
+## Segundo dictamen de G3: FAIL por trazabilidad (2026-09-30)
+
+Tras el pulido de prosa, el revisor devolvió **FAIL**, y todos los checks de
+contenido volvieron a dar PASS (estructura, densidad de citas, unicidad de
+claves, resolución en `refs.bib`, incisos, TRL 6, PND sin inventar, coherencia
+§2↔§3, territorio, estilo). El único FAIL fue el *check 4*, el de no-huérfanas:
+24-26 claves nuevas de §2 «resolvían únicamente» a su nota de
+`artefactos/vault/insumos/`, y esas notas no tienen bloque `## Verificación`.
+
+**El revisor acertó en el síntoma y se equivocó en la causa.** Lo comprobé:
+las 28 notas nuevas de `artefactos/scoping/papers/paper-51.md` a `paper-78.md`
+**SÍ tienen** el bloque `## Verificación` con ID resuelto (28 de 28). Lo que
+faltaba era el **enlace**: ninguna nota registraba su `cite_key`, así que el
+revisor no podía emparejar una clave con su nota de paper y concluyó que la clave
+«solo resolvía» al vault, cuyo formato de nota legítimamente no incluye ese
+bloque.
+
+**El arreglo aplicado** ataca la causa, no el síntoma: se añadió `- Clave:
+<cite_key>` a las 28 notas de paper (mapeadas 16 por DOI y 12 por URL oficial), y
+un bloque `## Verificación` a las 28 notas del vault que **apunta** al registro
+canónico en lugar de duplicarlo. Verificado después: las 28 claves nuevas de §2
+resuelven a una nota con `## Verificación` y `Resuelto: sí`.
+
+## Hallazgo nuevo: dos formatos de nota conviven en el corpus
+
+Al perseguir el FAIL apareció algo más grande. Las **11 claves de reúso de §2**
+que vienen del corpus semilla no resuelven a ninguna nota verificada, y la causa
+no es el enlace: **las 50 notas del corpus semilla no tienen bloque
+`## Verificación` en absoluto** (0 de 50).
+
+| | `paper-1`…`paper-50` (semilla) | `paper-51`…`paper-78` (nuevas) |
+|---|---|---|
+| Metadatos | lista de viñetas (`- Autores:`, `- Año:`, …) | una línea |
+| Bloque `## Verificación` | **no tiene** | sí, con ID resuelto |
+| `cite_key` registrada | no | sí (tras el arreglo) |
+
+No es de esta fase: el corpus semilla se escribió en la Fase 1 con la plantilla
+anterior a que existiera el invariante de verificación, y el check del revisor
+declara explícitamente los huérfanos preexistentes **fuera de alcance**. Tampoco
+lo introdujo §2: las 11 claves ya se citaban en §3/§4/§5 y §4 pasó su compuerta.
+
+**Por qué conviene cerrarlo antes de la Fase 7.** La auditoría final repasa el
+documento completo, y toda clave del corpus semilla volverá a quedar sin registro
+verificable. La plantilla se puede aplicar ahora porque las notas ya tienen
+`DOI/URL`, pero exige verificar 50 DOI contra `semanticscholar`/`crossref`/`openalex`
+antes de escribir cada bloque: no se puede rellenar de memoria. Es una tarea
+delimitada y delegable al `bibliografo-propuesta`.
 
 ## Notas de ensamble
 
