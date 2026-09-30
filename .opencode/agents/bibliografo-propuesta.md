@@ -437,14 +437,45 @@ Invariante: cada entrada nueva en `refs.bib` debe tener:
    `openalex` o `semanticscholar` — el mismo invariante de ID estable 1:1 y la misma
    regla de rechazo aplican igual en ese modo degradado.
 
+### Clase de evidencia institucional (documentos de política)
+
+El invariante de arriba asume que toda referencia es un artículo indexado con
+un ID estable (DOI/S2/arXiv). Eso no cubre los **instrumentos oficiales** que
+§2 Justificación y pertinencia está obligada a citar: los ODS con su número y
+nombre oficial, el Plan Nacional de Desarrollo vigente, el Plan de Desarrollo
+Departamental cuando el proyecto tenga anclaje territorial, y los informes de
+organismos multilaterales (OCDE, Banco Mundial, BID, UNESCO, CEPAL). Un decreto
+o un informe del Banco Mundial **no tiene DOI** y no aparece en
+`semanticscholar`, `crossref` ni `openalex`.
+
+Para esas fuentes rige la misma garantía con una fuente de prueba distinta: la
+**URL oficial**. La regla es:
+
+- Se escriben como entradas institucionales, `@techreport` o `@misc` según
+  corresponda, con `author` institucional entre dobles llaves
+  (p. ej. `{{Naciones Unidas}}`), `title`, `year`, `url` y
+  `note = {Consultado: <fecha>}`.
+- Su verificación es la URL oficial, confirmada y registrada. La nota
+  `artefactos/scoping/papers/paper-N.md` se escribe igual, con
+  `- Herramienta: url oficial` y `- ID estable: <URL oficial>  | Resuelto: sí`.
+- **No cuentan** para ningún piso de referencias Q1/Q2: son adicionales, y
+  sirven donde el párrafo pide el instrumento concreto.
+- Sigue prohibido inventar. Un número de ODS, una meta del PND, un eje del plan
+  departamental o una cifra del organismo multilateral que no se pueda
+  verificar no se escribe: se reporta como pendiente al dispatcher.
+
+El resto del invariante (nota de vault, nota de trazabilidad, cero entradas sin
+resolver) aplica igual a esta clase.
+
 Plantilla mínima de paper `.md` (extiende el esquema de MODE=scope):
 
 ```markdown
 # {Título}
 - Autores: ... | Año: ... | Venue: ... | Cuartil: Q1|Q2 | DOI: ...
 ## Verificación
-- Herramienta: <semanticscholar (batch_get_papers)|crossref|openalex|semanticscholar (individual)>
+- Herramienta: <semanticscholar (batch_get_papers)|crossref|openalex|semanticscholar (individual)|url oficial>
 - ID estable: <DOI o ID>  | Resuelto: sí
+  (fuente institucional: `- Herramienta: url oficial` con `- ID estable: <URL oficial>  | Resuelto: sí`)
 ## Relevancia
 {una línea}
 ## Abstract
