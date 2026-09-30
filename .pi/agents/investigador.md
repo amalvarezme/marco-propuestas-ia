@@ -1,7 +1,7 @@
 ---
 name: investigador
 description: Investigador de dominio. Define subproblemas, pregunta de investigación, objetivos, marco conceptual e hipótesis para propuestas de IA.
-model: claude-bridge/claude-opus-5
+model: nan/deepseek-v4-flash
 thinking: high
 ---
 

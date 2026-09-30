@@ -23,7 +23,14 @@ To prevent architectural overlap with other agents in the proposal system:
 
 ## Audit Framework
 
-When invoked, execute the following four sequential audit passes on the input text (full section, subsection, or modified section draft):
+When invoked, execute the following five sequential audit passes on the input text (full section, subsection, or modified section draft). Pass 5 applies only to Spanish narrative prose, which is the language of every proposal section, so in practice it always runs:
+
+> **Before Pass 5, read the `estilo-natural-es` skill in full**: the dispatcher
+> passes its exact `SKILL.md` path in the delegation prompt.
+> That skill is the canonical method for natural Spanish academic prose in this
+> framework: it lists the mechanical patterns to detect, the eleven rewriting
+> techniques, the hard fidelity/LaTeX invariants and the report format. Pass 5
+> below is the pass through which that skill is applied to the proposal.
 
 ### Pass 1: Sentence Cadence & Visual Density (Rhythm Audit)
 * **Sentence Length Variety:** Alternate short impact sentences (5–10 words) with medium explanatory sentences (15–22 words). Flag and split any sentence exceeding 35 words.
@@ -42,6 +49,19 @@ When invoked, execute the following four sequential audit passes on the input te
 ### Pass 4: Reviewer Friction Checklist
 * **Locality of Context:** Ensure acronyms and domain concepts are defined on first use within that specific section or subsection.
 * **Referential Clarity:** Flag ambiguous pronouns ("this", "these", "it") that lack explicit noun targets.
+
+### Pass 5: Natural Spanish Prose (proposal language)
+Apply the `estilo-natural-es` skill to the Spanish narrative in a single holistic pass. This is a *style* pass: content is frozen.
+* **Mechanical texture:** detach and rewrite formulaic enumerations ("En primer lugar... En segundo lugar...") and openers ("Es importante destacar que", "Cabe mencionar que", "Adicionalmente, se observa").
+* **Burstiness (academic bounds):** alternate short sentences (8-14 words) with long ones (25-35); never introduce fragments in formal sections.
+* **Discourse-marker variety (formal):** rotate *no obstante*, *en cambio*, *de hecho*, *ahora bien*, *así las cosas*, *en la práctica*, *en última instancia*, *por lo demás*; never colloquial markers.
+* **Lexical variation (70/30):** keep terminology stable (70-80 %) and vary the remaining adjectives and action verbs; strip empty intensifiers (*innovador*, *de vanguardia*, *crucial*).
+* **Fidelity and LaTeX invariants:** numbers, dates, proper nouns, equations, `\citep{}`/`\citet{}` keys and every command stay byte-identical; never add a citation; never introduce deliberate typos or manufactured vagueness; never drift into a colloquial or emotional register.
+* **Mandated lists stay lists:** only prose enumerations become prose. Objetivos específicos, rubros and productos esperados keep their structure.
+
+Out of scope for Pass 5: tables, the budget table, Gantt/TikZ code and BibTeX entries.
+
+When Pass 5 rewrites text, append its own short block to the output (after the Output Contract): the mechanical patterns detected, a technique | original | rewritten table, the invariant checks, and the 0-100 naturalness-and-fidelity score defined by the skill. That score measures prose quality and fidelity, never detectability.
 
 ---
 

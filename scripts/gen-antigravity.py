@@ -95,6 +95,29 @@ def build_skill(agent_file: Path, rules: dict, config: dict | None) -> tuple[str
     return agent_name, content
 
 
+def build_project_skill(skill_file: Path, rules: dict) -> str:
+    """Compile a canonical .claude/skills/**/SKILL.md into an Antigravity skill.
+
+    Unlike build_skill (which derives a skill from an agent), this copies a real
+    skill: Pi/Antigravity skill frontmatter is `name` + `description` (plus an
+    optional `model`).
+    """
+    text = skill_file.read_text(encoding="utf-8")
+    fm, body = split_frontmatter(text, skill_file)
+    name = fm.get("name") or skill_file.parent.name
+    description = fm.get("description")
+    if not description:
+        raise GeneratorError(f"{skill_file}: skill frontmatter missing 'description'")
+
+    lines = ["---", f"name: {name}", f"description: {description}"]
+    if "model" in fm:
+        lines.append(f"model: {fm['model']}")
+    lines.append("---\n")
+
+    body = apply_substitutions(body, rules)
+    return "\n".join(lines) + body
+
+
 def build_workflow(cmd_file: Path, rules: dict) -> tuple[str, str]:
     """Compile command file into workflow markdown content."""
     text = cmd_file.read_text(encoding="utf-8")
@@ -129,6 +152,7 @@ def main() -> int:
 
     source_agents_dir = root / rules["paths"]["source_agents_dir"]
     source_commands_dir = root / rules["paths"]["source_commands_dir"]
+    source_skills_dir = root / rules["paths"]["source_skills_dir"]
     target_skills_dir = root / rules["paths"]["target_skills_dir"]
     target_workflows_dir = root / rules["paths"]["target_workflows_dir"]
 
@@ -152,6 +176,15 @@ def main() -> int:
             out_name, content = build_workflow(cmd_file, rules)
             workflow_file = target_workflows_dir / out_name
             workflows_to_write.append((workflow_file, content))
+
+    # Process canonical skills (.claude/skills/**/SKILL.md), mirroring the
+    # nested layout under .agent/skills/<skill-dir>/SKILL.md.
+    if source_skills_dir.is_dir():
+        for skill_file in sorted(source_skills_dir.glob("**/SKILL.md")):
+            rel = skill_file.relative_to(source_skills_dir)
+            skills_to_write.append(
+                (target_skills_dir / rel, build_project_skill(skill_file, rules))
+            )
 
     if args.check:
         drift = False

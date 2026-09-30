@@ -1,7 +1,7 @@
 ---
 name: revisor
 description: Revisor de calidad y coherencia. Valida la propuesta contra la guía y las dependencias cruzadas en cada puerta de revisión. Devuelve PASS/FAIL.
-model: claude-bridge/claude-sonnet-5
+model: nan/glm5.3-flash
 thinking: medium
 tools: read, grep, find
 ---

@@ -273,6 +273,76 @@ class TestGenerators(unittest.TestCase):
         self.assertEqual(res.returncode, 0, f"gen-antigravity.py failed:\nSTDOUT: {res.stdout}\nSTDERR: {res.stderr}")
         self.assertTrue((self.target_dir / ".agent").is_dir())
 
+    def test_pi_generator_ports_skills(self):
+        gen_script = REPO_ROOT / "scripts" / "gen-pi.py"
+        res = subprocess.run(
+            [sys.executable, str(gen_script), "--root", str(self.target_dir)],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res.returncode, 0, f"gen-pi.py failed:\nSTDOUT: {res.stdout}\nSTDERR: {res.stderr}")
+        skill = self.target_dir / ".pi" / "skills" / "estilo-natural-es" / "SKILL.md"
+        self.assertTrue(skill.is_file(), "gen-pi.py did not port .claude/skills into .pi/skills/")
+        text = skill.read_text(encoding="utf-8")
+        self.assertIn("name: estilo-natural-es", text)
+        self.assertIn("description:", text)
+
+    def test_antigravity_generator_ports_skills(self):
+        gen_script = REPO_ROOT / "scripts" / "gen-antigravity.py"
+        res = subprocess.run(
+            [sys.executable, str(gen_script), "--root", str(self.target_dir)],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(res.returncode, 0, f"gen-antigravity.py failed:\nSTDOUT: {res.stdout}\nSTDERR: {res.stderr}")
+        skill = self.target_dir / ".agent" / "skills" / "estilo-natural-es" / "SKILL.md"
+        self.assertTrue(skill.is_file(), "gen-antigravity.py did not port .claude/skills into .agent/skills/")
+        self.assertIn("name: estilo-natural-es", skill.read_text(encoding="utf-8"))
+
+
+class TestGeneratorDrift(unittest.TestCase):
+    """The committed ports must be byte-identical to what the generators emit."""
+
+    def _check(self, script_name: str):
+        script = REPO_ROOT / "scripts" / script_name
+        res = subprocess.run(
+            [sys.executable, str(script), "--check"],
+            capture_output=True,
+            text=True,
+            cwd=str(REPO_ROOT),
+        )
+        self.assertEqual(
+            res.returncode,
+            0,
+            f"{script_name} --check reported drift (exit {res.returncode}):\n"
+            f"STDOUT: {res.stdout}\nSTDERR: {res.stderr}",
+        )
+
+    def test_pi_port_is_current(self):
+        self._check("gen-pi.py")
+
+    def test_opencode_port_is_current(self):
+        self._check("gen-opencode.py")
+
+    def test_antigravity_port_is_current(self):
+        self._check("gen-antigravity.py")
+
+    def test_canonical_skill_exists_and_is_ported(self):
+        canonical = REPO_ROOT / ".claude" / "skills" / "estilo-natural-es" / "SKILL.md"
+        self.assertTrue(canonical.is_file(), "canonical skill missing")
+        for ported in (
+            REPO_ROOT / ".pi" / "skills" / "estilo-natural-es" / "SKILL.md",
+            REPO_ROOT / ".agent" / "skills" / "estilo-natural-es" / "SKILL.md",
+        ):
+            self.assertTrue(ported.is_file(), f"skill not ported: {ported}")
+
+    def test_canonical_skill_has_no_drift_paths(self):
+        text = (REPO_ROOT / ".claude" / "skills" / "estilo-natural-es" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn(".claude/", text, "skill must not hardcode a runtime path")
+        self.assertIn("never introduces deliberate typos", text)
+
 
 class TestBuildScriptOptions(unittest.TestCase):
     """Verify redaccion/build.sh option handling and CSL validation."""

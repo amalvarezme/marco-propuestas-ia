@@ -140,10 +140,13 @@ Referencia completa del CLI (comandos, flags, entorno, manifest) en
    una corrida está gitignoreado), así que cada corpus se indexa **como raíz
    propia** con `repo_path` absoluto; y las negaciones `!ruta` de `.cbmignore`
    no revierten `.gitignore`, aunque `.cbmignore` sí sirve para excluir ruido
-   dentro del corpus. No hay export HTML ni edges de `[[wikilink]]`: el
-   artefacto que ve el usuario es el reporte Markdown, y los wikilinks rotos
-   se detectan con `Grep`. Detalle completo en "Cómo usar `codebase-memory`"
-   de `.claude/commands/propuesta.md`.
+   dentro del corpus. `codebase-memory` no exporta HTML ni crea edges de
+   `[[wikilink]]`: el artefacto **citable en las compuertas** es el reporte
+   Markdown, los wikilinks rotos se detectan con `Grep`, y el **gemelo visual
+   navegable** lo produce el marco con `scripts/graph_html.py` a partir de un
+   JSON que escribe el dispatcher (`grafos/<corpus>-graph.html`). Detalle
+   completo en "Cómo usar `codebase-memory`" de
+   `.claude/commands/propuesta.md`.
 
 ## Roster de agentes (`.claude/agents/`) y modelos por defecto
 
@@ -155,17 +158,35 @@ verdad):
 | `coordinador-propuesta` | sonnet | Referencia canónica del pipeline (no despachable como subagente activo) |
 | `investigador` | opus | Subproblemas, pregunta, objetivos, hipótesis, marco conceptual |
 | `redactor` | opus | Secciones narrativas (§1, §2, §9–§12, §14–§15) |
-| `grant-flow-auditor` | sonnet | Auditoría micro-estilística de prosa: cadencia, voz activa, transiciones y fricción en secciones, subsecciones o secciones modificadas |
+| `grant-flow-auditor` | sonnet | Auditoría micro-estilística de prosa: cadencia, voz activa, transiciones y fricción en secciones, subsecciones o secciones modificadas; aplica la skill `estilo-natural-es` |
 | `insumos-observador` | sonnet | Ingesta y estructuración de insumos del usuario |
 | `bibliografo-propuesta` | sonnet | Bibliografía (§4, §16) |
 | `revisor` | sonnet | Validación de coherencia/calidad en cada gate |
 | `presupuestador` | sonnet | Presupuesto (§13): tabla de rubros + aritmética + cofinanciación |
-| `disenador-tikz` | sonnet | Autoría de diagramas TikZ |
-| `revisor-figuras` | sonnet | Auditoría visual publication-ready de figuras (PNG) |
-| `tikz-optimizer` | sonnet | Compilación y optimización visual de diagramas TikZ |
+| `disenador-tikz` | sonnet | Autoría de la **spec JSON** de los diagramas (nunca del LaTeX) |
+| `revisor-figuras` | sonnet | Juicio visual (escala, centrado, armonía, etiquetas) sobre el preview PNG ya auditado |
+| `tikz-optimizer` | sonnet | Corrección de la spec cuando la auditoría determinista falla |
 
 No existen agentes llamados `orquestador`, `observador` (a secas) ni
 `bibliotecario`; esos nombres no forman parte de este marco.
+
+## Skills del marco (`.claude/skills/`)
+
+Además de los agentes, el marco tiene **skills** (metodologías reutilizables
+que un agente carga cuando la tarea lo pide), con la misma fuente de verdad
+`.claude/` y el mismo régimen de ports generados:
+
+| Skill | Para qué | La usa |
+|-------|----------|--------|
+| `estilo-natural-es` | Pulir prosa narrativa en español: desmecaniza enumeraciones y aperturas formulaicas, varía longitud de frase y conectores, aplica la regla 70/30 de vocabulario, con fidelidad estricta de cifras, fechas y citas. No es una herramienta de evasión de detectores de IA: no introduce errores tipográficos, imprecisión deliberada ni registro coloquial. | `grant-flow-auditor` (antes de cada `revisor`) |
+
+La skill canónica vive en `.claude/skills/estilo-natural-es/SKILL.md` y de ahí
+se porta de forma determinista: `.pi/skills/` (Pi) y `.agent/skills/`
+(Antigravity) los genera `scripts/gen-pi.py` y `scripts/gen-antigravity.py`;
+OpenCode la descubre directamente desde `.claude/skills/` (no se duplica en
+`.opencode/skills/` para no provocar un aviso de nombre duplicado). Toda skill
+nueva se agrega primero en `.claude/skills/`, luego a `scripts/kit-manifest.json`
+y a los generadores, y se regeneran los ports con su `--check`.
 
 ## Flujo del pipeline (interactivo, con gates)
 
@@ -174,35 +195,36 @@ Paso previo  `/propuesta-init <idea>` → crea y activa `proposals/<run-id>/`
         (`RUN_ROOT`) con sus cuatro subcarpetas: insumos/ artefactos/ grafos/
         redaccion/. El usuario deja sus insumos en `insumos/`.
 Fase 0  Insumos-Observador → ingerir insumos
-Fase 1  Investigador → §3 descripción del problema + pregunta, luego bucle de
-        figura (árbol de problemas):
-          Diseñador-TikZ (autor .tex)
-          → Tikz-Optimizer (compila a PNG; precheck determinista de
-            `Overfull \hbox` en el log de `pdflatex` — con overflow, vuelve
-            directo a Tikz-Optimizer sin gastar la revisión visual)
-          → Revisor-Figuras (solo con log limpio; audita, PASS/FAIL)
-          → en FAIL (overflow o visual), vuelve a Tikz-Optimizer con los
-            hallazgos; tope compartido de 4 intentos, con escalamiento
-            explícito al usuario al agotarse
+Fase 1  Investigador → §3 descripción del problema + pregunta, luego el bucle
+        de figura `arbol_problemas` (procedimiento canónico único, ver
+        "Bucle de figuras" abajo):
+          Diseñador-TikZ (autor de `specs/arbol_problemas.spec.json`)
+          → `python3 scripts/figura.py arbol_problemas` (determinista, ~1 s:
+            render → compile → autofix de overflow → auditoría mecánica)
+          → con `FIGURA PASS`, Revisor-Figuras audita SOLO los 4 criterios
+            visuales sobre el preview PNG (PASS/FAIL)
+          → en FAIL (spec, auditoría o visual), vuelve a Tikz-Optimizer, que
+            corrige la SPEC (nunca el .tex); tope compartido de 4 intentos,
+            con escalamiento explícito al usuario al agotarse
           → en PASS, continúa
         ──→ GATE Revisor ──→ user
 Fase 2  Bibliografo-Propuesta → §4 estado del arte (paralelo)
-        Investigador → §5 hipótesis, luego bucle de figura (mapa de estado
-        del arte; mismo precheck de overflow + tope de 4 intentos que la
-        Fase 1) ──→ GATE Revisor ──→ user
+        Investigador → §5 hipótesis, luego el mismo bucle de figura con
+        `<name>` = `estado_arte` (contenido autorizado: el bloque comentado al
+        final de `04_estado_arte.tex`) ──→ GATE Revisor ──→ user
 Fase 3  Redactor → §2 justificación y pertinencia ──→ GATE Revisor ──→ user
 Fase 4  Investigador → §6 objetivo general + §7 objetivos específicos ──→ GATE Revisor
         (subproblema↔objetivo específico; también valida hipótesis↔objetivo general) ──→ user
 Fase 5  Investigador → §8 marco conceptual (paralelo)
         Redactor → §9 equipo de trabajo (deriva roles de §7, nunca de Metodología) ──→ GATE Revisor ──→ user
-Fase 5.5 Redactor → §10 metodología, luego bucle de figuras (diagrama
-        metodológico; mismo precheck de overflow + tope de 4 intentos que
-        las Fases 1 y 2):
-          Diseñador-TikZ (autor .tex)
-          → Tikz-Optimizer (compila a PNG, primer ajuste)
-          → Revisor-Figuras (solo con log limpio; audita, PASS/FAIL)
-          → en FAIL (overflow o visual), vuelve a Tikz-Optimizer con los
-            hallazgos
+Fase 5.5 Redactor → §10 metodología, luego el mismo bucle de figura con
+        `<name>` = `metodologico` (nunca incluye personal responsable dentro de
+        los bloques):
+          Diseñador-TikZ (autor de `specs/metodologico.spec.json`)
+          → `python3 scripts/figura.py metodologico` (determinista)
+          → con `FIGURA PASS`, Revisor-Figuras audita los 4 criterios visuales
+          → en FAIL, Tikz-Optimizer corrige la SPEC; tope compartido de 4
+            intentos
           → en PASS, continúa
         ──→ GATE Revisor ──→ user
 Fase 6  Redactor → §11 resultados esperados; §12 consideraciones éticas (sin gate propio)
@@ -221,8 +243,39 @@ correcciones. Cada cierre de gate agrega además un punto de costo/tiempo
 (tokens, tool-uses, duración) al resumen presentado al usuario, acumulado
 por fase a partir del bloque `<usage>` de cada `Task` delegado — ver
 "Telemetría de uso por fase" en `.claude/commands/propuesta.md` para el
-detalle completo del cálculo y persistencia
-(`artefactos/pipeline/_estado.md`).
+detalle completo del cálculo y persistencia(`artefactos/pipeline/_estado.md`).
+
+## Bucle de figuras (determinista)
+
+Los tres diagramas (árbol de problemas §3, mapa de estado del arte §4, diagrama
+metodológico §10) **no se dibujan a mano**. La geometría la calcula un script:
+el modelo escribe solo la **spec JSON** con el contenido, y
+`scripts/render_tikz.py` deriva de ahí `sections/diag_<name>.tex` con anchos que
+caben el token más largo, columnas equiespaciadas, anclas reales en cada
+extremo, la paleta institucional y los tamaños canónicos.
+
+```bash
+python3 scripts/figura.py <name> --spec specs/<name>.spec.json
+```
+
+Ese único comando hace render → compilación a PNG/SVG/preview → autofix
+determinista de `Overfull \hbox` → auditoría mecánica, y sale con código
+distinto de cero si supera su presupuesto de 180 s. Después, `revisor-figuras`
+emite el juicio que un script no puede dar (escala, centrado, armonía,
+etiquetas) sobre `fig_<name>-preview.png`. Si algo falla, `tikz-optimizer`
+corrige **la spec**, nunca el `.tex` — el `.tex` es salida generada y se
+sobrescribe en el siguiente render.
+
+El procedimiento completo y el contador de intentos (4 por diagrama, por
+corrida) están definidos **una sola vez** en la sección "Bucle de figuras
+(canónico)" de `.claude/commands/propuesta.md`; las Fases 1, 2 y 5.5 la
+referencian. No reimplementes el bucle por fase.
+
+Medido en la corrida `2026-09-tept-depresion-ia-portable`: el bucle anterior
+costaba **~28,8 min por figura** (tres despachos de agente y tres fallos de
+`disenador-tikz` sin reporte por agotar su presupuesto de salida razonando); el
+actual cuesta **menos de 1 s** en el caso limpio y ~2,5 s en el peor caso de
+autofix.
 
 ## Dispatch directo de agentes de propuesta
 
@@ -235,13 +288,13 @@ flujo stepped `/propuesta-analizar` + `/propuesta-continuar`.
 
 | Agente | Cuándo despacharlo directamente |
 |--------|--------------------------------|
-| `disenador-tikz` | Rediseñar o crear diagramas TikZ de la propuesta |
-| `revisor-figuras` | Auditar visualmente figuras renderizadas (PNG) y describir problemas publication-ready |
-| `tikz-optimizer` | Compilar y optimizar visualmente diagramas TikZ existentes |
+| `disenador-tikz` | Crear o rediseñar la spec JSON de un diagrama |
+| `revisor-figuras` | Emitir juicio visual sobre una figura ya auditada (preview PNG) |
+| `tikz-optimizer` | Corregir la spec de un diagrama cuyo `figura.py` falla |
 | `investigador` | Definir/refinar subproblemas, pregunta, objetivos, hipótesis, marco conceptual |
 | `redactor` | Redactar o revisar secciones narrativas (§1, §2, §9–§12, §14–§15) |
 | `revisor` | Validar coherencia y calidad de secciones ya redactadas |
-| `grant-flow-auditor` | Auditar micro-estilo de prosa ya redactada (cadencia, voz activa, transiciones) antes del `revisor` |
+| `grant-flow-auditor` | Auditar micro-estilo de prosa ya redactada (cadencia, voz activa, transiciones) y aplicar el pulido `estilo-natural-es` antes del `revisor` |
 | `bibliografo-propuesta` | Construir o actualizar la bibliografía (§4, §16) |
 | `insumos-observador` | Ingerir y estructurar insumos del usuario (PDFs, papers) |
 | `presupuestador` | Construir o ajustar el presupuesto (§13): rubros, montos, cofinanciación |
@@ -274,9 +327,9 @@ por su cuenta, salvo la auditoría final de Fase 7. Resumen de asignación:
 | §8 Marco conceptual | Investigador |
 | §9 Equipo de trabajo | Redactor |
 | §10 Metodología | Redactor |
-| Diagramas (árbol de problemas, mapa de estado del arte, diagrama metodológico) | Diseñador-TikZ |
-| Auditoría visual de figuras (publication-ready) | Revisor-Figuras |
-| Compilación/optimización visual de diagramas (loop PNG) | Tikz-Optimizer |
+| Diagramas (spec JSON del árbol de problemas, mapa de estado del arte, diagrama metodológico) | Diseñador-TikZ |
+| Auditoría visual de figuras (los 4 criterios que un script no puede dar) | Revisor-Figuras |
+| Corrección de la spec de un diagrama cuando `figura.py` falla | Tikz-Optimizer |
 | §11 Resultados esperados | Redactor |
 | §12 Consideraciones éticas | Redactor |
 | §13 Presupuesto | Presupuestador |

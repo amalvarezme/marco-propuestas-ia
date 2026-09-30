@@ -1,6 +1,6 @@
 ---
 description: Fase 0 de intake (clasificación, checklist, TDR/draft, G0.5 opcional). Escribe estado y se detiene antes del scoping; imprime el siguiente comando.
-argument-hint: [idea de investigación] [run-id=... opcional]
+argument-hint: "[idea de investigación] [run-id=... opcional]"
 ---
 
 # /propuesta-analizar — Intake only (preflight)

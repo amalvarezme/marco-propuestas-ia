@@ -209,7 +209,7 @@ Cierra la sección con un **párrafo de síntesis** que resuma las estrategias m
 
 ### 5. Hipótesis
 
-**Instrucción para el agente:** A partir de la síntesis del Estado del arte (§4), plantea una **hipótesis** en un único párrafo que anticipe el objetivo general que se formalizará en Objetivo general (§6). Debe definir con total claridad las limitantes tecnológicas, teóricas o metodológicas de la IA que la propuesta busca resolver, y quedar explícitamente vinculada a la pregunta de investigación formulada al cierre de la Descripción del problema (§3).
+**Instrucción para el agente:** A partir de la síntesis del Estado del arte (§4), plantea una **hipótesis** en un único párrafo que anticipe el objetivo general que se formalizará en Objetivo general (§6). Debe definir con total claridad las limitantes tecnológicas, teóricas o metodológicas de la IA que la propuesta busca resolver, y quedar explícitamente vinculada a la pregunta de investigación formulada al cierre de la Descripción del problema (§3). Su condición de verificación sigue la **Regla de metas sin fijar porcentaje o rendimiento** definida en §6.
 
 ### 6. Objetivo general
 
@@ -219,11 +219,15 @@ Cierra la sección con un **párrafo de síntesis** que resuma las estrategias m
 
 **Sin mención textual de TRL.** Ni el objetivo general ni los objetivos específicos (§7) deben nombrar la sigla TRL ni un número de nivel; expresa el nivel de transferencia o validación esperada en términos funcionales ("desplegado y validado en el entorno de aplicación real", "listo para su adopción por el usuario final"). El TRL numérico se reserva para Metodología (§10) y Resultados esperados (§11).
 
+**Sin metas fijas de porcentaje o rendimiento (regla permanente).** Ni la hipótesis (§5), ni el objetivo general, ni los objetivos específicos fijan un umbral numérico de porcentaje, exactitud, concordancia o tamaño de efecto (p. ej. "concordancia ≥0,70", "mejora del 20%", "menos del 5% de error"). La forma de verificación se describe de manera cualitativa o direccional (p. ej. "diferencias estadísticamente significativas frente a un grupo de contraste", "mejora consistente en las tres dimensiones evaluadas", "reducción sustancial de afirmaciones no verificables"), dejando cualquier umbral operativo concreto, si llega a necesitarse, para el diseño experimental de la Metodología (§10), nunca como una meta fija declarada en §5, §6 o §7.
+
 El objetivo general debe derivarse directamente y ser la respuesta exacta a la pregunta de investigación formulada al final de §3 (Descripción del problema), en coherencia con la hipótesis planteada en §5. Debe ser ambicioso pero totalmente alcanzable en el tiempo de duración de la convocatoria. Además, debe reflejar claramente la innovación propuesta y el valor agregado en IA, y el impacto tecnológico esperado en términos funcionales (sin nombrar el TRL, ver regla arriba).
+
+**Sin mención textual de la duración del proyecto (regla permanente).** El objetivo general no menciona la ventana de ejecución ni ninguna cifra de duración (p. ej. "dentro de una ventana de dieciocho meses", "en 18 meses"). La alcanzabilidad dentro del plazo de la convocatoria es un requisito de diseño que el agente debe satisfacer al redactarlo, no un dato que se declare textualmente en la oración; la duración explícita se reserva para el Cronograma de actividades (§14).
 
 ### 7. Objetivos específicos
 
-**Instrucción para el agente:** Los objetivos específicos se rigen por las mismas reglas de verbo rector único y de no mención textual de TRL definidas en §6. Deben derivarse lógica y coherentemente del objetivo general, representando los pasos metodológicos y técnicos secuenciales del proyecto. Es un requisito estricto que cada objetivo específico esté directamente relacionado y dé respuesta a uno de los subproblemas planteados en §3 (Descripción del problema). El agente debe redactar al menos tres objetivos específicos estructurados de la siguiente manera:
+**Instrucción para el agente:** Los objetivos específicos se rigen por las mismas reglas de verbo rector único y de no mención textual de TRL definidas en §6. Deben derivarse lógica y coherentemente del objetivo general, representando los pasos metodológicos y técnicos secuenciales del proyecto. Es un requisito estricto que cada objetivo específico esté directamente relacionado y dé respuesta a uno de los subproblemas planteados en §3 (Descripción del problema). **Sin párrafo introductorio (regla permanente):** la sección presenta la lista de objetivos directamente, sin un párrafo previo que anuncie o resuma lo que la lista va a contener (p. ej. nunca abrir con algo como "Los siguientes objetivos específicos desarrollan de forma secuencial..."); tampoco se menciona ahí la duración del proyecto, por la misma regla de §6. El agente debe redactar al menos tres objetivos específicos estructurados de la siguiente manera:
 
 *   **Objetivo Específico 1 (Fundamentos y Caracterización de Datos):** Centrado en el levantamiento, curaduría, estructuración de los datos o en la caracterización fenomenológica del problema. Debe dar solución concreta al **subproblema 1**. *(Verbos sugeridos — elige uno: Caracterizar, Estructurar, Analizar, Procesar).*
 *   **Objetivo Específico 2 (Novedad Teórica y Metodológica en IA):** Centrado en el núcleo de investigación: la conceptualización, diseño, entrenamiento y ajuste del modelo, metodología, algoritmo o arquitectura de IA propuesta como novedad. Debe dar solución concreta al **subproblema 2**. *(Verbos sugeridos — elige uno: Desarrollar, Proponer, Diseñar, Modelar).*
@@ -429,6 +433,14 @@ Estas convenciones son la única fuente de verdad para el ensamble LaTeX; aplíc
 | `enumitem` | Listas |
 | `pgfgantt` + `tikz` + `shapes.geometric` | Gantt / figuras |
 | `xcolor[table]` | Colores / tablas |
+
+**Captions de tabla en español — siempre "Tabla", nunca "Cuadro" (regla permanente).** `babel[spanish]` define `\tablename` como "Cuadro" por defecto; sin corregirlo, todo `\caption{}` dentro de un entorno `table` se imprime como "Cuadro N: ...". **Un `\renewcommand{\tablename}{Tabla}` suelto en el preámbulo NO sobrevive**: babel reaplica sus nombres de idioma vía `\captionsspanish` dentro de su propio hook de `\begin{document}`, que se ejecuta después del preámbulo y sobrescribe cualquier `\renewcommand` anterior. El preámbulo de `main.tex` DEBE parchear el hook de babel en su lugar:
+
+```latex
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+```
+
+Esto es independiente de las entradas `\crefname{table}{tabla}{tablas}` / `\Crefname{table}{Tabla}{Tablas}` de cleveref, que solo gobiernan las referencias cruzadas `\cref{}`/`\Cref{}` en el cuerpo del texto, no el propio `\caption{}` de la tabla. El agente responsable de ensamblar `main.tex` (Fase 7) verifica, tras compilar, que ningún caption de tabla en el PDF diga "Cuadro" (extrayendo el texto del PDF, no solo revisando el `.tex`) antes de dar la Fase 7 por completa.
 
 **Colores institucionales**
 

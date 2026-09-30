@@ -1,0 +1,57 @@
+{
+  "_generated_by": "scripts/gen-pi.py",
+  "_source_of_truth": "scripts/agent-models.json",
+  "_reconciled_against": {
+    "gentle_profile": "andres_nan",
+    "profiles_store": "~/.pi/gentle-ai/profiles.json",
+    "verified_with": "pi --list-models",
+    "date": "2026-09-30",
+    "_note": "/propuesta-init re-runs this reconciliation at session start: it reads the ACTIVE gentle profile, checks every model id below against `pi --list-models`, shows the table to the operator and rewrites this block (and the tiers, if the operator changes them) only after confirmation."
+  },
+  "default_model": "nan/deepseek-v4-flash",
+  "default_effort": "high",
+  "default_mode": "task",
+  "stall_timeout_ms": 600000,
+  "model_profiles": {
+    "bibliografo-propuesta": {
+      "model": "nan/glm5.3-flash",
+      "effort": "medium"
+    },
+    "disenador-tikz": {
+      "model": "nan/glm5.3-flash",
+      "effort": "low"
+    },
+    "grant-flow-auditor": {
+      "model": "nan/glm5.3-flash",
+      "effort": "low"
+    },
+    "insumos-observador": {
+      "model": "nan/glm5.3-flash",
+      "effort": "medium"
+    },
+    "investigador": {
+      "model": "nan/deepseek-v4-flash",
+      "effort": "high"
+    },
+    "presupuestador": {
+      "model": "nan/deepseek-v4-flash",
+      "effort": "high"
+    },
+    "redactor": {
+      "model": "nan/deepseek-v4-flash",
+      "effort": "high"
+    },
+    "revisor": {
+      "model": "nan/glm5.3-flash",
+      "effort": "medium"
+    },
+    "revisor-figuras": {
+      "model": "nan/glm5.3-flash",
+      "effort": "low"
+    },
+    "tikz-optimizer": {
+      "model": "nan/glm5.3-flash",
+      "effort": "low"
+    }
+  }
+}

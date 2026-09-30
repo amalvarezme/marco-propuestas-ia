@@ -1,7 +1,7 @@
 ---
 name: bibliografo-propuesta
 description: Bibliografo-Propuesta. Busca literatura Q1/Q2, agrupa el estado del arte y consolida las referencias BibTeX (≥65 refs, APA author-year).
-model: claude-bridge/claude-sonnet-5
+model: nan/glm5.3-flash
 thinking: medium
 ---
 

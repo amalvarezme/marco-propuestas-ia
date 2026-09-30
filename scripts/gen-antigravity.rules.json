@@ -2,6 +2,7 @@
   "paths": {
     "source_agents_dir": ".claude/agents",
     "source_commands_dir": ".claude/commands",
+    "source_skills_dir": ".claude/skills",
     "target_skills_dir": ".agent/skills",
     "target_workflows_dir": ".agent/workflows"
   },
@@ -13,6 +14,10 @@
     {
       "find": ".claude/commands/",
       "replace": ".agent/workflows/"
+    },
+    {
+      "find": ".claude/skills/",
+      "replace": ".agent/skills/"
     }
   ],
   "command_files": [

@@ -34,11 +34,29 @@ English source text where relevant.
 
 ## Caché de extracción por hash (Fase 0 — antes de clasificar)
 
-Antes de clasificar o extraer contenido de cualquier archivo en `insumos/`,
-verifica si ya existe una extracción cacheada en Engram para ese archivo.
-Este caché es un acelerador puro: nunca debe bloquear ni degradar la
-corrida. Aplica a los cinco tipos de archivo (`TDR`, `draft-base`,
-`background`, `doc-secciones`, `idea-seed`) — no solo a TDR.
+Before classifying or extracting content from any file under `insumos/`, check
+whether a cached extraction already exists for that file. The cache is a pure
+accelerator: it must never block or degrade the run. It applies to all five
+file labels (`TDR`, `draft-base`, `background`, `doc-secciones`, `idea-seed`) —
+not only to TDR.
+
+### Where the cache lives (filesystem first, memory optional)
+
+The cache is **a set of files inside the run**, not a memory-server entry:
+
+```
+artefactos/insumos-cache/
+  <sha256>.json          # the full cached payload for one input file
+  _index.json            # hash -> {file_name, label, confirmed_by, cached_at}
+```
+
+This is deliberate. The previous design stored the payload **only** in Engram,
+which meant that on a fresh clone — or on any machine where the memory server is
+not installed, not running, or not authenticated — the cache silently did not
+exist and every input was re-extracted from scratch. Filesystem-first makes the
+cache part of the run, traveling with it, and requires no external service. A
+memory server may be used as an **optional mirror** for cross-run reuse, never
+as the primary store.
 
 ### Mecánica (una vez por corrida, luego por archivo)
 
@@ -58,9 +76,16 @@ corrida. Aplica a los cinco tipos de archivo (`TDR`, `draft-base`,
    binario ORIGINAL, ANTES de la conversión a texto plano vía `textutil` (ver
    "Lectura de insumos .docx" más abajo) — así la clave es estable
    independientemente del método de extracción.
-2. **Buscar en Engram**: `mem_search(query: "insumos/extraccion/<hash>",
-   project: "marco-propuestas-ia")`. Si hay resultado, `mem_get_observation(id)`
-   para obtener el payload completo.
+2. **Buscar el payload, en este orden** (el primero que exista gana):
+   a. **Disco (primario)**: `artefactos/insumos-cache/<hash>.json`. Leelo con
+      el tool `read`; si es JSON válido, es el resultado.
+   b. **Memoria (espejo opcional)**: solo si (a) falló, intentá
+      `mem_search(query: "insumos/extraccion/<hash>",
+      project: "marco-propuestas-ia")` y luego `mem_get_observation(id)`.
+      Si el espejo devuelve un payload para (a) y (a) no existe, escribilo en
+      disco antes de usarlo, para que la próxima corrida no dependa del
+      servidor.
+   Si ambos fallan, no hay cache hit y seguís al paso 4.
 3. **Hit de caché** → evalúa en este orden:
     - **Fingerprint gate**: si el `label` cacheado es `TDR`, `draft-base` o
       `doc-secciones` (dependen del mapeo §-de-guía) Y
@@ -68,38 +93,45 @@ corrida. Aplica a los cinco tipos de archivo (`TDR`, `draft-base`,
       trátalo como MISS (el mapeo §-guía puede estar obsoleto). Si
       `label = background` o `label = idea-seed`, el fingerprint no aplica
       (no dependen del mapeo §-guía).
-   - **Ambiguity gate (obligatorio, nunca lo omitas)**: si `payload.ambigua =
-     true` Y `payload.confirmado_por = pendiente` → esto NO es un hit
-     utilizable todavía. Reporta este archivo al dispatcher como AMBIGUA
-     exactamente igual que si fuera la primera vez (regla de "Confirmación
-     obligatoria ante ambigüedad" de `propuesta.md`) — el cache-hit NUNCA
-     debe saltarse el gate de confirmación del usuario. Solo tras la
-     confirmación del usuario en ESTA corrida, actualizá el payload cacheado
-     con `confirmado_por: usuario` (ver paso 4).
-   - **Reuso válido**: si pasa el fingerprint gate y `payload.confirmado_por
-     ∈ {auto, usuario}` → reutiliza el payload cacheado verbatim: reconstruye
-     la contribución de este archivo a `artefactos/insumos.md` (SOLO la fila de
-     clasificación, sin encabezado — ver esquema abajo) y su(s) nota(s) en
-     `artefactos/artefactos/vault/insumos/<slug>.md` a partir del payload, SIN releer el archivo
-     crudo. Si `artefactos/artefactos/vault/insumos/<slug>.md` ya existe en disco con contenido
-     adicional al cacheado (p. ej. una sección "## Usado en" con backlinks
-     agregados por Investigador/Redactor/Bibliografo-Propuesta en una fase
-     posterior de esta misma corrida), NO lo sobrescribas — fusiona
-     preservando ese contenido adicional.
+    - **Ambiguity gate (obligatorio, nunca lo omitas)**: si `payload.ambigua =
+      true` Y `payload.confirmado_por = pendiente` → esto NO es un hit
+      utilizable todavía. Reporta este archivo al dispatcher como AMBIGUA
+      exactamente igual que si fuera la primera vez (regla de "Confirmación
+      obligatoria ante ambigüedad" de `propuesta.md`) — el cache-hit NUNCA
+      debe saltarse el gate de confirmación del usuario. Solo tras la
+      confirmación del usuario en ESTA corrida, actualizá el payload cacheado
+      con `confirmado_por: usuario` (ver paso 4).
+    - **Reuso válido**: si pasa el fingerprint gate y `payload.confirmado_por
+      ∈ {auto, usuario}` → reutiliza el payload cacheado verbatim: reconstruye
+      la contribución de este archivo a `artefactos/insumos.md` (SOLO la fila de
+      clasificación, sin encabezado — ver esquema abajo) y su(s) nota(s) en
+      `artefactos/vault/insumos/<slug>.md` a partir del payload, SIN releer el archivo
+      crudo. Si `artefactos/vault/insumos/<slug>.md` ya existe en disco con contenido
+      adicional al cacheado (p. ej. una sección "## Usado en" con backlinks
+      agregados por Investigador/Redactor/Bibliografo-Propuesta en una fase
+      posterior de esta misma corrida), NO lo sobrescribas — fusiona
+      preservando ese contenido adicional.
 4. **Cache miss, o hit-ambiguo recién confirmado por el usuario** → ejecuta la
    clasificación/extracción de hoy sin cambios (ver "Clasificación de insumos
-   (Fase 0)" y siguientes secciones). Al terminar, `mem_save` el payload de
-   reconstrucción (ver esquema abajo, incluyendo `ambigua` y
-   `confirmado_por`) en `insumos/extraccion/<hash>`.
-5. **Cualquier falla de Engram** (búsqueda, lectura o escritura fallan,
-   timeout, o la herramienta no está disponible) → degrada silenciosamente a
-   la extracción completa normal. NUNCA bloquees Fase 0 ni muestres un error
-   al usuario por esto.
+   (Fase 0)" y siguientes secciones). Al terminar, **escribí el payload en
+   disco** (paso 5) y, best-effort, en el espejo de memoria.
+5. **Escritura del payload** (siempre en este orden):
+   1. `artefactos/insumos-cache/<hash>.json` con el payload completo (esquema
+      abajo). Es la fuente primaria: si esta escritura falla, el paso degrada
+      a "sin caché" y la corrida continúa normalmente.
+   2. Actualizá `artefactos/insumos-cache/_index.json` con
+      `{file_name, label, confirmado_por, cached_at}` para ese hash.
+   3. **Espejo opcional en memoria**: `mem_save` del mismo payload con
+      `topic_key: insumos/extraccion/<hash>`. Cualquier fallo aquí (el
+      servidor no está, timeout, la herramienta no existe) se ignora en
+      silencio — NUNCA bloquees Fase 0 ni muestres un error al usuario por
+      esto, y NUNCA trates a la memoria como la fuente de verdad.
 
 ### Esquema del payload cacheado
 
-`topic_key: insumos/extraccion/<hash>`, `type: discovery`, `capture_prompt:
-false`:
+`artefactos/insumos-cache/<hash>.json` (y, cuando exista el espejo, el mismo
+contenido con `topic_key: insumos/extraccion/<hash>`, `type: discovery`,
+`capture_prompt: false`):
 
 ```yaml
 file_hash: <sha256>
@@ -122,11 +154,11 @@ tdr_extraction_blocks: |
 vault_notes:
   - slug: <slug>
     body: |
-      <nota verbatim de artefactos/artefactos/vault/insumos/<slug>.md>
+      <nota verbatim de artefactos/vault/insumos/<slug>.md>
 ```
 
 El payload debe contener todo lo necesario para reconstruir ambas salidas
-(`artefactos/insumos.md` y las notas de `artefactos/artefactos/vault/insumos/`) sin releer el
+(`artefactos/insumos.md` y las notas de `artefactos/vault/insumos/`) sin releer el
 archivo crudo. Al ensamblar el `insumos.md` final: la tabla de clasificación
 lleva UN solo encabezado, seguido de la unión de `classification_row` de cada
 archivo (cacheado o recién extraído); los `tdr_extraction_blocks` se agregan
@@ -383,12 +415,12 @@ Luego lee el `.md` resultante para clasificar y estructurar el contenido.
 
 ## Vault mirror (Fase 0)
 
-At Fase 0, if `artefactos/vault/` does not exist, create `artefactos/artefactos/vault/secciones/` and
-`artefactos/artefactos/vault/insumos/` (a lightweight Obsidian-compatible Markdown mirror of the
+At Fase 0, if `artefactos/vault/` does not exist, create `artefactos/vault/secciones/` and
+`artefactos/vault/insumos/` (a lightweight Obsidian-compatible Markdown mirror of the
 proposal — a visual/navigation layer only, not a source of truth; see
 `coordinador-propuesta.md`). For each user-provided insumo that is itself a
 paper or reference (not the TDR or the draft-base document), write a note at
-`artefactos/artefactos/vault/insumos/<slug>.md`:
+`artefactos/vault/insumos/<slug>.md`:
 
 ```markdown
 ---

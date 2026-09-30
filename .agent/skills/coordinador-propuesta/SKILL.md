@@ -34,6 +34,10 @@ proposal content yourself. You:
 4. **Enforce gates & prose audits**: after narrative sections or subsections are
    drafted/edited by `redactor` or `investigador`, delegate to `grant-flow-auditor`
    for a micro-style prose audit (cadence, active voice, signposting, reviewer friction)
+   **plus the Spanish natural-prose pass defined by the `estilo-natural-es`
+   skill** (de-mechanize formulaic
+   enumerations and openers, vary sentence length and connectives, 70/30 lexical
+   variation, byte-identical fidelity of numbers, dates and citations)
    before passing to `revisor` for a PASS/FAIL compliance review. **STOP and present
    the reviewer's verdict to the user**. Do not advance until the user approves. On FAIL,
    re-dispatch the failing agent with the reviewer's fixes.
@@ -47,8 +51,8 @@ proposal content yourself. You:
    the preamble to avoid a duplicate.
 
 In parallel with `redaccion/`, the section-writing agents maintain a
-lightweight Obsidian-compatible vault under `artefactos/vault/` (`artefactos/artefactos/vault/secciones/` +
-`artefactos/artefactos/vault/insumos/`) mirroring sections and literature as linked Markdown notes,
+lightweight Obsidian-compatible vault under `artefactos/vault/` (`artefactos/vault/secciones/` +
+`artefactos/vault/insumos/`) mirroring sections and literature as linked Markdown notes,
 for graph-view navigation. This vault is a visual/navigation layer only — git
 history on the `.tex`/`.bib` files remains the actual version-of-record; the
 vault itself is not versioned separately and is never treated as a source of
@@ -90,25 +94,24 @@ Fase 1b [GATE COMBINADO G1b] Expansión de corpus SOTA: bibliografo-propuesta
         reporte en `grafos/vault-graph-report.md`. Descripción de referencia únicamente — ver
         `propuesta.md`, Fase 1b y "Grafo de coherencia del vault", para el
         detalle completo que ejecuta el dispatcher real.
-Fase 1  investigador → §3 descripción del problema + pregunta, luego bucle de
-        figura (árbol de problemas): disenador-tikz (autor .tex) →
-        tikz-optimizer (compila a PNG; precheck determinista de `Overfull
-        \hbox` en el log de `pdflatex` — con overflow, N > 0, vuelve directo
-        a tikz-optimizer sin gastar la revisión visual de revisor-figuras) →
-        revisor-figuras (solo con log limpio, N == 0; audita, PASS/FAIL) →
-        en FAIL (de overflow o visual) vuelve a tikz-optimizer con los
-        hallazgos; tope compartido de 4 intentos por diagrama, con
+Fase 1  investigador → §3 descripción del problema + pregunta, luego el bucle
+        de figura `arbol_problemas` definido UNA sola vez en "Bucle de figuras
+        (canónico)" de `.agent/workflows/propuesta.md`: disenador-tikz (autor
+        de la spec JSON) → `python3 scripts/figura.py arbol_problemas`
+        (determinista: render → compile → autofix → auditoría mecánica) → con
+        FIGURA PASS, revisor-figuras audita solo los 4 criterios visuales
+        sobre el preview → en FAIL vuelve a tikz-optimizer, que corrige la
+        SPEC (nunca el .tex); tope compartido de 4 intentos por diagrama, con
         escalamiento explícito al usuario al agotarse → en PASS continúa
         ──→ [NUEVO]
         dispatcher: refresh del índice del vault (codebase-memory) + inyecta
         bloque `EVIDENCIA DE GRAFO` (asesor, NO bloqueante) en el prompt de revisor ──→ GATE
         revisor ──→ user
 Fase 2  bibliografo-propuesta → §4 estado del arte (paralelo)
-        investigador → §5 hipótesis, luego bucle de figura (mapa de estado
-        del arte; mismo precheck de overflow determinista + tope de 4
-        intentos que la Fase 1): disenador-tikz → tikz-optimizer →
-        revisor-figuras (solo con log limpio) → en FAIL vuelve a
-        tikz-optimizer → en PASS continúa ──→ [NUEVO] refresh del índice del
+        investigador → §5 hipótesis, luego el mismo bucle de figura con
+        `<name>` = `estado_arte` (contenido autorizado: el bloque comentado al
+        final de `04_estado_arte.tex`); procedimiento y tope idénticos a la
+        Fase 1 ──→ [NUEVO] refresh del índice del
         vault + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
 Fase 3  redactor → §2 justificación y pertinencia ──→ [NUEVO] refresh del índice
         del vault + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor
@@ -121,13 +124,10 @@ Fase 5  investigador → §8 marco conceptual (paralelo)
         redactor → §9 equipo de trabajo (deriva roles de §7, nunca de
         Metodología) ──→ [NUEVO] refresh del índice del vault + bloque
         `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
-Fase 5.5 redactor → §10 metodología, luego bucle de figuras (diagrama
-        metodológico; mismo precheck de overflow determinista + tope de 4
-        intentos que las Fases 1 y 2): disenador-tikz (autor .tex) →
-        tikz-optimizer (compila a PNG, refina) → revisor-figuras (solo con
-        log limpio; audita, PASS/FAIL, sin evidencia de grafo) → en FAIL
-        (de overflow o visual) vuelve a tikz-optimizer → en PASS continúa
-        ──→ [NUEVO] refresh del índice del
+Fase 5.5 redactor → §10 metodología, luego el mismo bucle de figura con
+        `<name>` = `metodologico` (el diagrama nunca incluye personal
+        responsable dentro de sus bloques); procedimiento y tope idénticos a
+        la Fase 1 ──→ [NUEVO] refresh del índice del
         vault + bloque `EVIDENCIA DE GRAFO` ──→ GATE revisor ──→ user
 Fase 6  redactor → §11 resultados esperados; §12 consideraciones éticas
         (sin gate propio, se audita en la Fase 7)
@@ -176,7 +176,7 @@ lee/cita el bloque `EVIDENCIA DE GRAFO` que el dispatcher le inyecta.
 
 - The proposal output is **always in Spanish**. Agent prompts are in English.
 - Every section is written as a `.tex` file in `redaccion/sections/`.
-- After narrative drafting or editing by `redactor`/`investigador`, dispatch `grant-flow-auditor` to audit and polish the section, subsection, or modified draft text before delegating to `revisor` for compliance scoring.
+- After narrative drafting or editing by `redactor`/`investigador`, dispatch `grant-flow-auditor` to audit and polish the section, subsection, or modified draft text before delegating to `revisor` for compliance scoring. For Spanish narrative prose (always, in this framework) that audit must read and apply the `estilo-natural-es` skill as its natural-prose pass; pass the exact `SKILL.md` path in the delegation prompt.
 - Consult `guiaProyectosIA_Agente.md` for paragraph-by-paragraph instructions.
 - After each gate, present a concise summary of: (a) what was produced,
   (b) the reviewer's verdict, (c) the user's approval prompt, (d) cost/time

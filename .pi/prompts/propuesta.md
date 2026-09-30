@@ -1,6 +1,6 @@
 ---
 description: Inicia el pipeline multi-agente de redacción de una propuesta de investigación en IA a partir de la idea del usuario y sus insumos.
-argument-hint: [idea o contexto inicial de la propuesta]
+argument-hint: "[idea o contexto inicial de la propuesta]"
 ---
 **Nota de ejecución (solo Pi):** los gates de aprobación de este pipeline ("NO avances sin aprobación") requieren una sesión interactiva de Pi que se mantenga viva entre fases -- el usuario responde en cada gate y el pipeline continúa en la misma sesión (`pi`, o `pi -c` para retomarla). El modo no interactivo (`pi -p`) NO sirve para este comando: no puede detenerse a esperar la aprobación humana en cada gate.
 
@@ -102,10 +102,12 @@ Reglas duras:
 - **Nombres de proyecto estables por corrida**: `<run-id>-papers` para el
   corpus de scoping y `<run-id>-vault` para el mirror Obsidian. Son dos
   índices distintos y nunca se mezclan.
-- **No hay export HTML.** `codebase-memory` no produce un grafo navegable en
-  el navegador. Lo que se le presenta al usuario en los gates es el reporte
-  Markdown que el DISPATCHER escribe a partir de las llamadas MCP (ver
-  "Reporte de grafo" abajo).
+- **La vista HTML la genera el marco, no `codebase-memory`.**
+  `codebase-memory` no exporta un grafo navegable. La capa HTML la produce
+  `scripts/graph_html.py` a partir de un JSON que el DISPATCHER escribe junto
+  al reporte Markdown (ver "Reporte de grafo" abajo). El Markdown sigue siendo
+  el artefacto citable en las compuertas; el HTML es su gemelo visual
+  autocontenido (sin CDN, abre sin red). Se generan siempre los dos.
 - **No hay edges de `[[wikilink]]`.** `codebase-memory` modela carpetas,
   archivos y secciones (encabezados Markdown), no enlaces entre notas. Los
   `[[wikilinks]]` rotos se detectan de forma determinista con `Grep`, no se
@@ -130,6 +132,36 @@ exactamente estas tres secciones, derivadas de las llamadas MCP:
 Rutas fijas del reporte: `grafos/papers-graph-report.md` (corpus de
 papers) y `grafos/vault-graph-report.md` (mirror del vault).
 Ambos son artefactos de corrida, gitignoreados, nunca se commitean.
+
+**Gemelo HTML (obligatorio, paso del DISPATCHER).** Junto con el Markdown, el
+DISPATCHER escribe el dato del grafo y renderiza su vista navegable:
+
+1. Escribe `grafos/<corpus>-graph.json` (p. ej. `papers-graph.json`,
+   `vault-graph.json`) con este contrato: `corpus`, `run_id`, `title`,
+   `generated_at`, `index` (`project`, `nodes`, `edges`, `freshness`),
+   `central_nodes` (`note`, `items[]`), `communities` (`note`, `clusters[]`),
+   `questions[]`, `nodes[]` (`id`, `label`, `type`, `group`) y `edges[]`
+   (`source`, `target`, `type`). Los campos `note` se renderizan verbatim:
+   sirven para declarar con honestidad una sección degenerada en vez de
+   dejarla muda. El `group` de un nodo es libre y puede reflejar una
+   agrupación que NO viene del grafo (p. ej. las subsecciones SOTA del
+   bibliógrafo) — el HTML la colorea y la rotula como tal.
+2. Ejecuta `scripts/graph_html.py grafos/<corpus>-graph.json`, que escribe
+   `grafos/<corpus>-graph.html`: autocontenido, sin CDN, abre sin red, y
+   determinista (misma entrada, mismo HTML).
+3. Se generan siempre los dos archivos, también al refrescar el índice del
+   vault.
+
+**Techo de utilidad del grafo (hallazgo verificado, no lo ignores).** En un
+corpus de documentos (p. ej. abstracts en Markdown) `codebase-memory` produce un
+grafo **estructural, no semántico**: sin aristas entre documentos, sin hotspots
+y sin clusters, de forma **invariante al tamaño del corpus** (verificado a 5 y a
+50 papers: los nodos y aristas escalan linealmente y las comunidades detectadas
+siguen siendo cero). Tampoco fusiona encabezados homónimos entre archivos. La
+vista HTML hace visible esa estructura y su degeneración, pero **no la inventa**;
+la agrupación temática real proviene del sub-paso `grouping` del bibliógrafo, y
+el reporte y el HTML deben declararlo en sus campos `note` en vez de simular que
+existen comunidades.
 
 ### Refresh del índice del vault (procedimiento único)
 
@@ -309,11 +341,16 @@ un re-despacho, ocupa su propia fila). `MODE/Etiqueta` lleva el rol del
 despacho dentro de cualquier bucle en curso más el contador de intentos
 compartido con el resto del pipeline — p. ej. `tikz-optimizer intento 2/4`,
 `MODE=deliverable` — o `—` cuando el agente no tiene MODE ni contador de
-intentos aplicable en ese despacho. En el bucle de figuras, `revisor-figuras`
-lleva el MISMO número de intento que el despacho de `tikz-optimizer` que
-audita en esa iteración (p. ej. `revisor-figuras intento 2/4`), ya que ambos
-comparten el contador único por diagrama (ver "Tope de reintentos del bucle
-de figuras").
+intentos aplicable en ese despacho. En el bucle de figuras el contador es por
+diagrama: el despacho inicial de `disenador-tikz` (autor de la spec) es el
+intento 1, y cada re-despacho a `tikz-optimizer` suma uno más, así que la fila
+lleva p. ej. `disenador-tikz árbol de problemas intento 1/4` o
+`tikz-optimizer árbol de problemas intento 2/4`. `revisor-figuras` lleva el
+MISMO número de intento de la iteración que audita (p. ej. `revisor-figuras
+árbol de problemas intento 2/4`), porque comparte el contador único por
+diagrama (ver "Bucle de figuras (canónico)"). El paso determinista
+`python3 scripts/figura.py` NO es un despacho delegado: es trabajo inline del
+dispatcher y no aporta al acumulador de la fase.
 
 Regla de sentinel por despacho: si un despacho puntual retorna sin bloque
 `<usage>`, su fila en `## Desglose por despacho` escribe el literal
@@ -700,10 +737,13 @@ Fase 1a [COMPUERTA COMBINADA G1a] Scoping temprano: se ejecuta siempre,
           1. Los 5 papers + parámetros de búsqueda (query, filtro de
              cuartil, rango de años, hits por herramienta).
           2. El grafo: la ruta del reporte
-             `grafos/papers-graph-report.md` (indícale al usuario que puede
-             abrirlo para revisar comunidades y nodos centrales; no hay HTML
-             navegable — `codebase-memory` no exporta uno) + sus 3 secciones:
+             `grafos/papers-graph-report.md` y su gemelo visual navegable
+             `grafos/papers-graph.html` (abribles por el usuario; el HTML es
+             autocontenido y abre sin red) + sus 3 secciones:
              Nodos centrales, Comunidades temáticas, Preguntas sugeridas.
+             Si el grafo salió degenerado (sin nodos centrales ni
+             comunidades), dilo explícitamente: no presentes un grafo vacío
+             como si fuera un resultado.
           3. Los 3 subproblemas tempranos, cada uno con su gap y su
              `paper-N` de origen.
         Reglas de iteración por componente (NO es un rechazo en bloque):
@@ -787,9 +827,11 @@ Fase 1b [COMPUERTA COMBINADA G1b] Expansión de corpus SOTA: se ejecuta
              búsqueda (query, filtro de cuartil, rango de años, hits por
              herramienta) del sub-paso corpus.
           2. El grafo actualizado: la ruta del reporte
-             `grafos/papers-graph-report.md` + sus 3 secciones (Nodos
+             `grafos/papers-graph-report.md` y su gemelo visual navegable
+             `grafos/papers-graph.html` + sus 3 secciones (Nodos
              centrales, Comunidades temáticas, Preguntas sugeridas) sobre el
-             corpus ampliado.
+             corpus ampliado. Recuerda que el reporte y su HTML ya traen el
+             snapshot inmutable de G1a como referencia de diff.
           3. La tabla de mapeo de 3-5 subsecciones SOTA (paper → subsección
              → SP1/SP2/SP3).
         Reglas de iteración por componente (NO es un rechazo en bloque):
@@ -885,29 +927,11 @@ Fase 1  (en AMBAS rutas) Task → bibliografo-propuesta MODE=explore → mapa de
         tabla de mapeo de subsecciones; si la Fase 1b no corrió (o no cerró
         en APROBADA), omite este bloque adicional y el despacho sigue el
         comportamiento previo al cambio.
-        ──→ luego bucle de figura (árbol de problemas; contador de intentos
-        compartido por diagrama-por-corrida, tope 4, ver "Tope de reintentos
-        del bucle de figuras" más abajo):
-          Task → disenador-tikz (autor diag_arbol_problemas.tex)
-          → Task → tikz-optimizer (compila a PNG, primer ajuste; el reporte
-          de esta Task incluye el token verbatim `OVERFULL: arbol_problemas
-          <N> occurrence(s)`)
-          → DISPATCHER: precheck determinístico sobre ese token — si N > 0,
-          incrementa el contador de intentos de este diagrama y vuelve
-          directo a Task → tikz-optimizer con el detalle de línea mapeada
-          (`diag_arbol_problemas.tex:<línea>`), SIN despachar
-          revisor-figuras en esta iteración; si N == 0, continúa a
-          Task → revisor-figuras (audita, PASS/FAIL)
-          → en FAIL (de overflow o de revisor-figuras), incrementa el mismo
-          contador compartido y vuelve a Task → tikz-optimizer con el
-          detalle correspondiente (línea mapeada u hallazgos de
-          revisor-figuras)
-          → si el contador llega a 4/4 intentos, DETENTE: no despaches un
-          5.º intento; escala al usuario (nombre del diagrama, "4/4
-          intentos", último hallazgo conocido verbatim) y espera su guía
-          antes de continuar
-          → en PASS, continúa
-        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
+        ──→ luego bucle de figura `<name>` = `arbol_problemas`,
+        procedimiento canónico completo en "Bucle de figuras (canónico)".
+        Contenido autorizado: el bloque del Investigador (9 causas en 3
+        grupos, tronco, 4 ramas, copa). La copa NUNCA se conecta con las
+        raíces.
         `artefactos/vault/secciones/03_descripcion_problema.md` cambió en esta fase
         (recién escrita/actualizada por `investigador`); si no cambió,
         reutiliza el reporte de grafo existente sin
@@ -942,33 +966,12 @@ Fase 2  Task → bibliografo-propuesta → §4 estado del arte.
         Task, el dispatcher arma el bloque `## FRAGMENTO DE GUÍA` con
         Directrices Generales + §5 (Hipótesis) + Convenciones técnicas de
         LaTeX y lo inyecta inline al inicio del prompt.
-        ──→ luego bucle de figura (mapa de estado del arte), solo después de
+        ──→ luego bucle de figura `<name>` = `estado_arte`, solo después de
         que la Task de §4 complete (necesita el bloque comentado con el
-        contenido del diagrama; contador de intentos compartido por
-        diagrama-por-corrida, tope 4, ver "Tope de reintentos del bucle de
-        figuras" más abajo):
-          Task → disenador-tikz (autor diag_estado_arte.tex a partir del
-          bloque comentado en 04_estado_arte.tex)
-          → Task → tikz-optimizer (compila a PNG, primer ajuste;
-          `python3 redaccion/scripts/compile_tikz.py estado_arte:tikz`; el
-          reporte de esta Task incluye el token verbatim `OVERFULL:
-          estado_arte <N> occurrence(s)`)
-          → DISPATCHER: precheck determinístico sobre ese token — si N > 0,
-          incrementa el contador de intentos de este diagrama y vuelve
-          directo a Task → tikz-optimizer con el detalle de línea mapeada
-          (`diag_estado_arte.tex:<línea>`), SIN despachar revisor-figuras en
-          esta iteración; si N == 0, continúa a Task → revisor-figuras
-          (audita, PASS/FAIL, incluye criterio 8 "Frase de limitante")
-          → en FAIL (de overflow o de revisor-figuras), incrementa el mismo
-          contador compartido y vuelve a Task → tikz-optimizer con el
-          detalle correspondiente (línea mapeada u hallazgos de
-          revisor-figuras)
-          → si el contador llega a 4/4 intentos, DETENTE: no despaches un
-          5.º intento; escala al usuario (nombre del diagrama, "4/4
-          intentos", último hallazgo conocido verbatim) y espera su guía
-          antes de continuar
-          → en PASS, continúa
-        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
+        contenido del diagrama), procedimiento canónico completo en
+        "Bucle de figuras (canónico)". Contenido autorizado: el bloque
+        comentado al final de 04_estado_arte.tex (clusters, papers,
+        relaciones, frase roja por cluster).
         `artefactos/vault/secciones/04_estado_arte.md` o `artefactos/vault/secciones/05_hipotesis.md`
         cambiaron en esta fase; si no cambiaron, reutiliza el reporte de grafo existente sin
         re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
@@ -1083,32 +1086,10 @@ Fase 5.5 [NUEVO] Task → redactor → §10 metodología (compuerta propia,
         separada de la Fase 5). Antes de despachar esta Task, el dispatcher
         arma el bloque `## FRAGMENTO DE GUÍA` con Directrices Generales +
         §10 (Metodología) + Convenciones técnicas de LaTeX y lo inyecta
-        inline al inicio del prompt. Luego bucle de figuras (contador de
-        intentos compartido por diagrama-por-corrida, tope 4, ver "Tope de
-        reintentos del bucle de figuras" más abajo):
-          Task → disenador-tikz (autor diag_metodologico.tex — nunca incluir
-          personal responsable dentro de los bloques del diagrama, ver
-          `disenador-tikz.md` diagrama 3)
-          → Task → tikz-optimizer (compila a PNG, primer ajuste; el reporte
-          de esta Task incluye el token verbatim `OVERFULL: metodologico
-          <N> occurrence(s)`)
-          → DISPATCHER: precheck determinístico sobre ese token — si N > 0,
-          incrementa el contador de intentos de este diagrama y vuelve
-          directo a Task → tikz-optimizer con el detalle de línea mapeada
-          (`diag_metodologico.tex:<línea>`), SIN despachar revisor-figuras
-          en esta iteración; si N == 0, continúa a Task → revisor-figuras
-          (audita, PASS/FAIL, incluye chequeo de ausencia de "Resp.:" en los
-          bloques)
-          → en FAIL (de overflow o de revisor-figuras), incrementa el mismo
-          contador compartido y vuelve a Task → tikz-optimizer con el
-          detalle correspondiente (línea mapeada u hallazgos de
-          revisor-figuras)
-          → si el contador llega a 4/4 intentos, DETENTE: no despaches un
-          5.º intento; escala al usuario (nombre del diagrama, "4/4
-          intentos", último hallazgo conocido verbatim) y espera su guía
-          antes de continuar
-          → en PASS, continúa
-        ──→ [NUEVO] DISPATCHER: guardia — re-indexa el vault solo si
+        inline al inicio del prompt. Luego bucle de figura `<name>` =
+        `metodologico`, procedimiento canónico completo en "Bucle de
+        figuras (canónico)". El diagrama NUNCA incluye personal
+        responsable dentro de sus bloques (ver `disenador-tikz.md`).
         `artefactos/vault/secciones/10_metodologia.md` cambió en esta fase; si no
         cambió, reutiliza el reporte de grafo existente sin
         re-indexar. Si hubo cambios: aplica el procedimiento de "Refresh
@@ -1328,34 +1309,75 @@ Fase 7  ──→ [NUEVO] DISPATCHER: aplica el procedimiento de "Refresh del í
         completa igual.
 ```
 
-## Tope de reintentos del bucle de figuras
+## Bucle de figuras (canónico)
 
-Aplica idéntico a los 3 bucles de figura (árbol de problemas, mapa de
-estado del arte, diagrama metodológico):
+**Un solo procedimiento**, referenciado por las Fases 1 (árbol de problemas),
+2 (mapa de estado del arte) y 5.5 (diagrama metodológico). No lo reimplementes
+en cada fase.
 
-- El bucle de un diagrama alterna entre un precheck determinístico sobre el
-  token `OVERFULL: <name> <N> occurrence(s)` (verbatim en el reporte de
-  `tikz-optimizer`) y el veredicto visual de `revisor-figuras`. `N > 0` en el
-  precheck → vuelve directo a `tikz-optimizer` con la línea mapeada,
-  saltando `revisor-figuras` esa iteración. `N == 0` → despacha
-  `revisor-figuras` como antes.
-- El contador de intentos es POR DIAGRAMA y POR CORRIDA (nunca global, nunca
-  persiste entre corridas distintas de `/propuesta`), y es COMPARTIDO entre
-  FAILs por overflow (precheck `N > 0`) y FAILs de `revisor-figuras` — ambos
-  cuentan como el mismo "este diagrama todavía no está bien" desde la
-  perspectiva del usuario. El despacho inicial de `tikz-optimizer` es el
-  intento 1; cada re-despacho por cualquiera de los dos tipos de FAIL suma
-  uno más.
-- Tope = 4 intentos totales de `tikz-optimizer` por diagrama (1 inicial + 3
-  remediaciones). Al llegar al 4.º FAIL (de cualquier tipo), el dispatcher
-  DETIENE el bucle — no despacha un 5.º intento — y escala al usuario con:
-  (1) nombre del diagrama y su fase/§, (2) intentos usados vs. tope ("4/4
-  intentos"), (3) el último hallazgo conocido verbatim (el token
-  `OVERFULL:` si el último FAIL fue por overflow, o los ítems
-  `CORRECCIONES` si fue de `revisor-figuras`), (4) pedido explícito de guía
-  al usuario. Nunca reintenta en silencio más allá del tope ni abandona en
-  silencio sin avisar; no avanza a la siguiente fase sin la guía del
-  usuario.
+La geometría de las tres figuras es **determinista**: no la dibuja un modelo.
+`scripts/render_tikz.py` construye `diag_<name>.tex` desde una spec JSON
+compacta (anchos que caben el token más largo, columnas equiespaciadas, anclas
+reales en cada extremo, paleta y tamaños canónicos), `compile_tikz.py` lo
+compila a PNG + SVG + preview, y `audit_tikz.py` responde los criterios
+mecánicos. Medido en la corrida `2026-09-tept-depresion-ia-portable`: el bucle
+anterior costaba **~28,8 min por figura** (tres despachos y tres fallos de
+`disenador-tikz` sin reporte) y este cuesta **menos de 1 s** en el caso limpio y
+~2,5 s en el peor caso de autofix.
+
+```
+1. Task -> disenador-tikz
+   escribe `redaccion/specs/<name>.spec.json` (NO escribe LaTeX).
+   Inyecta inline el contenido autorizado: el bloque del Investigador para el
+   árbol, el bloque comentado al final de 04_estado_arte.tex para el mapa, y
+   §10 para el metodológico.
+
+2. DISPATCHER (inline, determinista -- nunca delegado):
+   python3 scripts/figura.py <name> --spec specs/<name>.spec.json
+   Salida: `FIGURA PASS: <name> (<t>s, <k> compilacion(es), presupuesto 180s OK)`
+   o `FIGURA FAIL` + la lista de chequeos fallidos.
+
+3. Segun la salida de figura.py:
+   - `FIGURA PASS`                          -> continua al paso 4.
+   - `spec invalida: ...`                   -> Task -> tikz-optimizer con el mensaje verbatim
+   - `FIGURA FAIL` con fallo de auditoria   -> Task -> tikz-optimizer
+   - `autofix no convergio` / `COMPILE FAILED` -> Task -> tikz-optimizer con el
+     log `redaccion/sections/figuras/log_<name>.txt`
+   Cualquier re-despacho a `tikz-optimizer` cuenta como un intento mas
+   (paso 5) y vuelve al paso 2.
+
+4. Task -> revisor-figuras
+   Inyecta inline el reporte de auditoria completo (los chequeos mecanicos ya
+   resueltos) y pidele SOLO los 4 criterios visuales sobre
+   `redaccion/sections/figuras/fig_<name>-preview.png`. PASS -> el diagrama esta
+   listo; FAIL -> Task -> tikz-optimizer con sus `CORRECCIONES` verbatim
+   (paso 5) y vuelve al paso 2.
+
+5. Contador de intentos: POR DIAGRAMA y POR CORRIDA (nunca global, nunca
+   persiste entre corridas). Es COMPARTIDO entre los fallos deterministas
+   (spec invalida, autofix, compile, auditoria) y los fallos visuales de
+   `revisor-figuras` -- ambos cuentan como "este diagrama todavia no esta
+   bien". El despacho inicial de `disenador-tikz` es el intento 1; cada
+   re-despacho a `tikz-optimizer` suma uno mas.
+   Tope = 4 intentos por diagrama (1 inicial + 3 remediaciones). Al llegar al
+   4.o fallo (de cualquier tipo) el dispatcher DETIENE el bucle -- no despacha
+   un 5.o intento -- y escala al usuario con: (1) nombre del diagrama y su
+   fase/§, (2) intentos usados vs. tope ("4/4 intentos"), (3) el ultimo
+   hallazgo conocido verbatim (el mensaje de `figura.py` o los items
+   `CORRECCIONES` de `revisor-figuras`), (4) pedido explicito de guia al
+   usuario. Nunca reintenta en silencio mas alla del tope ni abandona en
+   silencio; no avanza a la siguiente fase sin la guia del usuario.
+```
+
+Presupuesto de reloj: `figura.py` sale con codigo distinto de cero si el bucle
+completo supera `--budget-s` (180 s por defecto). Un diagrama que exceda los 3
+minutos es un fallo del pipeline, no un caso a tolerar.
+
+Nota de artefactos: `specs/<name>.spec.json` es la **unica fuente autoral** del
+diagrama; `sections/diag_<name>.tex` es salida generada y **nunca se edita a
+mano** (el siguiente render la sobrescribe). `specs/<name>.overrides.json`
+guarda los anchos que el autofix determinista midio; si un nodo se acorta, la
+entrada obsoleta debe borrarse para que el render vuelva a medir.
 
 ## Reglas de dependencia (haz que `revisor` las valide en cada gate)
 
@@ -1420,9 +1442,17 @@ estado del arte, diagrama metodológico):
   unidad produjo o editó secciones narrativas (`redactor` o `investigador`),
   despachá `grant-flow-auditor` sobre esas secciones ANTES del `revisor`:
   audita micro-estilo (cadencia, voz activa, transiciones, fricción para el
-  evaluador), no cumplimiento. El `revisor` sigue siendo la autoridad del
-  veredicto PASS/FAIL; el auditor no lo reemplaza ni lo bloquea. No aplica a
-  unidades sin prosa nueva (bucles de figura, presupuesto, bibliografía).
+  evaluador), no cumplimiento. Esa auditoría incluye, como paso propio, el
+  pulido de prosa en español que define la skill `estilo-natural-es`
+  (desmecanizar enumeraciones y
+  aperturas formulaicas, variar longitud de frase y conectores, regla 70/30
+  de vocabulario, con fidelidad byte a byte de cifras, fechas y citas). Pasale
+  al subagente la ruta exacta de esa skill en el prompt de despacho, y exigile
+  que devuelva su bloque de verificación (patrones detectados, tabla de
+  cambios, invariantes y puntuación de naturalidad y fidelidad). El `revisor`
+  sigue siendo la autoridad del veredicto PASS/FAIL; el auditor no lo
+  reemplaza ni lo bloquea. No aplica a unidades sin prosa nueva (bucles de
+  figura, presupuesto, bibliografía).
 - En FAIL, vuelve a despachar con `subagent_run` al agente responsable de la sección
   con las correcciones exactas del revisor, y repite el gate.
 - No reescribas contenido de sección tú mismo; ese trabajo es de los

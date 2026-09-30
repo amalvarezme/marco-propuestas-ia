@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "purpose": "Data-only rules consumed by gen-pi.py to port .claude/agents + .claude/commands/*.md into .pi/agents + .pi/prompts. Never edit generated output directly -- edit this file or the .claude/ sources, then re-run the generator.",
+    "purpose": "Data-only rules consumed by gen-pi.py to port .claude/agents + .claude/commands/*.md + .claude/skills/**/SKILL.md into .pi/agents + .pi/prompts + .pi/skills. Never edit generated output directly -- edit this file or the .claude/ sources, then re-run the generator.",
     "schema_version": 1
   },
   "paths": {
@@ -8,12 +8,15 @@
     "source_commands_dir": ".claude/commands",
     "output_agents_dir": ".pi/agents",
     "output_commands_dir": ".pi/prompts",
+    "source_skills_dir": ".claude/skills",
+    "output_skills_dir": ".pi/skills",
     "excluded_agents": [
       "coordinador-propuesta.md"
     ],
     "agent_files": [
       "bibliografo-propuesta.md",
       "disenador-tikz.md",
+      "grant-flow-auditor.md",
       "insumos-observador.md",
       "investigador.md",
       "presupuestador.md",
@@ -30,6 +33,9 @@
       "propuesta-continuar.md",
       "propuesta-limpiar.md",
       "_propuesta-steps.md"
+    ],
+    "skill_files": [
+      "estilo-natural-es/SKILL.md"
     ]
   },
   "frontmatter": {
@@ -44,17 +50,16 @@
       "description",
       "argument-hint"
     ],
-    "_note_keys": "Pi keeps `name` (the subagent id used by subagent_run) and keeps `argument-hint` on prompt templates (Pi supports it natively, unlike OpenCode markdown commands). `$ARGUMENTS`/`$1` substitution works in Pi prompt templates as-is, so no rewrite is needed."
-  },
-  "model_map": {
-    "sonnet": "claude-bridge/claude-sonnet-5",
-    "opus": "claude-bridge/claude-opus-5",
-    "_verified": "Both ids listed as available by `pi --list-models` on this machine (provider claude-bridge, 1M context). The tiering of the Claude source is preserved 1:1 instead of collapsing both tiers onto one model."
-  },
-  "thinking_map": {
-    "sonnet": "medium",
-    "opus": "high",
-    "_note": "Pi's `thinking` frontmatter field has no Claude Code equivalent; it is derived from the source model tier. Values are Pi thinking levels (off|minimal|low|medium|high|xhigh|max)."
+    "skill_key_order": [
+      "name",
+      "description",
+      "license",
+      "compatibility",
+      "metadata",
+      "allowed-tools",
+      "disable-model-invocation"
+    ],
+    "_note_keys": "Pi keeps `name` (the subagent id used by `subagent_run`) and keeps `argument-hint` on prompt templates (Pi supports it natively, unlike OpenCode markdown commands). `$ARGUMENTS`/`$1` substitution works in Pi prompt templates as-is, so no rewrite is needed. `skill_key_order` is the Agent Skills frontmatter subset Pi understands; unknown keys are dropped rather than guessed. `model` and `thinking` values are resolved per agent from agent_models_source, never from the Claude tier."
   },
   "tools_map": {
     "_note": "Keyed by the exact literal value of the source agent's `tools:` frontmatter field. `__no_tools_field__` is the sentinel for agents with no `tools:` key at all (full Claude default access); it maps to null, meaning the generated Pi agent also omits `tools` and therefore keeps the harness default set -- never narrowed beyond the Claude original.",
@@ -63,6 +68,16 @@
     "Read, Grep, Glob, Write, Edit": "read, grep, find, write, edit"
   },
   "substitutions": [
+    {
+      "id": "propuesta-init-model-check-pi",
+      "applies_to": [
+        "propuesta-init.md"
+      ],
+      "find": "1. **Resolvé el run-id.** Esquema `<YYYY-MM>-<slug>` (p. ej.",
+      "replace": "**Mecanismo en Pi (paso 0).** El runtime es Pi y estos son los cuatro comandos/archivos exactos:\n\n```bash\npi --list-models                      # 1) modelos realmente alcanzables\ncat scripts/agent-models.json         # 2) fuente de verdad de modelos del marco\ncat ~/.pi/gentle-ai/profiles.json     # 3) perfil activo del usuario\n```\n\nEl paso 3 se resuelve así: leé la clave `active` de `profiles.json`, tomá ese perfil, y contrastá cada `tiers[].model` de `agent-models.json` contra (a) la lista de `pi --list-models` y (b) la política de proveedor del perfil activo (`profiles.json[active]`). Si el perfil activo es Pi-nativo (p. ej. `andres_nan`, todos los agentes en un proveedor Pi-nativo), la tabla del marco debe quedarse en ese mismo proveedor: **nunca** escribas un modelo de puente a otro agente de código externo, porque eso reintroduce una dependencia de otro runtime dentro de una sesión de Pi. `scripts/gen-pi.py` **falla** si una tier apunta a un modelo de puente y `allow_claude_bridge` no está en `true`, así que un descuido no pasa silencioso.\n\nEl paso 5 se resuelve así: editá `scripts/agent-models.json` (tiers y/o el mapa `agents`), actualizá su bloque `reconciled_against` con el nombre del perfil activo y la fecha, y corré:\n\n```bash\npython3 scripts/gen-pi.py            # reescribe .pi/agents/*.md y .pi/subagents.json\npython3 scripts/gen-pi.py --check    # debe salir 0\n```\n\nLos dos artefactos que mandan en tiempo de ejecución son `.pi/subagents.json` (perfil de proyecto; tiene precedencia sobre el `model:` del frontmatter del agente) y `.pi/agents/*.md` (declaración declarativa). Ambos se generan del mismo archivo, así que no pueden divergir. `.pi/subagents.json` **debe quedar versionado**: sin él, un clon nuevo cae al frontmatter y, antes de este cambio, ese fallback era un puente a otro agente de código.\n\nCorré además la verificación de sincronía de los otros puertos (`python3 scripts/gen-opencode.py --check`, `python3 scripts/gen-antigravity.py --check`) y reportá si alguno quedó desfasado.\n\n1. **Resolvé el run-id.** Esquema `<YYYY-MM>-<slug>` (p. ej.",
+      "literal": true,
+      "_note": "The canonical step 0 states the runtime-agnostic requirement (verify the code agent, verify the models are reachable, contrast against the operator's active profile, confirm the table). Pi's concrete mechanism -- the two generated artifacts, the profiles store, the generator guard against bridge models -- is injected here so the canonical source stays runtime-generic."
+    },
     {
       "id": "propuesta-interactive-session-note",
       "applies_to": [
@@ -213,11 +228,16 @@
     "Claude Code",
     "Task tool",
     ".claude/",
-    "`Task`"
+    "`Task`",
+    "claude-bridge/"
   ],
-  "_drift_patterns_note": "Same baseline set as the OpenCode port: any of these surviving into generated output means a source edit introduced a Claude-specific mention with no matching rule.",
+  "_drift_patterns_note": "Baseline set plus `claude-bridge/`: any of these surviving into generated output means either a source edit introduced a Claude-specific mention with no matching rule, or the model SSOT was reconciled onto the Claude bridge without setting allow_claude_bridge deliberately.",
   "open_items": [
     "Pi's default tool set for an agent with no `tools:` frontmatter key is assumed (not verified here) to include MCP access, which bibliografo-propuesta needs for openalex/semanticscholar/crossref. If a ported agent reports no MCP tools, add an explicit `tools` value for it in tools_map instead of narrowing the others.",
     "`.mcp.json` mentions inside agent prose are left untouched: Pi reads project MCP servers from its own configuration, and rewriting the filename is out of scope for this generator (same boundary the OpenCode port draws)."
-  ]
+  ],
+  "agent_models_source": {
+    "_note": "Models and thinking levels are NOT mapped from the Claude tier here. They come from scripts/agent-models.json, keyed by AGENT, so the port can never inherit `claude-bridge/*` by accident. That file is the single source of truth for both the .pi/agents/*.md frontmatter and .pi/subagents.json, and /propuesta-init reconciles it against the operator's active gentle profile at session start.",
+    "path": "scripts/agent-models.json"
+  }
 }

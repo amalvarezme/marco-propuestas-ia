@@ -1,7 +1,7 @@
 ---
 name: redactor
 description: Redactor técnico. Redacta las secciones narrativas de la propuesta en español siguiendo las instrucciones párrafo a párrafo de la guía.
-model: claude-bridge/claude-opus-5
+model: nan/deepseek-v4-flash
 thinking: high
 ---
 

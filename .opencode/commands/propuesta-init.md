@@ -15,6 +15,41 @@ $ARGUMENTS
 
 ## Qué hacés vos (el asistente primario) al recibir este comando
 
+0. **Validá el runtime y confirmá la tabla de modelos con el usuario** (antes
+   de crear nada). Este marco despacha subagentes, y cada subagente tiene
+   asignado un modelo concreto. Si esa asignación no existe, no es alcanzable en
+   el runtime actual, o el proveedor no está autenticado, el pipeline falla a
+   mitad de una fase — y el síntoma es un subagente que devuelve *sin reporte*
+   tras varios minutos, no un error claro. Verificá antes de empezar:
+
+   1. **Qué agente de código está corriendo esta sesión** y qué runtime es
+      (el marco soporta varios; cada uno tiene su propio directorio de agentes y
+      su propio mecanismo de asignación de modelos).
+   2. **Qué modelos hay realmente disponibles** en ese runtime. Nunca asumas que
+      una lista de modelos recordada o declarada en un archivo de configuración
+      sigue siendo alcanzable: consultá la lista del runtime.
+   3. **Contrastá la tabla vigente del marco con el perfil activo del usuario.**
+      El marco guarda su tabla de modelos por agente en un único archivo
+      versionado (la *fuente de verdad de modelos*); el usuario, además, tiene
+      un *perfil activo* de modelos que gobierna el resto de su entorno.
+      Compará ambos y reportá cualquier divergencia: un agente del marco que
+      apunte a un modelo ausente del perfil activo, o a un proveedor distinto
+      del que el perfil usa, es una divergencia a resolver ahora y no en la
+      Fase 4.
+   4. **Mostrá la tabla al usuario y pedí confirmación explícita**, una fila por
+      agente (agente · modelo · nivel de razonamiento · por qué ese nivel). No
+      avances con la creación de la corrida hasta tener la confirmación: la
+      tabla es una decisión del operador, no un valor por defecto silencioso.
+   5. **Escribí la tabla confirmada en la fuente de verdad de modelos** y
+      regenerá los puertos si el runtime los genera. Si el usuario no cambia
+      nada, no reescribas el archivo: reportá "sin cambios".
+
+   Si el runtime no expone forma de listar modelos o de asignar modelos por
+   subagente, decilo explícitamente en el reporte en vez de inventar un valor:
+   el paso se marca como `no verificable en este runtime` y el resto de
+   `/propuesta-init` continúa. Nunca bloquees la creación de la corrida por
+   esto; sí es obligatorio dejar constancia de que la verificación no se hizo.
+
 1. **Resolvé el run-id.** Esquema `<YYYY-MM>-<slug>` (p. ej.
    `2026-09-siun-alianzas`): `<YYYY-MM>` de la fecha del sistema, `<slug>` =
    2-4 palabras clave en kebab-case, minúsculas, ASCII-folded (sin tildes ni
@@ -82,7 +117,8 @@ $ARGUMENTS
 6. **Cerrá informando**: run-id, `RUN_ROOT`, las cuatro subcarpetas, los dos
    nombres de índice de `codebase-memory` que usará la corrida
    (`<run-id>-papers` sobre `artefactos/scoping/papers`, `<run-id>-vault`
-   sobre `artefactos/vault`) y el siguiente paso literal: dejar los insumos en
+   sobre `artefactos/vault`), la tabla de modelos confirmada en el paso 0 (o su
+   marca de `no verificable`) y el siguiente paso literal: dejar los insumos en
    `proposals/<run-id>/insumos/` y correr `/propuesta <idea>`.
 
 ## Qué NO hace este comando

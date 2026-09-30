@@ -17,10 +17,12 @@ under `<project>/sections/figuras/` (see WORK below and "Output location").
 
 Every diagram is rendered to BOTH `fig_<name>-1.png` (raster, for the
 compiled PDF/DOCX) and `fig_<name>.svg` (vector, for easier visualization —
-zoom without loss, Obsidian/browser preview). The SVG comes from the same
-intermediate PDF as the PNG via `pdftocairo -svg`, no second LaTeX compile.
-This applies to all four diagrams (árbol de problemas, mapa de estado del
-arte, diagrama metodológico, Gantt de §14) and is runtime-agnostic (Claude
+zoom without loss, Obsidian/browser preview), plus a compact
+`fig_<name>-preview.png` (longest side 1400 px) for the model-assisted visual
+review. The SVG and the preview come from the same intermediate PDF as the PNG
+via `pdftocairo -svg` / `pdftoppm -scale-to`, no second LaTeX compile. This
+applies to all four diagrams (árbol de problemas, mapa de estado del arte,
+diagrama metodológico, Gantt de §14) and is runtime-agnostic (Claude
 Code/OpenCode both call this same script).
 
 Requires: pdflatex, pdftoppm, pdftocairo in PATH (all three ship with a
@@ -253,6 +255,16 @@ def build(name, kind):
     # SVG export (vector, for easier visualization/zoom) from the same PDF —
     # no second LaTeX compile needed. Single-page standalone diagrams only.
     subprocess.run(["pdftocairo", "-svg", str(pdf), str(WORK / f"fig_{name}.svg")], check=True)
+    # Compact preview for the model-assisted visual review. The 200-DPI raster is
+    # the artifact that ships in the compiled PDF/DOCX; handing that same raster
+    # to a vision model costs far more image tokens than the check needs (a
+    # measured `revisor-figuras` pass read a 658 kB PNG and took 4.2 min). The
+    # preview caps the longest side at 1400 px, which is plenty to judge scale,
+    # centring and overlap, and it comes from the same intermediate PDF.
+    subprocess.run(
+        ["pdftoppm", "-png", "-scale-to", "1400", str(pdf), str(WORK / f"fig_{name}-preview")],
+        check=True,
+    )
     # Structured Overfull signal (always printed, N may be 0 — the explicit
     # 0 is the release signal downstream tooling greps for).
     if overfull_count > 0:
@@ -268,10 +280,11 @@ def build(name, kind):
             )
     else:
         print(f"OVERFULL: {name} {overfull_count} occurrence(s)")
-    # Cleanup intermediates on success: keep ONLY the 2 consumed outputs,
-    # fig_<name>-1.png and fig_<name>.svg. Glob-based and tolerant of files
-    # that don't exist (.fls/.fdb_latexmk aren't produced under this plain
-    # -pdflatex invocation). Never touches fig_* (distinct prefix).
+    # Cleanup intermediates on success: keep ONLY the consumed outputs
+    # (fig_<name>-1.png, fig_<name>.svg and fig_<name>-preview.png). Glob-based
+    # and tolerant of files that don't exist (.fls/.fdb_latexmk aren't produced
+    # under this plain -pdflatex invocation). Never touches fig_* (distinct
+    # prefix).
     for stale in WORK.glob(f"wrap_{name}.*"):
         stale.unlink(missing_ok=True)
     log.unlink(missing_ok=True)

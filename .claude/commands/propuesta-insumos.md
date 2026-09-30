@@ -1,6 +1,6 @@
 ---
 description: Crea zonas de depósito bajo insumos/ (TDR, borrador, background, doc-secciones, ideas) sin iniciar una corrida del pipeline.
-argument-hint: [slug opcional o ruta bajo insumos/]
+argument-hint: "[slug opcional o ruta bajo insumos/]"
 ---
 
 # /propuesta-insumos — Zonas de depósito de insumos

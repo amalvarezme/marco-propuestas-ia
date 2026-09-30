@@ -10,6 +10,11 @@ alineado a las 16 secciones de `guiaProyectosIA_Agente.md`.
   `artefactos/...`, `grafos/...` y `redaccion/...` del diagrama se resuelven
   dentro de ese `RUN_ROOT`.
 - **Casillas amarillas**: compuertas de decisión/aprobación (usuario o `revisor`).
+- **Auditoría de prosa**: cada nodo `grant-flow-auditor` (Fases 3, 5, 5.5 y 6.5)
+  aplica la skill [`.claude/skills/estilo-natural-es/SKILL.md`](../.claude/skills/estilo-natural-es/SKILL.md)
+  como su paso de prosa en español: es un paso de *estilo* (fidelidad byte a
+  byte de cifras, fechas y citas), no de cumplimiento, y no reemplaza al
+  `revisor`.
 - **Casillas azules**: las tres vistas de conocimiento — dos índices de
   `codebase-memory` (papers y vault, servidor MCP `codegraph`) más el registro
   del pipeline (archivos de evento, sin indexar) — que corren en paralelo al

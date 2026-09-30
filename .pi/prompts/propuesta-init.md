@@ -1,6 +1,6 @@
 ---
 description: Crea la carpeta de proyecto de una corrida nueva de /propuesta (proposals/<run-id>/ con docs, artefactos, grafos y redaccion) y la deja activa.
-argument-hint: [idea breve de la propuesta] | run-id=<valor> [idea breve]
+argument-hint: "[idea breve de la propuesta] | run-id=<valor> [idea breve]"
 ---
 
 # /propuesta-init — Crear la carpeta de proyecto de una corrida
@@ -15,6 +15,62 @@ Entrada del usuario:
 $ARGUMENTS
 
 ## Qué hacés vos (el asistente primario) al recibir este comando
+
+0. **Validá el runtime y confirmá la tabla de modelos con el usuario** (antes
+   de crear nada). Este marco despacha subagentes, y cada subagente tiene
+   asignado un modelo concreto. Si esa asignación no existe, no es alcanzable en
+   el runtime actual, o el proveedor no está autenticado, el pipeline falla a
+   mitad de una fase — y el síntoma es un subagente que devuelve *sin reporte*
+   tras varios minutos, no un error claro. Verificá antes de empezar:
+
+   1. **Qué agente de código está corriendo esta sesión** y qué runtime es
+      (el marco soporta varios; cada uno tiene su propio directorio de agentes y
+      su propio mecanismo de asignación de modelos).
+   2. **Qué modelos hay realmente disponibles** en ese runtime. Nunca asumas que
+      una lista de modelos recordada o declarada en un archivo de configuración
+      sigue siendo alcanzable: consultá la lista del runtime.
+   3. **Contrastá la tabla vigente del marco con el perfil activo del usuario.**
+      El marco guarda su tabla de modelos por agente en un único archivo
+      versionado (la *fuente de verdad de modelos*); el usuario, además, tiene
+      un *perfil activo* de modelos que gobierna el resto de su entorno.
+      Compará ambos y reportá cualquier divergencia: un agente del marco que
+      apunte a un modelo ausente del perfil activo, o a un proveedor distinto
+      del que el perfil usa, es una divergencia a resolver ahora y no en la
+      Fase 4.
+   4. **Mostrá la tabla al usuario y pedí confirmación explícita**, una fila por
+      agente (agente · modelo · nivel de razonamiento · por qué ese nivel). No
+      avances con la creación de la corrida hasta tener la confirmación: la
+      tabla es una decisión del operador, no un valor por defecto silencioso.
+   5. **Escribí la tabla confirmada en la fuente de verdad de modelos** y
+      regenerá los puertos si el runtime los genera. Si el usuario no cambia
+      nada, no reescribas el archivo: reportá "sin cambios".
+
+   Si el runtime no expone forma de listar modelos o de asignar modelos por
+   subagente, decilo explícitamente en el reporte en vez de inventar un valor:
+   el paso se marca como `no verificable en este runtime` y el resto de
+   `/propuesta-init` continúa. Nunca bloquees la creación de la corrida por
+   esto; sí es obligatorio dejar constancia de que la verificación no se hizo.
+
+**Mecanismo en Pi (paso 0).** El runtime es Pi y estos son los cuatro comandos/archivos exactos:
+
+```bash
+pi --list-models                      # 1) modelos realmente alcanzables
+cat scripts/agent-models.json         # 2) fuente de verdad de modelos del marco
+cat ~/.pi/gentle-ai/profiles.json     # 3) perfil activo del usuario
+```
+
+El paso 3 se resuelve así: leé la clave `active` de `profiles.json`, tomá ese perfil, y contrastá cada `tiers[].model` de `agent-models.json` contra (a) la lista de `pi --list-models` y (b) la política de proveedor del perfil activo (`profiles.json[active]`). Si el perfil activo es Pi-nativo (p. ej. `andres_nan`, todos los agentes en un proveedor Pi-nativo), la tabla del marco debe quedarse en ese mismo proveedor: **nunca** escribas un modelo de puente a otro agente de código externo, porque eso reintroduce una dependencia de otro runtime dentro de una sesión de Pi. `scripts/gen-pi.py` **falla** si una tier apunta a un modelo de puente y `allow_claude_bridge` no está en `true`, así que un descuido no pasa silencioso.
+
+El paso 5 se resuelve así: editá `scripts/agent-models.json` (tiers y/o el mapa `agents`), actualizá su bloque `reconciled_against` con el nombre del perfil activo y la fecha, y corré:
+
+```bash
+python3 scripts/gen-pi.py            # reescribe .pi/agents/*.md y .pi/subagents.json
+python3 scripts/gen-pi.py --check    # debe salir 0
+```
+
+Los dos artefactos que mandan en tiempo de ejecución son `.pi/subagents.json` (perfil de proyecto; tiene precedencia sobre el `model:` del frontmatter del agente) y `.pi/agents/*.md` (declaración declarativa). Ambos se generan del mismo archivo, así que no pueden divergir. `.pi/subagents.json` **debe quedar versionado**: sin él, un clon nuevo cae al frontmatter y, antes de este cambio, ese fallback era un puente a otro agente de código.
+
+Corré además la verificación de sincronía de los otros puertos (`python3 scripts/gen-opencode.py --check`, `python3 scripts/gen-antigravity.py --check`) y reportá si alguno quedó desfasado.
 
 1. **Resolvé el run-id.** Esquema `<YYYY-MM>-<slug>` (p. ej.
    `2026-09-siun-alianzas`): `<YYYY-MM>` de la fecha del sistema, `<slug>` =
@@ -83,7 +139,8 @@ $ARGUMENTS
 6. **Cerrá informando**: run-id, `RUN_ROOT`, las cuatro subcarpetas, los dos
    nombres de índice de `codebase-memory` que usará la corrida
    (`<run-id>-papers` sobre `artefactos/scoping/papers`, `<run-id>-vault`
-   sobre `artefactos/vault`) y el siguiente paso literal: dejar los insumos en
+   sobre `artefactos/vault`), la tabla de modelos confirmada en el paso 0 (o su
+   marca de `no verificable`) y el siguiente paso literal: dejar los insumos en
    `proposals/<run-id>/insumos/` y correr `/propuesta <idea>`.
 
 ## Qué NO hace este comando
