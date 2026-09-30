@@ -178,7 +178,7 @@ que un agente carga cuando la tarea lo pide), con la misma fuente de verdad
 
 | Skill | Para qué | La usa |
 |-------|----------|--------|
-| `estilo-natural-es` | Pulir prosa narrativa en español: desmecaniza enumeraciones y aperturas formulaicas, varía longitud de frase y conectores, aplica la regla 70/30 de vocabulario, con fidelidad estricta de cifras, fechas y citas. No es una herramienta de evasión de detectores de IA: no introduce errores tipográficos, imprecisión deliberada ni registro coloquial. | `grant-flow-auditor` (antes de cada `revisor`) |
+| `estilo-natural-es` | Pulir prosa narrativa en español: desmecaniza enumeraciones y aperturas formulaicas, varía longitud de frase y conectores, aplica la regla 70/30 de vocabulario, con fidelidad estricta de cifras, fechas y citas. No es una herramienta de evasión de detectores de IA: no introduce errores tipográficos, imprecisión deliberada ni registro coloquial. | `grant-flow-auditor` (antes de cada `revisor`) **y el asistente primario en toda prosa en español que redacte** |
 
 La skill canónica vive en `.claude/skills/estilo-natural-es/SKILL.md` y de ahí
 se porta de forma determinista: `.pi/skills/` (Pi) y `.agent/skills/`
@@ -187,6 +187,31 @@ OpenCode la descubre directamente desde `.claude/skills/` (no se duplica en
 `.opencode/skills/` para no provocar un aviso de nombre duplicado). Toda skill
 nueva se agrega primero en `.claude/skills/`, luego a `scripts/kit-manifest.json`
 y a los generadores, y se regeneran los ports con su `--check`.
+
+### La skill `estilo-natural-es` es obligatoria en toda prosa en español
+
+**Alcance.** Pasa por ella cualquier prosa en español que el marco produzca. Eso
+incluye las secciones de la propuesta (§1–§16 y el front-matter) y también los
+artefactos que el asistente primario redacta por su cuenta: `LEEME`, documentos
+de `odd/tasks/`, guías, reportes y notas de corrida.
+
+**Mecánica, según quién escriba.**
+
+| Quién escribe | Cómo se aplica |
+|---|---|
+| `redactor` o `investigador` producen una sección | `grant-flow-auditor` la pule **antes** del `revisor`. El orden no es negociable: si el auditor edita después de un PASS, ese PASS queda invalidado y la revisión se repite sobre el texto final |
+| El asistente primario redacta documentación en español | Aplica la skill **antes de escribir**. El texto sale ya pulido, en lugar de corregirse después |
+
+**Qué queda fuera.** Entradas BibTeX, tablas de LaTeX, la tabla de presupuesto
+(§13), el Gantt (§14), el código TikZ, las enumeraciones que la guía exige
+(objetivos específicos, rubros, productos esperados) y todo texto en inglés. La
+skill mejora la cadencia; no reescribe contenido, no inventa datos y no mueve una
+cifra, una fecha ni una clave de cita.
+
+**Por qué la regla vive aquí y no solo en el pipeline.** Mientras fue un paso del
+pipeline, cubría las secciones de la propuesta y dejaba fuera todo lo demás que
+se escribe en español. Un `LEEME` o un documento de tareas sin pasar por la skill
+tiene la misma textura mecánica que la skill existe para quitar.
 
 ## Flujo del pipeline (interactivo, con gates)
 
