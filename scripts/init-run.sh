@@ -86,6 +86,7 @@ for d in \
   "$RUN_ROOT" \
   "$RUN_ROOT/insumos" \
   "$RUN_ROOT/artefactos" \
+  "$RUN_ROOT/artefactos/insumos-cache" \
   "$RUN_ROOT/artefactos/pipeline" \
   "$RUN_ROOT/artefactos/scoping" \
   "$RUN_ROOT/artefactos/scoping/papers" \
@@ -164,7 +165,7 @@ las cuatro subcarpetas:
 | Subcarpeta | Qué contiene | Quién la llena |
 |---|---|---|
 | \`insumos/\` | TDR, papers, propuestas base, documentos de referencia | el usuario |
-| \`artefactos/\` | \`estado_propuesta.md\`, \`insumos.md\`, \`guia_ajustada_TDR.md\`, \`pipeline/\`, \`scoping/\`, \`vault/\` | el pipeline |
+| \`artefactos/\` | \`estado_propuesta.md\`, \`insumos.md\`, \`guia_ajustada_TDR.md\`, \`insumos-cache/\`, \`pipeline/\`, \`scoping/\`, \`vault/\` | el pipeline |
 | \`grafos/\` | reportes de \`codebase-memory\` (\`papers-graph-report.md\`, \`vault-graph-report.md\`) | el dispatcher |
 | \`redaccion/\` | \`main.tex\`, \`sections/\`, \`refs.bib\`, \`main.pdf\`, \`main.docx\`, \`build.sh\`, \`scripts/\`, \`logos/\`, \`templates/\` | el pipeline |
 
