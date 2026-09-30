@@ -40,7 +40,7 @@ Apply the operator's revision round after G2:
 - [x] T5 Registrar el equipo en `artefactos/equipo.md` (fuente para §9 y para los anexos)
 - [x] T6 Redactar los anexos del §8.6 en `artefactos/anexos/`
 - [x] T7 Crear la carpeta en Drive y subir los anexos — **hecho el 2026-09-30**: `SIUN Emergencias 2026 — Anexos postulación` en `Proyectos Activos`, con los 9 PDF en la raíz y `borradores/` con los 9 `.md`. 20/20 archivos verificados por tamaño contra el origen
-- [ ] T8 Recompilar `main.pdf` y presentar la ronda al usuario
+- [x] T8 Recompilar `main.pdf` y presentar la ronda al usuario — **hecho el 2026-09-30**
 
 ## Evidence
 
@@ -122,3 +122,48 @@ Ambas decisiones quedaron cerradas: la carpeta se llama
 `SIUN Emergencias 2026 — Anexos postulación` y va dentro de `Proyectos Activos`;
 y el formato de subida son los PDF (con los `.md` en `borradores/` como fuente
 editable).
+
+## Los borradores pasaron a Google Docs — 2026-09-30
+
+El operador pidió que `borradores/` tuviera documentos, no Markdown. El montaje de
+DriveFS **no convierte** al subir (se verificó: un `.docx` copiado localmente sigue
+siendo `org.openxmlformats.wordprocessingml.document`, y el ajuste «convertir
+subidas» está apagado en la cuenta).
+
+La conversión funciona por la API, y el obstáculo real era el transporte: el
+sandbox de `mcpScript` no tiene `fetch`, `fs`, `require`, `Buffer`, `TextDecoder`
+ni `crypto` —solo `atob`/`btoa`—, así que parecía obligado transcribir a mano
+~36 KB de contenido (un intento falló con un error de JSON en la posición 744).
+
+**La solución fue encadenar llamadas MCP dentro del propio sandbox**:
+`download_file_content` devuelve el base64 del `.md` a una variable de JavaScript
+y esa variable alimenta `create_file` con `mimeType:
+application/vnd.google-apps.document`. El contenido nunca pasa por el contexto del
+modelo. Es el patrón a reutilizar para cualquier conversión futura.
+
+**Google Drive sí interpreta Markdown al importar**: el `#` se vuelve Título 1, el
+`##` Título 2, la negrita se preserva, las listas se vuelven ítems reales y no
+queda ningún `#` literal (verificado exportando el Doc a HTML).
+
+Resultado: `borradores/` tiene **9 documentos de Google y cero Markdown**, con
+títulos legibles (`03 · Aval de horas docentes — Germán Castellanos-Domínguez`) en
+vez del nombre de archivo. El `LEEME.md` de la raíz también se convirtió y se
+actualizó para reflejar el nuevo estado. Los `.md` siguen siendo la fuente
+editable, pero viven en la corrida (`artefactos/anexos/`), no en Drive.
+
+## Estado de T8 — 2026-09-30
+
+Recompilación limpia con `./build.sh --clean`: 15 páginas A4, 0 `Overfull \hbox`,
+0 `Overfull \vbox`, 0 referencias indefinidas, 0 citas indefinidas, 0 avisos de
+LaTeX. 51 entradas en `refs.bib`, 51 citadas. El PDF resultante pesa exactamente
+los mismos 2 574 320 bytes que el anterior, lo que confirma que las fuentes no
+habían cambiado y que la compilación es reproducible.
+
+Se encontró y retiró `sections/diag_estado_arte.tex`: el mapa monolítico quedó
+huérfano al partirlo en `_a`/`_b` y ya no lo referenciaba nadie. La recompilación
+posterior dio el mismo tamaño de bytes, confirmando que era inerte.
+
+Las tres figuras son **TikZ nativo**, no PNG incrustados: los entornos `figure` y
+las etiquetas viven en `main.tex`, que envuelve los `\input{sections/diag_*}`. Los
+PNG de `sections/figuras/` son previsualizaciones para la revisión visual, no
+entradas de compilación.
