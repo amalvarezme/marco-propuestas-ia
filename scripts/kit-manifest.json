@@ -35,6 +35,7 @@
     "plantilla/logos/logo_labIA.png",
     "plantilla/logos/logo_unal.png",
     "plantilla/logos/logogcpds.png",
+    "plantilla/scripts/anexos_a_pdf.sh",
     "plantilla/scripts/audit_tikz.py",
     "plantilla/scripts/compile_tikz.py",
     "plantilla/scripts/figura.py",

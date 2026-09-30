@@ -54,6 +54,42 @@ Apply the operator's revision round after G2:
 - **T6**: `artefactos/anexos/` — 9 archivos (índice + 8 documentos, 673 líneas en total), todos en estado `borrador`, con la tabla de anexos obligatorios del §8.6, la coherencia documental con la decisión de vincular a la UTP y la lista de datos por completar antes de firmar.
 - **T3** (ejecutado el 2026-09-30): el mapa se reconstruyó desde la spec determinista. Se corrigieron cuatro defectos estructurales que el bucle anterior no podía ver: (a) el ancho del estilo `paper` se calculaba con la fuente equivocada porque el estilo no fijaba `font=`; (b) las aristas que saltan nodos intermedios cruzaban las tarjetas intermedias y ahora hacen un desvío acotado en el margen derecho; (c) los enlaces entre clústeres de filas distintas envolvían la figura (+7,4 cm de ancho medidos) y ahora se dibujan solo entre vecinos de la misma fila, con la relación declarada en el `%` del `.tex` para que la prosa de §4 la conserve; (d) la frase de cierre se ancoraba a la última fila y su ancho fijo de 15 cm empujaba la caja envolvente fuera de la página. Resultado: 17,78 × 28,54 cm, PASS en 1,1 s. `main.tex` todavía lo escala con `\resizebox`; la decisión de página está en el blocker de `marco-tikz-pi-native.md`.
 
+## Estado de T7 (carpeta de Drive) — 2026-09-30
+
+**Preparado y verificado:**
+
+- Los 9 anexos se convierten a PDF con `artefactos/anexos/convertir_a_pdf.sh`
+  (pandoc + xelatex). Resultado: 9 PDF, 288 KB en total, todos muy por debajo del
+  tope de 2 MB por archivo que exige el §8.6.
+- Tres decisiones de formato, documentadas en el script y en el §6 del índice:
+  membrete `BORRADOR — pendiente de firma` en cada página (ninguno está firmado y
+  todos llevan datos por completar, así que un PDF sin esa marca puede
+  confundirse con el radicable); guillemets «…» en lugar de los ⟨…⟩ del Markdown,
+  porque U+27E8/U+27E9 no existe en ninguna fuente instalada y se imprimía como un
+  cuadro vacío (el `.md` no se toca: la sustitución ocurre en la copia temporal
+  que consume pandoc); y `hard_line_breaks`, porque la prosa de las cartas no
+  envuelve pero la fecha, el destinatario y las líneas de firma sí usan un salto
+  por línea — sin esa extensión pandoc los une en un párrafo corrido y la carta
+  deja de parecer una carta.
+
+**Bloqueado:** el MCP `google-drive` exige OAuth y el flujo no completa. Diagnóstico:
+el almacén de tokens (`~/.pi/agent/mcp-oauth/`) **no existe**, así que ninguna
+autorización se ha guardado nunca en esta máquina; `GOOGLE_MCP_CLIENT_SECRET` sí
+está definido. Quedan dos causas posibles: (a) el paso del navegador no se
+completó —es lo más probable, porque requiere un login humano—, o (b) el
+`redirect_uri` `http://127.0.0.1:8123/callback` no está registrado en el cliente
+OAuth de Google Cloud.
+
+**Decisión del operador (tomada):** la carpeta se llamará
+`SIUN Emergencias 2026 — Anexos postulación` y se creará dentro de
+`Mi unidad / UNAL / GCPDS_main / Proyectos Activos`, con una subcarpeta
+`borradores/` para los `.md` editables.
+
+**Salida manual mientras tanto:** crear la carpeta con ese nombre en
+`Proyectos Activos` y arrastrar los 9 archivos de
+`artefactos/anexos/pdf/`, más los 9 `.md` de `artefactos/anexos/` en
+`borradores/`.
+
 ## Blocker
 
 **Resuelto el 2026-09-30.** El operador habilitó el OAuth de Drive, Gmail, Docs y

@@ -293,6 +293,32 @@ costaba **~28,8 min por figura** (tres despachos de agente y tres fallos de
 actual cuesta **menos de 1 s** en el caso limpio y ~2,5 s en el peor caso de
 autofix.
 
+## Anexos administrativos de una convocatoria
+
+Los anexos obligatorios (§8.6 del TDR y los propios de una alianza) se redactan
+en **Markdown** en `artefactos/anexos/` —versionables, diffeables y revisables— y
+de ahí se derivan los **PDF de radicación** con:
+
+```bash
+redaccion/scripts/anexos_a_pdf.sh <RUN_ROOT>/artefactos/anexos
+```
+
+El script (parte del kit, instalado por `marco init`) usa pandoc + xelatex y toma
+tres decisiones deliberadas, todas porque el PDF es el documento que alguien firma:
+
+- **Membrete de borrador en cada página.** Un anexo sin firmar y con datos por
+  completar no puede parecerse al documento radicable.
+- **Guillemets en lugar de los `⟨…⟩` del Markdown.** U+27E8/U+27E9 no existe en
+  las fuentes instaladas y se imprimía como un cuadro vacío. El `.md` **no** se
+  modifica: la sustitución ocurre en la copia temporal que consume pandoc.
+- **Saltos de línea duros.** La prosa de una carta no envuelve (cada párrafo es
+  una línea larga), pero la fecha, el destinatario y las líneas de firma sí usan
+  un salto por línea; sin esa extensión pandoc los une en un párrafo corrido.
+
+El §8.6 exige **máximo 2 MB por archivo**; el script avisa si alguno lo supera.
+Antes de radicar hay que quitar de cada documento su sección interna de datos por
+completar.
+
 ## Dispatch directo de agentes de propuesta
 
 El **asistente primario de Claude Code** puede despachar directamente

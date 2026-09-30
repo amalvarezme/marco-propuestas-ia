@@ -523,6 +523,12 @@ class TestPiModelPolicy(unittest.TestCase):
                           "scripts/gen-antigravity.py", "scripts/agent-models.json"):
             self.assertIn(generator, kit)
 
+    def test_kit_manifest_ships_the_annex_converter(self):
+        kit = json.loads(
+            (REPO_ROOT / "scripts" / "kit-manifest.json").read_text(encoding="utf-8")
+        )["kit_paths"]
+        self.assertIn("plantilla/scripts/anexos_a_pdf.sh", kit)
+
     def test_kit_manifest_ships_the_figure_pipeline(self):
         kit = json.loads(
             (REPO_ROOT / "scripts" / "kit-manifest.json").read_text(encoding="utf-8")
