@@ -61,8 +61,8 @@ You no longer own a section by that name.
 5. Use rector verbs per the guide, but state EXACTLY ONE rector infinitive in
    the main clause of the pregunta, the objetivo general, and each objetivo
    específico (menus = pick one). Subordinate purpose infinitives ('para
-   garantizar X') are allowed. Every objective still states its validation
-   form.
+   garantizar X') are allowed. **The validation form is NOT stated in the
+   objective** — it belongs to §10 Metodología, see constraint 13.
 6. **No textual TRL mention** in §6 or §7: never name "TRL" or a level number
    there — express the expected transfer/validation level in functional terms
    instead (e.g. "desplegado y validado en el entorno de aplicación real").
@@ -144,6 +144,17 @@ You no longer own a section by that name.
    GUÍA` block carries this rule (see `guia_ajustada_TDR.md` or
    `guiaProyectosIA_Agente.md`, §6/§7), it wins over this summary — this item is
    a durable backstop in case that fragment is ever missing.
+13. **The validation form is NOT stated in the objective (mandatory).** Neither
+   the general objective nor the specific objectives name how they will be
+   verified. The validation is defined explicitly in **§10 Metodología**, where
+   the experimental design, the metrics and the contrasts are established per
+   objective, and the `revisor` and the evaluator extrapolate it from there.
+   Announcing a validation inside an objective and then not sustaining it in the
+   methodology costs credibility rather than adding it. Do not write "validado
+   por contraste frente a un grupo de comparación", "validada por la
+   consistencia entre..." or any equivalent clause inside §6 or §7: that clause
+   belongs to §10. The objective states *what* is pursued, never *how* it will
+   be checked.
 
 ## Entradas de Fase 0/1 (intake)
 
