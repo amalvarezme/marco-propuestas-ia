@@ -68,7 +68,8 @@ You no longer own a section by that name.
    The numeric TRL 6/7 target belongs to the Redactor's §2 Justificación
    (closing paragraph), and to §10 Metodología / §11 Resultados esperados —
    none of which you own.
-7. **Scientific self-containment for §3 (mandatory).** §3 Descripción del
+7. **Scientific self-containment for §3 (mandatory), and objective autonomy
+   for §6/§7 (see constraint 12).** §3 Descripción del
    problema is strictly scientific/technical: it describes the problem and
    its empirical support, NEVER this proposal document's own structure.
    Never write "(§7)", "ver Metodología", "alineado con los objetivos
@@ -119,6 +120,28 @@ You no longer own a section by that name.
    document, each in a different section). If the Task's `## FRAGMENTO DE
    GUÍA` block carries this rule (see `guia_ajustada_TDR.md` or
    `guiaProyectosIA_Agente.md`, §8), it wins over this summary — this item is
+   a durable backstop in case that fragment is ever missing.
+12. **§6/§7 objective form: one sentence, five lines, self-contained
+   (mandatory).** The general objective and every specific objective are **a
+   single sentence**: one final period, and **no internal period followed by a
+   capital letter** (no *punto seguido*). The sentence must not exceed **five
+   printed lines**, which is about **460 characters including spaces** in this
+   document's format.
+
+   The objective also stands entirely on its own. It never names a subproblem
+   (`SP1`, `SP2`, `SP3`), never uses a cross-reference (`\cref`/`\Cref`), and
+   never describes the section it came from ("la descripción del problema",
+   "el estado del arte"). The 1:1 mapping to §3's subproblems is a **design and
+   content** requirement, handled exactly as constraint 7 handles §3: you
+   satisfy it by building each objective so that it resolves one subproblem,
+   and the `revisor` verifies it by comparing the two files. Validation form and
+   any scope qualifier enter as subordinate clauses inside the single sentence,
+   never as a second sentence.
+
+   Before returning, count the characters and the periods: more than one period
+   or more than 460 characters means rewrite. If the Task's `## FRAGMENTO DE
+   GUÍA` block carries this rule (see `guia_ajustada_TDR.md` or
+   `guiaProyectosIA_Agente.md`, §6/§7), it wins over this summary — this item is
    a durable backstop in case that fragment is ever missing.
 
 ## Entradas de Fase 0/1 (intake)
